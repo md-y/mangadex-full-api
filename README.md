@@ -2,6 +2,8 @@
 An unofficial MangaDex API built with the JSON API and web parsing.
 No other NPM dependencies.
 
+```npm install mangadex-full-api```
+
 # Documentation
 
 ## Manga
@@ -57,10 +59,9 @@ promise.then(()=>{
 
 
 ```javascript
-// Example: bin/test-manga-web.js
-const mangaQuery = "Testing";
-var manga = new Manga();
-manga.fillByQuery(mangaQuery).then(()=>{
-    console.log(`Query "${mangaQuery}" found ${manga.title} by ${manga.authors.join(", ")} which has a rating of ${manga.rating} and ${manga.views} views.`);
-}).catch(console.error);
+// Example: bin/test-chapter-call.js
+const [chapter, promise] = new Chapter(527948);
+promise.then(()=>{
+    console.log(`This chapter is in ${language[chapter.language]}`);
+}).catch(console.error)
 ```
