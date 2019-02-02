@@ -1,0 +1,28 @@
+{
+  "name": "mangadex-full-api",
+  "version": "1.0.0",
+  "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "node bin/test-manga-call.js && node bin/test-manga-web.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/md-y/mangadex-full-api.git"
+  },
+  "keywords": [
+    "mangadex",
+    "api",
+    "manga",
+    "anime",
+    "full",
+    "chapter",
+    "page"
+  ],
+  "author": "m;dy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/md-y/mangadex-full-api/issues"
+  },
+  "homepage": "https://github.com/md-y/mangadex-full-api#readme"
+}
