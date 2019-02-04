@@ -49,7 +49,24 @@ module.exports = {
                 }
                 if (payload[i] && payload[i].length == 1) payload[i] = payload[i][0]; // Convert to string if the only element
             }
-            callback(payload);
+            callback(payload, res);
+        });
+    },
+    /**
+     * Performs modified getMatch() call that returns an array of IDs
+     * @param {String|URL} url Base quicksearch URL
+     * @param {String} query Query like a name
+     * @param {RegExp} regex 
+     * @param {Function} callback Takes match object and http.IncomingMessage as arguments
+     */
+    quickSearch: function(url, query, regex, callback) {
+        return module.exports.getMatches(url + encodeURIComponent(query), {
+            "results": regex,
+        }, (matches, res) => {
+            if (!matches.results) matches.results = [];
+            if (!(matches.results instanceof Array)) matches.results = [matches.results];
+            matches.results.forEach((e, i, a)=> {a[i] = parseInt(e)});
+            callback(matches.results, res);
         });
     }
 }

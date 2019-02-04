@@ -1,17 +1,12 @@
 const util = require("../util");
 const APIObject = require("./apiobject");
+const Group = require("./group");
 
 /**
  * Represents a Chapter with pages
  */
 class Chapter extends APIObject {
     parse(data) {
-        /**
-         * MangaDex Chapter ID
-         * @type {Number}
-         */
-        this.id = data.id;
-
         /**
          * Unix timestamp
          * @type {Number}
@@ -52,7 +47,8 @@ class Chapter extends APIObject {
          * IDs of translation groups for this chapter
          * @type {Array<Number>}
          */
-        this.groups = [data.group_id, data.group_id_2, data.group_id_3];
+        this.groups = [];
+        for (let i of [data.group_id, data.group_id_2, data.group_id_3]) if (i != 0) this.groups.push(new Group(i, true));
 
         /**
          * Number of comments for this chapter, not manga

@@ -4,7 +4,7 @@
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
   "scripts": {
-    "test": "node bin/test-manga-call.js && node bin/test-manga-web.js"
+    "test": "node bin/test-manga-call.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,8 @@
     "anime",
     "full",
     "chapter",
-    "page"
+    "page",
+    "group"
   ],
   "author": "m;dy",
   "license": "MIT",

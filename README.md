@@ -28,19 +28,23 @@ No other NPM dependencies.
 |description|```String```| HTML Formated description string
 |links|```Array<String>```| Array of full URLs to additional links (e.g. MangaUpdates, MAL, BookWalker). See ```links.js```
 |chapters|```Array<Chapter>```| Array of all chapters for this manga. Contains only minimal information like ID and title; use ```Chapter.fill()``` 
+|views|```Number```| Amount of manga views
+|rating|```Number```| Manga's Bayesian rating
 
 ```javascript
+
 // Example: bin/test-manga-call.js
 var [manga, promise] = new Manga(mangaID);
 promise.then(()=>{
     console.log(`${manga.title} by ${manga.authors.join(", ")}`);
 });
+
 ```
 
 ## Chapter
 |Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
 |-|-|-|-|-
-|fill()|```Manga ID (Number)```|```Promise```| Fills an instance of Chapter with information from the JSON API and web parsing.<br>Promise returns Chapter object.|JSON
+|fill()|```Chapter ID (Number)```|```Promise```| Fills an instance of Chapter with information from the JSON API and web parsing.<br>Promise returns Chapter object.|JSON
 |getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/chapter/(id)"```)|Neither
 
 |Property|Type|Information
@@ -52,16 +56,47 @@ promise.then(()=>{
 |title|```String```| The chapter's title
 |language|```String```| The language code for this chapter's translated language. See ```language.js```
 |parentMangaID|```Number```| The ID of the manga this chapter is from
-|groups|```Array<Number>```| The IDs of the groups that translated this chapter
+|groups|```Array<Group>```| The groups that translated this chapter
 |commentCount|```Number```| Number of comments on this chapter
 |longstrip|```Boolean```| Longstrip (e.g. WebToon style) or not?
 |pages|```Array<String>```| Array of each page image's URL
 
 
 ```javascript
+
 // Example: bin/test-chapter-call.js
 const [chapter, promise] = new Chapter(527948);
 promise.then(()=>{
     console.log(`This chapter is in ${language[chapter.language]}`);
 }).catch(console.error)
+
+```
+
+## Group
+|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
+|-|-|-|-|-
+|search()|```Query (String)```|```Array<String>```| (Static) Calls a MangaDex quicksearch and returns an array of group IDs.|Web
+|fill()|```Group ID (Number)```|```Promise```| Fills an instance of Group with information from web parsing.<br>Promise returns Group object.|Web
+|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/group/(id)"```)|Neither
+
+|Property|Type|Information
+|-|-|-
+|id|```Number```| This group's MangaDex ID
+|title|```String```| The group's official name
+|description|```String```| HTML Formated description string
+|language|```String```| The language code for this group. See ```language.js```
+|views|```Number```| Amount of group views
+|followers|```Number```| Amount of group followers
+|uploads|```Number```| Amount chapters uploaded by this group
+|links|```Object```| Links to the group's website, Discord, IRC, and/or email.
+
+
+```javascript
+
+// Example: bin/test-group-call.js
+const [chapter, promise] = new Group(2233);
+promise.then(()=>{
+    console.log(`${group.title} has uploaded ${group.uploads} chapters and has ${group.followers} followers and ${group.views} views.`);
+}).catch(console.error)
+
 ```

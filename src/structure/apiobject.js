@@ -4,6 +4,7 @@
 class APIObject {
     /**
      * @param {Number} id MangaDex ID (Optional).
+     * @param {Boolean} dontRequest When true, the object will not be filled from the constructor (Optional)
      * @returns {Array<APIObject, Promise>} (Optional) Returns a two-element array when an agrument is included.
      * Index zero is this object, the other is the fill() promise.
      * 
@@ -15,9 +16,14 @@ class APIObject {
      * });
      * 
      */
-    constructor(id) {
+    constructor(id, dontRequest) {
+        /**
+         * MangaDex Chapter ID
+         * @type {Number}
+         */
         this.id = id;
-        if (id) return [this, this.fill(id)];
+        
+        if (id && !dontRequest) return [this, this.fill(id)];
     }
 
     /**

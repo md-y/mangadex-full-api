@@ -7,7 +7,7 @@ const APIObject = require("./apiobject");
 /**
  * Represents a Manga with all information on a Manga's homepage
  */
-class Manga extends APIObject{
+class Manga extends APIObject {
     parse(data) {
         /**
          * Main title for a manga
@@ -38,13 +38,13 @@ class Manga extends APIObject{
          * Artist(s) name(s)
          * @type {Array<String>}
          */
-        this.artists = data.manga.artist ? data.manga.artist.split(", ") : undefined;
+        this.artists = data.manga.artist ? data.manga.artist.split(", ") : [];
 
         /**
          * Author(s) name(s)
          * @type {Array<String>}
          */
-        this.authors = data.manga.author ? data.manga.author.split(", ") : undefined;
+        this.authors = data.manga.author ? data.manga.author.split(", ") : [];
 
         /**
          * Hentai or not?
@@ -76,9 +76,8 @@ class Manga extends APIObject{
         if (data.chapter) {
             this.chapters = [];
             for (let i in data.chapter) {
-                let c = new Chapter();
+                let c = new Chapter(parseInt(i), true);
                 c.parse(data.chapter[i]);
-                c.id = i; // Add id here to avoid GET request
                 c.parentMangaID = this.id;
                 this.chapters.push(c);
             }
@@ -89,13 +88,13 @@ class Manga extends APIObject{
          * Viewcount (Web Parsing)
          * @type {String}
          */
-        this.views = data.views;
+        this.views = data.views ? parseInt(data.views.replace(/\D/g, "")) : undefined;
 
         /**
          * Bayesian Rating (Web Parsing)
          * @type {String}
          */
-        this.rating = data.rating;
+        this.rating = data.rating ? parseFloat(data.rating) : undefined;
     }
 
     fill(id) {
@@ -180,13 +179,9 @@ class Manga extends APIObject{
      */
     static search(query) {
         const url = "https://mangadex.org/quick_search/";
+        const regex = /<a.+href=["']\/title\/(\d+)\/\S+["'].+class=["'].+manga_title.+["']>.+<\/a>/gmi;
         return new Promise((resolve, reject) => {
-            Util.getMatches(url + encodeURIComponent(query), {
-                "results": /<a.+href=["']\/title\/(\d+)\/\S+["'].+class=["'].+manga_title.+["']>.+<\/a>/gmi,
-            }, (matches) => {
-                if (!(matches.results instanceof Array)) matches.results = [matches.results];
-                resolve(matches.results);
-            }).on('error', reject);;
+            Util.quickSearch(url, query, regex, resolve).on('error', reject);
         });
     }
 }
