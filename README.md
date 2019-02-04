@@ -1,6 +1,10 @@
 # MangaDex Full API
-An unofficial MangaDex API built with the JSON API and web parsing.
+An unofficial [MangaDex](https://www.mangadex.org) API built with the JSON API and web parsing.
 No other NPM dependencies.
+
+[![Version](https://img.shields.io/npm/v/mangadex-full-api.svg?style=flat)](https://www.npmjs.com/package/mangadex-full-api)
+[![License](https://img.shields.io/github/license/md-y/mangadex-full-api.svg?style=flat)](https://github.com/md-y/mangadex-full-api/blob/master/LICENSE)
+[![Downloads](https://img.shields.io/npm/dm/mangadex-full-api.svg?style=flat)](https://www.npmjs.com/package/mangadex-full-api)
 
 ```npm install mangadex-full-api```
 
