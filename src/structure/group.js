@@ -13,13 +13,13 @@ class Group extends APIObject {
         this.views = data.views ? parseInt(data.views.replace(/\D/g, "")) : undefined;
 
         /**
-         * Group language code
+         * Group language code (Web Parsing)
          * @type {String}
          */
         this.language = data.language ? data.language.toUpperCase(): undefined;
 
         /**
-         * Group description
+         * Group description (Web Parsing)
          * @type {String}
          */
         this.description = data.description ? data.description.replace(/<\s*br\s*\/>/gmi, ""): undefined; // Removes <br />
@@ -79,7 +79,7 @@ class Group extends APIObject {
     }
 
     /**
-     * Executes Group.search() then executes fill() with the most relevent manga.
+     * Executes Group.search() then executes fill() with the most relevent user.
      * @param {String} query Quicksearch query like a name or description
      */
     fillByQuery(query) {
