@@ -2,6 +2,7 @@ module.exports = {
     Manga: require("./structure/manga"),
     Chapter: require("./structure/chapter"),
     Group: require("./structure/group"),
+    User: require("./structure/user"),
     
     Util: require("./util"),
 
