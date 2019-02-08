@@ -1,5 +1,6 @@
 const APIObject = require("./apiobject");
 const Util = require("../util");
+const User = require("./user");
 
 /**
  * Represents a MangaDex translation group
@@ -34,7 +35,7 @@ class Group extends APIObject {
          * Number of chapters uploaded (Web Parsing)
          * @type {String}
          */
-        this.uploads = data.uploads ? parseInt(data.uploads.replace(/\D/g, "")) : undefined;;
+        this.uploads = data.uploads ? parseInt(data.uploads.replace(/\D/g, "")) : undefined;
 
         /**
          * Official Group Name (Web Parsing)
@@ -52,6 +53,20 @@ class Group extends APIObject {
         if (data.discord) this.links.discord = data.discord;
         if (data.irc) this.links.irc = data.irc;
         if(data.email) this.links.email = data.email;
+
+        /**
+         * Leader User Object (Web Parsing)
+         * Contains ID only, use fill() for full data.
+         * @type {User}
+         */
+        this.leader = data.leader ? new User(parseInt(data.leader), true) : undefined;
+
+        /**
+         * Array of members (Web Parsing)
+         * @type {Array<User>}
+         */
+        this.members = []
+        if (data.members) for (let i of data.members) this.members.push(new User(i, true));
     }
 
     fill(id) {
@@ -70,7 +85,9 @@ class Group extends APIObject {
                 "discord": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Discord["']/gmi,
                 "irc": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']IRC["']/gmi,
                 "email": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Email["']/gmi,
-                "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s<\/div>\s{1,2}<ul/gmi
+                "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s<\/div>\s{1,2}<ul/gmi,
+                "leader": /Leader:.+\s{1,2}.+href=["']\/user\/(\d+)\/.+["']>/gmi,
+                "members": /<li [^>]+><span [^>]+><\/span> <a [^\/]+\/user\/(\d+)\/[^"']+["']>[^>]+><\/li>/gmi
             }, (matches) => {
                 this.parse(matches);
                 resolve(this);
