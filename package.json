@@ -1,10 +1,10 @@
 {
   "name": "mangadex-full-api",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
   "scripts": {
-    "test": "node bin/test-manga-call.js"
+    "test": "node bin/test-manga-web.js && node bin/test-chapter-call.js && node bin/test-group-call.js && node bin/test-user-call.js"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,10 @@
     "full",
     "chapter",
     "page",
-    "group"
+    "group",
+    "user",
+    "manwha",
+    "manhua"
   ],
   "author": "m;dy",
   "license": "MIT",
