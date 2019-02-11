@@ -134,3 +134,7 @@ user.fillByQuery("mdy").then(()=>{
 }).catch(console.error);
 
 ```
+
+# Errors
+
+Service may be shut down during a DDOS attack.

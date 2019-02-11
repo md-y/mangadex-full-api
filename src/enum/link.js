@@ -1,7 +1,7 @@
 /**
  * Manga page 'links' information and link prefixes.
  * Keys are /manga endpoint JSON keys
- * @enum {String}
+ * @enum {Object}
  */
 module.exports = {
     /**
