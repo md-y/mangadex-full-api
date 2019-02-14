@@ -8,6 +8,7 @@ module.exports = {
      */
     getHTTPS: function(url, callback) {
         return https.get(url, (res) => {
+            res.url = url;
             let payload = "";
 
             res.on('data', (data) => {

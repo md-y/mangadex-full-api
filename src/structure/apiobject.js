@@ -36,7 +36,6 @@ class APIObject {
 
     /**
      * Retrieves information from MangaDex and set this instance's variables.
-     * Uses two HTTPS requests
      * @param {Number} id Object's ID (Defaults to this.id)
      * @returns {Promise} Promise resolve argument is this object
      */

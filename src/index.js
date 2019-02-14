@@ -3,6 +3,8 @@ module.exports = {
     Chapter: require("./structure/chapter"),
     Group: require("./structure/group"),
     User: require("./structure/user"),
+    Thread: require("./structure/thread"),
+    Post: require("./structure/post"),
     
     Util: require("./util"),
 

@@ -136,6 +136,35 @@ user.fillByQuery("mdy").then(()=>{
 
 ```
 
+## Thread
+|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
+|-|-|-|-|-
+|fill()|```Thread ID (Number), Pages (Number)```|```Promise```| Fills an instance of Thread with information from web parsing for X number of pages.<br>Promise returns User object.|Web
+|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/thread/(id)"```)|Neither
+
+|Property|Type|Information
+|-|-|-
+|id|```Number```| This thread's MangaDex ID
+|pages|```Number```| The number of pages searched for this thread
+|posts|```Array<Post>```| An array of Post objects.
+
+```javascript
+
+// Example: bin/test-thread-call.js
+var thread = new Thread();
+thread.fill(56429, 2).then(()=>{
+    console.log(`${thread.posts[0].author.username}'s original post: ${thread.posts[0].text}`);
+});
+
+```
+
+## (Thread) Post
+|Property|Type|Information
+|-|-|-
+|id|```Number```| This post's MangaDex ID
+|author|```User```| User with minimal information; use ```User.fill()```.
+|text|```String```| The post's text
+
 # Errors
 
 Service may be shut down during a DDOS attack.
