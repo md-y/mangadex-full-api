@@ -47,6 +47,12 @@ class User extends APIObject {
          * @type {Object}
          */
         this.website  = data.website;
+
+        /**
+         * Avatar Image URL
+         * @type {String}
+         */
+        this.avatar = data.avatar;
     }
 
     fill(id) {
@@ -60,7 +66,8 @@ class User extends APIObject {
                 "views": /title=["']Views["'][\D\s\n]+([\d,]+)<\/li>/gmi,
                 "uploads": /title=["']Chapters uploaded["'][\D\s\n]+([\d,]+)<\/li>/gmi,
                 "website": /Website:[\d\D\n]+<a href=["']([^<>\s]+)["'].+>[^\s]+<\/a><\/div>/gmi,
-                "biography": /Biography:<\/div>\s*<div class=["'].+["']>([\w\W\n]+)<\/div>\s{1,2}<\/div.+\s.+\s.+Actions:/gmi
+                "biography": /Biography:<\/div>\s*<div class=["'].+["']>([\w\W\n]+)<\/div>\s{1,2}<\/div.+\s.+\s.+Actions:/gmi,
+                "avatar": /alt=["']Avatar["'] src=["']([^"']+)["']/gmi
             }, (matches) => {
                 this.parse({...matches, id: id});
                 resolve(this);

@@ -123,6 +123,7 @@ promise.then(()=>{
 |views|```Number```| Amount of profile views
 |uploads|```Number```| Amount chapters uploaded by this user
 |website|```String```| Link to user's website
+|avatar|```String```| Link to user's avatar image
 
 
 ```javascript
