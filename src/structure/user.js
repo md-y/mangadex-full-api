@@ -7,6 +7,12 @@ const Util = require("../util");
 class User extends APIObject {
     parse(data) {
         /**
+         * MangaDex User ID
+         * @type {Number}
+         */
+        this.id = data.id;
+
+        /**
          * Viewcount (Web Parsing)
          * @type {String}
          */
@@ -46,7 +52,6 @@ class User extends APIObject {
     fill(id) {
         const web = "https://mangadex.org/user/"; 
         if (!id) id = this.id;
-        else this.id = id;
 
         return new Promise((resolve, reject) => {
             Util.getMatches(web + id.toString(), {
@@ -57,7 +62,7 @@ class User extends APIObject {
                 "website": /Website:[\d\D\n]+<a href=["']([^<>\s]+)["'].+>[^\s]+<\/a><\/div>/gmi,
                 "biography": /Biography:<\/div>\s*<div class=["'].+["']>([\w\W\n]+)<\/div>\s{1,2}<\/div.+\s.+\s.+Actions:/gmi
             }, (matches) => {
-                this.parse(matches);
+                this.parse({...matches, id: id});
                 resolve(this);
             }).on('error', reject);;
         });

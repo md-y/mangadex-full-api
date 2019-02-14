@@ -10,6 +10,12 @@ const APIObject = require("./apiobject");
 class Manga extends APIObject {
     parse(data) {
         /**
+         * MangaDex Manga ID
+         * @type {Number}
+         */
+        this.id = data.id;
+
+        /**
          * Main title for a manga
          * @type {String}
          */
@@ -102,7 +108,6 @@ class Manga extends APIObject {
         const web = "https://mangadex.org/title/"
 
         if (!id) id = this.id;
-        else this.id = id;
         let last = false; // Flag to trigger resolve()
         let obj = {};
 
@@ -116,7 +121,7 @@ class Manga extends APIObject {
 
         return new Promise((resolve, reject) => {
             Util.getJSON(jsonAPI + id.toString(), (json) => {
-                obj = {...obj, ...json};
+                obj = {...obj, ...json, id: id};
                 finish(this, resolve);
             }).on('error', reject);
 

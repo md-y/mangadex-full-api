@@ -8,6 +8,12 @@ const User = require("./user");
 class Group extends APIObject {
     parse(data) {
         /**
+         * MangaDex Group ID
+         * @type {Number}
+         */
+        this.id = data.id;
+
+        /**
          * Viewcount (Web Parsing)
          * @type {String}
          */
@@ -72,7 +78,6 @@ class Group extends APIObject {
     fill(id) {
         const web = "https://mangadex.org/group/"; 
         if (!id) id = this.id;
-        else this.id = id;
 
         return new Promise((resolve, reject) => {
             Util.getMatches(web + id.toString(), {
@@ -89,7 +94,7 @@ class Group extends APIObject {
                 "leader": /Leader:.+\s{1,2}.+href=["']\/user\/(\d+)\/.+["']>/gmi,
                 "members": /<li [^>]+><span [^>]+><\/span> <a [^\/]+\/user\/(\d+)\/[^"']+["']>[^>]+><\/li>/gmi
             }, (matches) => {
-                this.parse(matches);
+                this.parse({...matches, id: id});
                 resolve(this);
             }).on('error', reject);;
         });

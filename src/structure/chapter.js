@@ -8,6 +8,12 @@ const Group = require("./group");
 class Chapter extends APIObject {
     parse(data) {
         /**
+         * MangaDex Chapter ID
+         * @type {Number}
+         */
+        this.id = data.id;
+
+        /**
          * Unix timestamp
          * @type {Number}
          */

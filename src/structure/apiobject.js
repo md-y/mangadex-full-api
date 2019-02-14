@@ -18,7 +18,7 @@ class APIObject {
      */
     constructor(id, dontRequest) {
         /**
-         * MangaDex Chapter ID
+         * MangaDex ID
          * @type {Number}
          */
         this.id = id;
