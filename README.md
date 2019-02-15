@@ -10,6 +10,12 @@ No other NPM dependencies.
 
 # Documentation
 
+[Manga](#-Manga) <br>
+[Chapter](#Chapter) <br>
+[Group](#Group) <br>
+[User](#User) <br>
+[Thread](#Thread) <br>
+
 ## Manga
 |Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
 |-|-|-|-|-

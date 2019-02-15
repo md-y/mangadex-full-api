@@ -21,7 +21,10 @@
     "group",
     "user",
     "manwha",
-    "manhua"
+    "manhua",
+    "thread",
+    "forum",
+    "post"
   ],
   "author": "m;dy",
   "license": "MIT",
