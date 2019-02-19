@@ -10,7 +10,7 @@ No other NPM dependencies.
 
 # Documentation
 
-[Manga](#-Manga) <br>
+[Manga](#Manga) <br>
 [Chapter](#Chapter) <br>
 [Group](#Group) <br>
 [User](#User) <br>
