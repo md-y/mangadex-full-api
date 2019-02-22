@@ -183,10 +183,9 @@ class Manga extends APIObject {
      * @param {String} query Quicksearch query like a name or description
      */
     static search(query) {
-        const url = "https://mangadex.org/quick_search/";
         const regex = /<a.+href=["']\/title\/(\d+)\/\S+["'].+class=["'].+manga_title.+["']>.+<\/a>/gmi;
         return new Promise((resolve, reject) => {
-            Util.quickSearch(url, query, regex, resolve).on('error', reject);
+            Util.quickSearch(query, regex, resolve).on('error', reject);
         });
     }
 }

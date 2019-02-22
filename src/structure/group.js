@@ -134,10 +134,9 @@ class Group extends APIObject {
      * @param {String} query Quicksearch query like a name or description
      */
     static search(query) {
-        const url = "https://mangadex.org/groups/0/1/";
-        const regex = /href=["']\/group\/(\d+)\/[^"'/<>]+["']/gmi;
+        const regex = /<td><a href=["']\/group\/(\d+)\/[^"'\/<>]+["']>/gmi;
         return new Promise((resolve, reject) => {
-            Util.quickSearch(url, query, regex, resolve).on('error', reject);
+            Util.quickSearch(query, regex, resolve).on('error', reject);
         });
     }
 }

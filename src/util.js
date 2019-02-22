@@ -60,7 +60,8 @@ module.exports = {
      * @param {RegExp} regex 
      * @param {Function} callback Takes match object and http.IncomingMessage as arguments
      */
-    quickSearch: function(url, query, regex, callback) {
+    quickSearch: function(query, regex, callback) {
+        let url = "https://mangadex.org/quick_search/";
         return module.exports.getMatches(url + encodeURIComponent(query), {
             "results": regex,
         }, (matches, res) => {
