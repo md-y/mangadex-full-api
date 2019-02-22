@@ -87,6 +87,7 @@ promise.then(()=>{
 |-|-|-|-|-
 |search()|```Query (String)```|```Array<String>```| (Static) Calls a MangaDex quicksearch and returns an array of group IDs.|Web
 |fill()|```Group ID (Number)```|```Promise```| Fills an instance of Group with information from web parsing.<br>Promise returns Group object.|Web
+|fillByQuery()|```Query (String)```|```Promise```| Executes ```search()``` then ```fill()``` with the most relevant group.<br>Promise returns Group object.|Web
 |getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/group/(id)"```)|Neither
 
 |Property|Type|Information
@@ -118,6 +119,7 @@ promise.then(()=>{
 |-|-|-|-|-
 |search()|```Query (String)```|```Array<String>```| (Static) Calls a MangaDex quicksearch and returns an array of user IDs.|Web
 |fill()|```User ID (Number)```|```Promise```| Fills an instance of User with information from web parsing.<br>Promise returns User object.|Web
+|fillByQuery()|```Query (String)```|```Promise```| Executes ```search()``` then ```fill()``` with the most relevant user.<br>Promise returns User object.|Web
 |getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/user/(id)"```)|Neither
 
 |Property|Type|Information
