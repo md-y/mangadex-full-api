@@ -8,6 +8,22 @@ No other NPM dependencies.
 
 ```npm install mangadex-full-api```
 
+```javascript
+
+// A Couple of Examples
+
+var manga = new Manga();
+manga.fillByQuery("Ancient Magus Bride").then((manga)=>{
+    console.log(`${manga.title} by ${manga.authors.join(", ")}`);
+});
+
+var group = new Group();
+group.fillByQuery("MangaDex Scans").then((group)=>{
+    console.log(`${group.title} has uploaded ${group.uploads} chapters and has ${group.followers} followers and ${group.views} views.`);
+});
+
+```
+
 # Documentation
 
 [Manga](#Manga) <br>
