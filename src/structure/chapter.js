@@ -29,7 +29,7 @@ class Chapter extends APIObject {
          * Chapter #
          * @type {Number}
          */
-        this.chapter = data.volume ? parseFloat(data.volume): undefined;
+        this.chapter = data.chapter ? parseFloat(data.chapter): undefined;
 
         /**
          * Chapter Title. No title == ""

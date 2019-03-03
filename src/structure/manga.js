@@ -82,9 +82,14 @@ class Manga extends APIObject {
         if (data.chapter) {
             this.chapters = [];
             for (let i in data.chapter) {
-                let c = new Chapter(parseInt(i), true);
-                c.parse(data.chapter[i]);
-                c.parentMangaID = this.id;
+                // Simulate api/chapter return object
+                let chapterObject = data.chapter[i];
+                chapterObject.manga_id = this.id;
+                chapterObject.id = parseInt(i);
+
+                // Create chapter object
+                let c = new Chapter();
+                c.parse(chapterObject);
                 this.chapters.push(c);
             }
             this.chapters.reverse(); // Fix Order
