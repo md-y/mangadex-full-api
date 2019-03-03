@@ -5,6 +5,7 @@ module.exports = {
     User: require("./structure/user"),
     Thread: require("./structure/thread"),
     Post: require("./structure/post"),
+    Home: require("./structure/home"),
     
     Util: require("./util"),
 
