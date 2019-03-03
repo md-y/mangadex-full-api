@@ -31,6 +31,7 @@ group.fillByQuery("MangaDex Scans").then((group)=>{
 [Group](#Group) <br>
 [User](#User) <br>
 [Thread](#Thread) <br>
+[Home](#Home) <br>
 
 ## Manga
 |Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
@@ -163,7 +164,7 @@ user.fillByQuery("mdy").then(()=>{
 ## Thread
 |Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
 |-|-|-|-|-
-|fill()|```Thread ID (Number), Pages (Number)```|```Promise```| Fills an instance of Thread with information from web parsing for X number of pages.<br>Promise returns User object.|Web
+|fill()|```Thread ID (Number), Pages (Number)```|```Promise```| Fills an instance of Thread with information from web parsing for X number of pages.<br>Promise returns Thread object.|Web
 |getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/thread/(id)"```)|Neither
 
 |Property|Type|Information
@@ -188,6 +189,30 @@ thread.fill(56429, 2).then(()=>{
 |id|```Number```| This post's MangaDex ID
 |author|```User```| User with minimal information; use ```User.fill()```.
 |text|```String```| The post's text
+
+## Home
+|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
+|-|-|-|-|-
+|fill()|```None```|```Promise```| Fills an instance of Home with information MangaDex's homepage. <br>Promise returns Home object.|Web
+
+|Property|Type|Information
+|-|-|-
+|newest|```Array<Manga>```| Array of the most recently updated manga
+|top6h|```Array<Manga>```| Array of the top manga in the past 6 hours
+|top24h|```Array<Manga>```| Array of the top manga in the past 24 hours
+|top7d|```Array<Manga>```| Array of the top manga in the week
+|topFollows|```Array<Manga>```| Array of the top manga by follows
+|topRating|```Array<Manga>```| Array of the top manga by rating
+
+```javascript
+
+// Example: bin/test-home.js
+let home = new Home();
+home.fill().then(()=>{
+    console.log(`${home.topRating[0].title} is the highest rated manga on MangaDex.`);
+});
+
+```
 
 # Errors
 
