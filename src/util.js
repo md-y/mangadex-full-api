@@ -11,6 +11,11 @@ module.exports = {
             res.url = url;
             let payload = "";
 
+            if (res.statusCode == 503) {
+                console.error("MangaDex is currently in DDOS mitigation mode. (Status code 503)");
+                return;
+            }
+
             res.on('data', (data) => {
                 payload += data;
             });
@@ -18,7 +23,7 @@ module.exports = {
             res.on('end', () => {
                 callback(payload, res);
             });
-        }).on('error', console.log);
+        }).on('error', console.error);
     },
     /**
      * Sends a HTTPS GET request and parses JSON response
