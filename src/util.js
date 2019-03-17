@@ -11,8 +11,8 @@ module.exports = {
             res.url = url;
             let payload = "";
 
-            if (res.statusCode == 503) {
-                console.error("MangaDex is currently in DDOS mitigation mode. (Status code 503)");
+            if (res.statusCode == 503 || res.statusCode == 502) {
+                console.error(`MangaDex is currently unavailable. It is most likely in DDOS mitigation mode. (Status code ${res.statusCode})`);
                 return;
             }
 
