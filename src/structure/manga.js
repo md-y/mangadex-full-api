@@ -125,18 +125,18 @@ class Manga extends APIObject {
         } 
 
         return new Promise((resolve, reject) => {
-            Util.getJSON(jsonAPI + id.toString(), (json) => {
+            Util.getJSON(jsonAPI + id.toString()).then((json) => {
                 obj = {...obj, ...json, id: id};
                 finish(this, resolve);
-            }).on('error', reject);
+            }).catch(reject);
 
             Util.getMatches(web + id.toString(), {
                 "views": /title=["']views["']\D+(\d[\d,.]+)<\/li>/gmi,
                 "rating": /title=["']Bayesian rating["']\D+(\d[\d,.]+)/gmi
-            }, (matches) => {
+            }).then((matches) => {
                 obj = {...obj, ...matches};
                 finish(this, resolve);
-            }).on('error', reject);;
+            }).catch(reject);;
         });
     }
 
@@ -189,9 +189,7 @@ class Manga extends APIObject {
      */
     static search(query) {
         const regex = /<a.+href=["']\/title\/(\d+)\/\S+["'].+class=["'].+manga_title.+["']>.+<\/a>/gmi;
-        return new Promise((resolve, reject) => {
-            Util.quickSearch(query, regex, resolve).on('error', reject);
-        });
+        return Util.quickSearch(query, regex);
     }
 }
 

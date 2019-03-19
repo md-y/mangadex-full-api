@@ -68,10 +68,10 @@ class User extends APIObject {
                 "website": /Website:[\d\D\n]+<a href=["']([^<>\s]+)["'].+>[^\s]+<\/a><\/div>/gmi,
                 "biography": /Biography:<\/div>\s*<div class=["'].+["']>([\w\W\n]+)<\/div>\s{1,2}<\/div.+\s.+\s.+Actions:/gmi,
                 "avatar": /alt=["']Avatar["'] src=["']([^"']+)["']/gmi
-            }, (matches) => {
+            }).then((matches) => {
                 this.parse({...matches, id: id});
                 resolve(this);
-            }).on('error', reject);;
+            }).catch(reject);
         });
     }
 
@@ -110,9 +110,7 @@ class User extends APIObject {
      */
     static search(query) {
         const regex = /<td><a class=["']user[\w\W]{0,100}href=["']\/user\/(\d+)\/[^"'\/<>]+["']>/gmi;
-        return new Promise((resolve, reject) => {
-            Util.quickSearch(query, regex, resolve).on('error', reject);
-        });
+        return Util.quickSearch(query, regex);
     }
 }
 

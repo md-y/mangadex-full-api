@@ -79,10 +79,10 @@ class Home {
             Util.getMatches(web, {
                 "ids": /<a[^>]*href=["']\/title\/(\d+)\/[^"']+["'][^>]*>[^<]+<\/a>/gmi,
                 "titles": /<a[^>]*href=["']\/title\/\d+\/[^"']+["'][^>]*>([^<]+)<\/a>/gmi
-            }, (matches) => {
+            }).then((matches) => {
                 this.parse(matches);
                 resolve(this);
-            }).on('error', reject);;
+            }).catch(reject);
         });
     }
 }

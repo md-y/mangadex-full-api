@@ -85,12 +85,10 @@ class Chapter extends APIObject {
         else this.id = id;
 
         return new Promise((resolve, reject) => {
-            util.getJSON(api + id.toString(), (json) => {
+            util.getJSON(api + id.toString()).then((json) => {
                 this.parse(json);
                 resolve(this);
-            }).on('error', (err) => {
-                reject(err);
-            });
+            }).catch(reject);
         });
     }
 

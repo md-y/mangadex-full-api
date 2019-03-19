@@ -53,9 +53,12 @@ class Thread extends APIObject {
                     "postID": /<tr[^>]+id=["']post_(\d+)["'][^>]*>/gmi,
                     "userID": /<div[^>]+>[\s]+<span[^>]+><a[^>]+href=["']\/user\/(\d+)\/[^"']+["'][^>]*>/gmi,
                     "username": /<div[^>]+>[\s]+<span[^>]+><a[^>]+>([^<]+)</gmi,
-                    "text": /<div[^>]+class=["']postbody mb-3 mt-4["'][^>]*>((?:(?!<\/div>)[\w\W])+)<\/div>/gmi
-                }, (matches, res) => {
-                    let pageNum = parseInt(/\/(\d+)$/.exec(res.url)[1]);
+                    "text": /<div[^>]+class=["']postbody mb-3 mt-4["'][^>]*>((?:(?!<\/div>)[\w\W])+)<\/div>/gmi,
+                    "page": /post_reply[\w\W]*?["']page-item active["']>\D+(\d+)/gmi
+                }).then(matches => {
+                    let pageNum = 1;
+                    if (matches.page) pageNum = parseInt(matches.page);
+                    delete matches.page;
                     pageObjects[pageNum - 1] = matches;
 
                     obj.pages++; // Add completed request to counter
@@ -69,7 +72,7 @@ class Thread extends APIObject {
                         this.parse(obj);
                         resolve(this);
                     }
-                }).on('error', reject);;
+                }).catch(reject);;
             }
         });
     }

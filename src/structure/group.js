@@ -81,8 +81,8 @@ class Group extends APIObject {
 
         return new Promise((resolve, reject) => {
             Util.getMatches(web + id.toString(), {
-                "title": /class=["']card-header["'][\D\n]+<\/span> (.+) <img/gmi,
-                "language": /class=["']card-header["'][\D\n]+<\/span> .+ <img [^<>]+ src=["']https:[\w/:.]+(\w{2}).png/gmi,
+                "title": /<span class=["']mx-1["']>(.*?)<\/span>/gmi,
+                "language": /<span class=["']mx-1["']>.*?<\/span>\s{0,2}<span[^>]+flag-(\w{2})["']/gmi,
                 "views": /Stats:[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>/gmi,
                 "followers": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>/gmi,
                 "uploads": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>/gmi,
@@ -93,10 +93,10 @@ class Group extends APIObject {
                 "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s<\/div>\s{1,2}<ul/gmi,
                 "leader": /Leader:.+\s{1,2}.+href=["']\/user\/(\d+)\/.+["']>/gmi,
                 "members": /<li [^>]+><span [^>]+><\/span> <a [^\/]+\/user\/(\d+)\/[^"']+["']>[^>]+><\/li>/gmi
-            }, (matches) => {
+            }).then(matches => {
                 this.parse({...matches, id: id});
                 resolve(this);
-            }).on('error', reject);;
+            }).catch(reject);
         });
     }
 
@@ -135,9 +135,7 @@ class Group extends APIObject {
      */
     static search(query) {
         const regex = /<td><a href=["']\/group\/(\d+)\/[^"'\/<>]+["']>/gmi;
-        return new Promise((resolve, reject) => {
-            Util.quickSearch(query, regex, resolve).on('error', reject);
-        });
+        return Util.quickSearch(query, regex);
     }
 }
 
