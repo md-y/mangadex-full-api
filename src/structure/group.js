@@ -82,7 +82,7 @@ class Group extends APIObject {
         return new Promise((resolve, reject) => {
             Util.getMatches(web + id.toString(), {
                 "title": /<span class=["']mx-1["']>(.*?)<\/span>/gmi,
-                "language": /<span class=["']mx-1["']>.*?<\/span>\s{0,2}<span[^>]+flag-(\w{2})["']/gmi,
+                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]+flag-(\w{2})["']/gmi,
                 "views": /Stats:[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>/gmi,
                 "followers": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>/gmi,
                 "uploads": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>/gmi,
@@ -90,9 +90,9 @@ class Group extends APIObject {
                 "discord": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Discord["']/gmi,
                 "irc": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']IRC["']/gmi,
                 "email": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Email["']/gmi,
-                "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s<\/div>\s{1,2}<ul/gmi,
-                "leader": /Leader:.+\s{1,2}.+href=["']\/user\/(\d+)\/.+["']>/gmi,
-                "members": /<li [^>]+><span [^>]+><\/span> <a [^\/]+\/user\/(\d+)\/[^"']+["']>[^>]+><\/li>/gmi
+                "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s*?<\/div>\s*?<ul/gmi,
+                "leader": /Leader:[\w\W]*?href=["']\/user\/(\d+)\/.+["']>/gmi,
+                "members": /<li[^>]+><span[^>]+><\/span>\s?<a[^\/]+\/user\/(\d+)\/[^"']+["']>[^>]+><\/li>/gmi
             }).then(matches => {
                 this.parse({...matches, id: id});
                 resolve(this);

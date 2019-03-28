@@ -54,7 +54,7 @@ class Thread extends APIObject {
                     "userID": /<div[^>]+>[\s]+<span[^>]+><a[^>]+href=["']\/user\/(\d+)\/[^"']+["'][^>]*>/gmi,
                     "username": /<div[^>]+>[\s]+<span[^>]+><a[^>]+>([^<]+)</gmi,
                     "text": /<div[^>]+class=["']postbody mb-3 mt-4["'][^>]*>((?:(?!<\/div>)[\w\W])+)<\/div>/gmi,
-                    "page": /post_reply[\w\W]*?["']page-item active["']>\D+(\d+)/gmi
+                    "page": /<nav>[\w\W]+<a class='page-link'>(\d+)<\/a>/gmi
                 }).then(matches => {
                     let pageNum = 1;
                     if (matches.page) pageNum = parseInt(matches.page);

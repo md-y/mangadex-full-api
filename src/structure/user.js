@@ -61,8 +61,8 @@ class User extends APIObject {
 
         return new Promise((resolve, reject) => {
             Util.getMatches(web + id.toString(), {
-                "username": /class=["']card-header["'][\D\n]+<\/span> (.+) <img/gmi,
-                "language": /class=["']card-header["'][\D\n]+<\/span> .+ <img [^<>]+ src=["']https:[\w/:.]+(\w{2}).png/gmi,
+                "username": /card-header[\w\W]*?<span[^>]*class=["']mx-1["']>(.+)<\/span>/gmi,
+                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]+flag-(\w{2})["']/gmi,
                 "views": /title=["']Views["'][\D\s\n]+([\d,]+)<\/li>/gmi,
                 "uploads": /title=["']Chapters uploaded["'][\D\s\n]+([\d,]+)<\/li>/gmi,
                 "website": /Website:[\d\D\n]+<a href=["']([^<>\s]+)["'].+>[^\s]+<\/a><\/div>/gmi,
