@@ -57,6 +57,7 @@ group.fillByQuery("MangaDex Scans").then((group)=>{
 |chapters|```Array<Chapter>```| Array of all chapters for this manga. Contains only minimal information like ID and title; use ```Chapter.fill()``` 
 |views|```Number```| Amount of manga views
 |rating|```Number```| Manga's Bayesian rating
+|altTitles|```Array<String>```| Alternate names for this manga.
 
 ```javascript
 

@@ -106,6 +106,16 @@ class Manga extends APIObject {
          * @type {String}
          */
         this.rating = data.rating ? parseFloat(data.rating) : undefined;
+
+        /**
+         * Alternate Titles (Web Parsing)
+         * @type {Array<String>}
+         */
+        this.altTitles = undefined;
+        if (data.altTitles) {
+            this.altTitles = [];
+            for (let i of data.altTitles) this.altTitles.push(decodeURI(i));
+        }
     }
 
     fill(id) {
@@ -132,7 +142,8 @@ class Manga extends APIObject {
 
             Util.getMatches(web + id.toString(), {
                 "views": /title=["']views["']\D+(\d[\d,.]+)<\/li>/gmi,
-                "rating": /title=["']Bayesian rating["']\D+(\d[\d,.]+)/gmi
+                "rating": /title=["']Bayesian rating["']\D+(\d[\d,.]+)/gmi,
+                "altTitles": /<li [^>]+><span[^>]+fa-book[\s"'][^>]+><\/span>([^<]+)<\/li>/gmi
             }).then((matches) => {
                 obj = {...obj, ...matches};
                 finish(this, resolve);
