@@ -34,12 +34,6 @@ group.fillByQuery("MangaDex Scans").then((group)=>{
 [Home](#Home) <br>
 
 ## Manga
-|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
-|-|-|-|-|-
-|search()|```Query (String)```|```Array<String>```| (Static) Calls a MangaDex quicksearch and returns an array of manga IDs.|Both
-|fill()|```Manga ID (Number)```|```Promise```| Fills an instance of Manga with information from the JSON API and web parsing.<br>Promise returns Manga object.|Both
-|fillByQuery()|```Query (String)```|```Promise```| Executes ```search()``` then ```fill()``` with the most relevant manga.<br>Promise returns Manga object.|Both
-|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/title/(id)"```)|Neither
 
 |Property|Type|Information
 |-|-|-
@@ -59,6 +53,31 @@ group.fillByQuery("MangaDex Scans").then((group)=>{
 |rating|```Number```| Manga's Bayesian rating
 |altTitles|```Array<String>```| Alternate names for this manga.
 
+### ```static Promise search(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Query|```String```| Search Keyword(s) | No
+Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
+
+### ```Promise fill(id)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+Calls and fills object with info from MangaDex return. Promise returns the object.
+
+### ```Promise fillByQuery(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Query|```String```| Search Keyword(s) | No
+Fills object with the most relevent result from a search. Promise returns the object.
+
+### ```String getFullURL(property)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Property|```String```| Search Keyword(s) | No
+Returns the full URL of a partially stored one.
+
+
 ```javascript
 
 // Example: bin/test-manga-call.js
@@ -70,10 +89,6 @@ promise.then(()=>{
 ```
 
 ## Chapter
-|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
-|-|-|-|-|-
-|fill()|```Chapter ID (Number)```|```Promise```| Fills an instance of Chapter with information from the JSON API and web parsing.<br>Promise returns Chapter object.|JSON
-|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/chapter/(id)"```)|Neither
 
 |Property|Type|Information
 |-|-|-
@@ -89,6 +104,18 @@ promise.then(()=>{
 |longstrip|```Boolean```| Longstrip (e.g. WebToon style) or not?
 |pages|```Array<String>```| Array of each page image's URL
 
+### ```Promise fill(id)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+Calls and fills object with info from MangaDex return. Promise returns the object.
+
+### ```String getFullURL(property)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Property|```String```| Search Keyword(s) | No
+Returns the full URL of a partially stored one.
+
 
 ```javascript
 
@@ -101,12 +128,6 @@ promise.then(()=>{
 ```
 
 ## Group
-|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
-|-|-|-|-|-
-|search()|```Query (String)```|```Array<String>```| (Static) Calls a MangaDex quicksearch and returns an array of group IDs.|Web
-|fill()|```Group ID (Number)```|```Promise```| Fills an instance of Group with information from web parsing.<br>Promise returns Group object.|Web
-|fillByQuery()|```Query (String)```|```Promise```| Executes ```search()``` then ```fill()``` with the most relevant group.<br>Promise returns Group object.|Web
-|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/group/(id)"```)|Neither
 
 |Property|Type|Information
 |-|-|-
@@ -121,6 +142,30 @@ promise.then(()=>{
 |leader|```User```| The group's leader.
 |members|```Array<User>```| All non-leader members of this group.
 
+### ```static Promise search(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Query|```String```| Search Keyword(s) | No
+Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
+
+### ```Promise fill(id)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+Calls and fills object with info from MangaDex return. Promise returns the object.
+
+### ```Promise fillByQuery(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Query|```String```| Search Keyword(s) | No
+Fills object with the most relevent result from a search. Promise returns the object.
+
+### ```String getFullURL(property)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Property|```String```| Search Keyword(s) | No
+Returns the full URL of a partially stored one.
+
 
 ```javascript
 
@@ -133,12 +178,6 @@ promise.then(()=>{
 ```
 
 ## User
-|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
-|-|-|-|-|-
-|search()|```Query (String)```|```Array<String>```| (Static) Calls a MangaDex quicksearch and returns an array of user IDs.|Web
-|fill()|```User ID (Number)```|```Promise```| Fills an instance of User with information from web parsing.<br>Promise returns User object.|Web
-|fillByQuery()|```Query (String)```|```Promise```| Executes ```search()``` then ```fill()``` with the most relevant user.<br>Promise returns User object.|Web
-|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/user/(id)"```)|Neither
 
 |Property|Type|Information
 |-|-|-
@@ -150,6 +189,30 @@ promise.then(()=>{
 |uploads|```Number```| Amount chapters uploaded by this user
 |website|```String```| Link to user's website
 |avatar|```String```| Link to user's avatar image
+
+### ```static Promise search(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Query|```String```| Search Keyword(s) | No
+Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
+
+### ```Promise fill(id)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+Calls and fills object with info from MangaDex return. Promise returns the object.
+
+### ```Promise fillByQuery(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Query|```String```| Search Keyword(s) | No
+Fills object with the most relevent result from a search. Promise returns the object.
+
+### ```String getFullURL(property)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Property|```String```| Search Keyword(s) | No
+Returns the full URL of a partially stored one.
 
 
 ```javascript
@@ -163,16 +226,25 @@ user.fillByQuery("mdy").then(()=>{
 ```
 
 ## Thread
-|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
-|-|-|-|-|-
-|fill()|```Thread ID (Number), Pages (Number)```|```Promise```| Fills an instance of Thread with information from web parsing for X number of pages.<br>Promise returns Thread object.|Web
-|getFullURL()|```Property (String)```|```String```| Returns full URL for partial stored url (i.e. ```"id"``` returns ```"https://www.mangadex.org/thread/(id)"```)|Neither
 
 |Property|Type|Information
 |-|-|-
 |id|```Number```| This thread's MangaDex ID
 |pages|```Number```| The number of pages searched for this thread
 |posts|```Array<Post>```| An array of Post objects.
+
+### ```Promise fill(id, [pages])```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+|Pages|```Number```| Number of Pages to Parse (Default: 1) | Yes
+Calls and fills object with info from MangaDex return. Promise returns the object.
+
+### ```String getFullURL(property)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Property|```String```| Search Keyword(s) | No
+Returns the full URL of a partially stored one.
 
 ```javascript
 
@@ -184,7 +256,7 @@ thread.fill(56429, 2).then(()=>{
 
 ```
 
-## (Thread) Post
+## Post
 |Property|Type|Information
 |-|-|-
 |id|```Number```| This post's MangaDex ID
@@ -192,9 +264,6 @@ thread.fill(56429, 2).then(()=>{
 |text|```String```| The post's text
 
 ## Home
-|Method|Arguments|Return Type|Information|Web, JSON, Both, or Neither?
-|-|-|-|-|-
-|fill()|```None```|```Promise```| Fills an instance of Home with information MangaDex's homepage. <br>Promise returns Home object.|Web
 
 |Property|Type|Information
 |-|-|-
@@ -204,6 +273,9 @@ thread.fill(56429, 2).then(()=>{
 |top7d|```Array<Manga>```| Array of the top manga in the week
 |topFollows|```Array<Manga>```| Array of the top manga by follows
 |topRating|```Array<Manga>```| Array of the top manga by rating
+
+### ```Promise fill()```
+Calls and fills object with info from MangaDex return. Promise returns the object.
 
 ```javascript
 
