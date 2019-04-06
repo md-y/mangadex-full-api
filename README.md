@@ -57,24 +57,28 @@ group.fillByQuery("MangaDex Scans").then((group)=>{
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
+
 Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
 
 ### ```Promise fill(id)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
+
 Calls and fills object with info from MangaDex return. Promise returns the object.
 
 ### ```Promise fillByQuery(query)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
+
 Fills object with the most relevent result from a search. Promise returns the object.
 
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Property|```String```| Search Keyword(s) | No
+
 Returns the full URL of a partially stored one.
 
 
@@ -108,12 +112,14 @@ promise.then(()=>{
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
+
 Calls and fills object with info from MangaDex return. Promise returns the object.
 
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Property|```String```| Search Keyword(s) | No
+
 Returns the full URL of a partially stored one.
 
 
@@ -146,24 +152,28 @@ promise.then(()=>{
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
+
 Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
 
 ### ```Promise fill(id)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
+
 Calls and fills object with info from MangaDex return. Promise returns the object.
 
 ### ```Promise fillByQuery(query)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
+
 Fills object with the most relevent result from a search. Promise returns the object.
 
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Property|```String```| Search Keyword(s) | No
+
 Returns the full URL of a partially stored one.
 
 
@@ -194,24 +204,28 @@ promise.then(()=>{
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
+
 Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
 
 ### ```Promise fill(id)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
+
 Calls and fills object with info from MangaDex return. Promise returns the object.
 
 ### ```Promise fillByQuery(query)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
+
 Fills object with the most relevent result from a search. Promise returns the object.
 
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Property|```String```| Search Keyword(s) | No
+
 Returns the full URL of a partially stored one.
 
 
@@ -238,12 +252,14 @@ user.fillByQuery("mdy").then(()=>{
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
 |Pages|```Number```| Number of Pages to Parse (Default: 1) | Yes
+
 Calls and fills object with info from MangaDex return. Promise returns the object.
 
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |Property|```String```| Search Keyword(s) | No
+
 Returns the full URL of a partially stored one.
 
 ```javascript
