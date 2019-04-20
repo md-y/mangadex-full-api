@@ -75,6 +75,7 @@ class Chapter extends APIObject {
         this.pages = undefined;
         if (data.server && data.hash && data.page_array) {
             this.pages = []
+            if (data.server == "/data/") data.server = "https://mangadex.org/data/"; // Home image server
             for (let i of data.page_array) this.pages.push(data.server + data.hash + "/" + i);
         }
     }
