@@ -4,7 +4,7 @@
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
   "scripts": {
-    "test": "node bin/test-manga-call.js && node bin/test-manga-web.js && node bin/test-chapter-call.js && node bin/test-group-call.js && node bin/test-user-call.js && node bin/test-thread-call.js && node bin/test-home.js"
+    "test": "node bin/test-manga-call.js && node bin/test-chapter-call.js && node bin/test-group-call.js && node bin/test-user-call.js && node bin/test-thread-call.js && node bin/test-home.js"
   },
   "repository": {
     "type": "git",

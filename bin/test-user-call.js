@@ -1,8 +1,6 @@
 const api = require("../src/index");
 
-const username = "mdy";
-
 var user = new api.User();
-user.fillByQuery(username).then(()=>{
+user.fill(77571).then(()=>{
     console.log(`${user.username} has uploaded ${user.uploads} chapters and has ${user.views} views.`);
 }).catch(console.error);
