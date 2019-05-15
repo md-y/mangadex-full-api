@@ -1,4 +1,5 @@
-const https = require("https")
+const https = require("https");
+const index = require("./index");
 
 module.exports = {
     /**
@@ -7,8 +8,18 @@ module.exports = {
      * @returns {Promise} Returns promise with resolve(response, http.IncomingMessage)
      */
     getHTTPS: function(url) {
-        return new Promise((resolve, reject)=> {
-            https.get(url, (res) => {
+        return new Promise((resolve, reject) => {
+            let urlObj = new URL(url);
+            let options = {
+                host: urlObj.host,
+                path: urlObj.pathname,
+                headers: {
+                    "User-Agent": "mangadex-full-api"
+                }
+            };
+            if (index.agent.sessionId) options.headers["Cookie"] = "mangadex_session=" + index.agent.sessionId;
+
+            https.get(options, (res) => {
                 res.url = url;
                 let payload = "";
 
@@ -80,7 +91,7 @@ module.exports = {
                 "results": regex,
                 "error": /Certain features disabled for guests during DDoS mitigation/gmi
             }).then(matches => {
-                if (matches.error != undefined) reject("MangaDex is in DDOS mitigation mode. No search available.");
+                if (matches.error != undefined) reject("MangaDex is in DDOS mitigation mode. No search available. Using agent?");
 
                 if (!matches.results) matches.results = [];
                 if (!(matches.results instanceof Array)) matches.results = [matches.results];
