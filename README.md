@@ -42,6 +42,7 @@ api.agent.login("a_User", "password123", false).then(() => {
 
 ## Agent
 **Called with api.agent**
+
 |Property|Type|Information
 |-|-|-
 |sessionId|```String```| User session token
