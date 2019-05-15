@@ -12,26 +12,49 @@ No other NPM dependencies.
 
 // A Couple of Examples
 
-var manga = new Manga();
-manga.fillByQuery("Ancient Magus Bride").then((manga)=>{
-    console.log(`${manga.title} by ${manga.authors.join(", ")}`);
-});
+const api = require("mangadex-full-api");
 
-var group = new Group();
-group.fillByQuery("MangaDex Scans").then((group)=>{
-    console.log(`${group.title} has uploaded ${group.uploads} chapters and has ${group.followers} followers and ${group.views} views.`);
+api.agent.login("a_User", "password123", false).then(() => {
+
+    var manga = new api.Manga();
+    manga.fillByQuery("Ancient Magus Bride").then((manga) => {
+        console.log(`${manga.title} by ${manga.authors.join(", ")}`);
+    });
+
+    var group = new api.Group();
+    group.fillByQuery("MangaDex Scans").then((group) => {
+        console.log(`${group.title} has uploaded ${group.uploads} chapters and has ${group.followers} followers and ${group.views} views.`);
+    });
+
 });
 
 ```
 
 # Documentation
 
+[Agent](#Agent) <br>
 [Manga](#Manga) <br>
 [Chapter](#Chapter) <br>
 [Group](#Group) <br>
 [User](#User) <br>
 [Thread](#Thread) <br>
 [Home](#Home) <br>
+
+## Agent
+**Called with api.agent**
+|Property|Type|Information
+|-|-|-
+|sessionId|```String```| User session token
+|sessionExpiration|```Date```| Session token expiration date
+
+### ```Promise login(username, password, rememberMe)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|username|```String```| Login username | No
+|password|```String```| Login password | No
+|rememberMe|```Boolean```| Create persistent session? (Lasts 1 year) | Yes
+
+Logs into MangaDex with specified credentials, then fills the agent object. This must be executed before a search.
 
 ## Manga
 
