@@ -14,9 +14,22 @@ class Home {
     }
 
     parse(data) {
-        // Newest; Top 6h; Top 24h; Top 7d; Top Follows; Top Rating
-        const ranges = [0, 40, 50, 60, 70, 80, 90]
+        const tabLength = 42;
+        const rankingLength = 10;
+        const ranges = [0, 
+                        tabLength,                      // Newest
+                        tabLength + rankingLength,      // Top 6h
+                        tabLength + rankingLength * 2,  // Top 24h
+                        tabLength + rankingLength * 3,  // Top 7d
+                        tabLength + rankingLength * 4,  // Top Follows
+                        tabLength + rankingLength * 5]; // Top Rating 
 
+        // Combine manga into one object
+        const series = {
+            ids: data["ids-pre"].concat(data["ids-mid"], data["ids-post"]),
+            titles: data["titles-pre"].concat(data["titles-mid"], data["titles-post"])
+        };
+        
         const getRange = function() {
             // Remove one remaining range every call
             let min = ranges.splice(0, 1);
@@ -24,8 +37,8 @@ class Home {
 
             let payload = [];
             for (let i = min; i < max; i++) {
-                let m = new Manga(data.ids[i], true);
-                m.title = data.titles[i];
+                let m = new Manga(series.ids[i], true);
+                m.title = series.titles[i];
                 payload.push(m);
             }
             return payload;
@@ -77,8 +90,16 @@ class Home {
 
         return new Promise((resolve, reject) => {
             Util.getMatches(web, {
-                "ids": /<a[^>]*href=["']\/title\/(\d+)\/[^"']+["'][^>]*>[^<]+<\/a>/gmi,
-                "titles": /<a[^>]*href=["']\/title\/\d+\/[^"']+["'][^>]*>([^<]+)<\/a>/gmi
+                // Each Section Will Be Combined; This is to remove manga from a signed in user (agent):
+                // Everything Before Follows (Recently Uploaded)
+                "ids-pre": /<a[^>]*href=["']\/title\/(\d+)\/[^"']+["'][^>]*>[^<]+<\/a>(?=[\w\W]+follows_update)/gmi,
+                "titles-pre": /<a[^>]*href=["']\/title\/\d+\/[^"']+["'][^>]*>([^<]+)<\/a>(?=[\w\W]+follows_update)/gmi,
+                // Recent Ranking (6h, 24h, and a week)
+                "ids-mid": /(?![\w\W]+\/stats\/top)<a[^>]*href=["']\/title\/(\d+)\/[^"']+["'][^>]*>[^<]+<\/a>(?=[\w\W]+[Rr]eading.[Hh]istory)/gmi,
+                "titles-mid": /(?![\w\W]+\/stats\/top)<a[^>]*href=["']\/title\/\d+\/[^"']+["'][^>]*>([^<]+)<\/a>(?=[\w\W]+[Rr]eading.[Hh]istory)/gmi,
+                // After History ("Top Of All Time"s)
+                "ids-post": /<a[^>]*href=["']\/title\/(\d+)\/[^"']+["'][^>]*>[^<]+<\/a>(?![\w\W]+top_follows)/gmi, 
+                "titles-post": /<a[^>]*href=["']\/title\/\d+\/[^"']+["'][^>]*>([^<]+)<\/a>(?![\w\W]+top_follows)/gmi
             }).then((matches) => {
                 this.parse(matches);
                 resolve(this);
