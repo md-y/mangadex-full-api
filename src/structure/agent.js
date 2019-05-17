@@ -1,4 +1,6 @@
 const https = require("https");
+const fs = require("fs");
+const Util = require("../util");
 
 /**
  * Represents this API as a user.
@@ -65,6 +67,54 @@ class Agent {
             }
             req.write(`--${boundary}--`);
             req.end();
+        });
+    }
+
+    /**
+     * Checks filepath for a cached sessionId. If none is found,
+     * login() is called and the sessionId is cached. The file is stored unencrypted.
+     * @param {*} filepath 
+     * @param {*} username 
+     * @param {*} password 
+     * @param {*} persistent Creates a persistent session viewable at https://mangadex.org/settings (default: true)
+     */
+    cacheLogin(filepath, username, password, persistent=true) {
+        const resetCache = function (agentInstance, resolve, reject) {
+            agentInstance.login(username, password, persistent).then((a) => {
+                try {
+                    fs.writeFileSync(filepath, a.sessionId);
+                    resolve(a);
+                } catch(err) {
+                    reject(err);
+                }
+            });
+        };
+
+        return new Promise((resolve, reject) => {
+            fs.readFile(filepath, (err, file) => {
+                if (err) {
+                    if (err.code == "ENOENT") { // No File Found
+                        try {
+                            fs.writeFileSync(filepath, ""); // Create file if it not exist
+                            resetCache(this, resolve, reject);
+                            return;
+                        } catch(err) {
+                            reject(err);
+                            return;
+                        }
+                    } else return reject(err); // Other Errors
+                }
+
+                this.sessionId = file;
+
+                // Check if the sessionId is working
+                Util.getMatches("https://mangadex.org/login", {
+                    "logged": /You are logged in/gmi
+                }).then((m)=>{
+                    if (m.logged) return resolve(this);
+                    else resetCache(this, resolve, reject);
+                });
+            });
         });
     }
 }
