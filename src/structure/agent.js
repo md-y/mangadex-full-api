@@ -18,7 +18,11 @@ class Agent {
      * @param {Boolean} rememberMe Create persistent session? (Lasts 1 year)
      * @returns {Promise}
      */
-    login(username, password, rememberMe) {
+    login(username, password, rememberMe=false) {
+        // Reset current data
+        this.sessionId = null;
+        this.sessionExpiration = null;
+
         return new Promise((resolve, reject) => {
             const payload = {
                 "login_username": username,
@@ -82,20 +86,20 @@ class Agent {
         const resetCache = function (agentInstance, resolve, reject) {
             agentInstance.login(username, password, persistent).then((a) => {
                 try {
-                    fs.writeFileSync(filepath, a.sessionId);
+                    fs.writeFileSync(filepath, a.sessionId + "; " + a.sessionExpiration, "utf8");
                     resolve(a);
                 } catch(err) {
                     reject(err);
                 }
-            });
+            }).catch(reject);
         };
 
         return new Promise((resolve, reject) => {
-            fs.readFile(filepath, (err, file) => {
+            fs.readFile(filepath, "utf8", (err, file) => {
                 if (err) {
                     if (err.code == "ENOENT") { // No File Found
                         try {
-                            fs.writeFileSync(filepath, ""); // Create file if it not exist
+                            fs.writeFileSync(filepath, "", "utf8"); // Create file if it not exist
                             resetCache(this, resolve, reject);
                             return;
                         } catch(err) {
@@ -104,9 +108,11 @@ class Agent {
                         }
                     } else return reject(err); // Other Errors
                 }
-
-                this.sessionId = file;
-
+                
+                let data = file.split("; ");
+                this.sessionId = data[0];
+                if (data.length > 1) this.sessionExpiration = new Date(data[1]); 
+                
                 // Check if the sessionId is working
                 Util.getMatches("https://mangadex.org/login", {
                     "logged": /You are logged in/gmi
