@@ -1,6 +1,6 @@
 {
   "name": "mangadex-full-api",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
   "scripts": {
@@ -25,7 +25,8 @@
     "thread",
     "forum",
     "post",
-    "login"
+    "login",
+    "messaging"
   ],
   "author": "m;dy",
   "license": "MIT",
