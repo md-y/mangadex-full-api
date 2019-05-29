@@ -99,5 +99,27 @@ module.exports = {
                 resolve(matches.results);
             }).catch(reject);
         });
+    },
+    /**
+     * Returns a random string following the mfa[0-1000] pattern
+     */
+    generateMultipartBoundary: function() {
+        return "mfa" + Math.floor(Math.random() * 1000).toString();
+    },
+    /**
+     * Returns multipart payload for POST requests
+     * @param {String} boundary Any String
+     * @param {Object} obj Name-Content Key-Value Pairs
+     */
+    generateMultipartPayload: function(boundary, obj) {
+        payload = "";
+        for (let i in obj) {
+            payload +=  `--${boundary}\n` +
+                        `Content-Disposition: form-data; name="${i}"\n` +
+                        `\n` +
+                        `${obj[i]}\n`;
+        }
+        payload += `--${boundary}--`;
+        return payload;
     }
 }

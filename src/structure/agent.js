@@ -15,7 +15,7 @@ class Agent {
      * Retrieves required information and fills this object.
      * @param {String} username 
      * @param {String} password 
-     * @param {Boolean} rememberMe Create persistent session? (Lasts 1 year)
+     * @param {Boolean} rememberMe Creates a persistent session viewable at https://mangadex.org/settings (default: false)
      * @returns {Promise}
      */
     login(username, password, rememberMe=false) {
@@ -30,7 +30,7 @@ class Agent {
                 "remember_me": rememberMe ? 1 : 0
             };
 
-            const boundary = "mfa" + Math.floor(Math.random() * 1000).toString();
+            const boundary = Util.generateMultipartBoundary();
             let options = {
                 host: "mangadex.org",
                 path: "/ajax/actions.ajax.php?function=login",
@@ -39,8 +39,7 @@ class Agent {
                     referer: "https://mangadex.org/login",
                     "User-Agent": "mangadex-full-api",
                     "X-Requested-With": "XMLHttpRequest",
-                    "Content-Type": "multipart/form-data; boundary=" + boundary,
-                    "Transfer-Encoding": "chunked"
+                    "Content-Type": "multipart/form-data; boundary=" + boundary
                 }
             };
     
@@ -60,16 +59,8 @@ class Agent {
                 else reject("Failed to retrieve session id.");
 
             }).on('error', reject);
-    
-            // Send Form Data
-            for (let i in payload) {
-                req.write(
-                    `--${boundary}\n` +
-                    `Content-Disposition: form-data; name="${i}"\n` +
-                    `\n` +
-                    `${payload[i]}\n`);
-            }
-            req.write(`--${boundary}--`);
+
+            req.write(Util.generateMultipartPayload(boundary, payload));
             req.end();
         });
     }
@@ -80,9 +71,9 @@ class Agent {
      * @param {*} filepath 
      * @param {*} username 
      * @param {*} password 
-     * @param {*} persistent Creates a persistent session viewable at https://mangadex.org/settings (default: true)
+     * @param {*} persistent Creates a persistent session viewable at https://mangadex.org/settings (default: false)
      */
-    cacheLogin(filepath, username, password, persistent=true) {
+    cacheLogin(filepath, username, password, persistent=false) {
         const resetCache = function (agentInstance, resolve, reject) {
             agentInstance.login(username, password, persistent).then((a) => {
                 try {
@@ -96,6 +87,7 @@ class Agent {
 
         return new Promise((resolve, reject) => {
             fs.readFile(filepath, "utf8", (err, file) => {
+                // Errors
                 if (err) {
                     if (err.code == "ENOENT") { // No File Found
                         try {
@@ -113,7 +105,13 @@ class Agent {
                 this.sessionId = data[0];
                 if (data.length > 1) this.sessionExpiration = new Date(data[1]); 
                 
-                // Check if the sessionId is working
+                // Out of Date Token
+                if (this.sessionExpiration && this.sessionExpiration < Date.now()) {
+                    resetCache(this, resolve, reject);
+                    return;
+                }
+
+                // Final check if the sessionId is working
                 Util.getMatches("https://mangadex.org/login", {
                     "logged": /You are logged in/gmi
                 }).then((m)=>{
@@ -121,6 +119,48 @@ class Agent {
                     else resetCache(this, resolve, reject);
                 });
             });
+        });
+    }
+
+    /**
+     * Sends a DM to a target user.
+     * Warning: MangaDex only notifies of failed http requests, not message requests
+     * (ie your message may not be delivered even on a successful callback).
+     * @param {*} target Target user's username
+     * @param {*} subject Message Subject
+     * @param {*} body Message Body (BBCode Format)
+     */
+    sendMessage(target, subject, body) {
+        return new Promise((resolve, reject) => {
+            if (!this.sessionId) reject("No Agent Login.");
+
+            const payload = {
+                "recipient": target,
+                "subject": subject,
+                "text": body
+            };
+
+            const boundary = Util.generateMultipartBoundary();
+            let options = {
+                host: "mangadex.org",
+                path: "/ajax/actions.ajax.php?function=msg_send",
+                method: "POST",
+                headers: {
+                    referer: "https://mangadex.org/messages/send",
+                    "User-Agent": "mangadex-full-api",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "multipart/form-data; boundary=" + boundary,
+                    "Cookie": "mangadex_session=" + this.sessionId + ";"
+                }
+            };
+
+            const req = https.request(options, (res) => {
+                if (res.statusCode < 400) resolve(target, subject, body);
+                else reject("Failed with " + res.statusCode + " response code.");
+            });
+
+            req.write(Util.generateMultipartPayload(boundary, payload));
+            req.end();
         });
     }
 }
