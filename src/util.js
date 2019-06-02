@@ -17,9 +17,22 @@ module.exports = {
                     "User-Agent": "mangadex-full-api"
                 }
             };
-            if (index.agent.sessionId) options.headers["Cookie"] = "mangadex_session=" + index.agent.sessionId;
+            options.headers["Cookie"] = "";
+            if (index.agent.sessionId) options.headers["Cookie"] += "mangadex_session=" + index.agent.sessionId + "; ";
+            if (index.agent.persistentId) options.headers["Cookie"] += "mangadex_rememberme_token=" + index.agent.persistentId + "; ";
+            options.headers["Cookie"] += "mangadex_h_toggle=" + index.agent.hentaiSetting;
 
             https.get(options, (res) => {
+                // Update current session token if new one is given.
+                for (let i of res.headers["set-cookie"]) {
+                    let m = (/mangadex_session=([^;]+);.+expires=([^;]+)/gmi).exec(i);
+                    if (m && m.length >= 3) {
+                        index.agent.sessionId = m[1];
+                        index.agent.sessionExpiration = new Date(m[2]);
+                        break;
+                    }
+                }
+
                 res.url = url;
                 let payload = "";
 

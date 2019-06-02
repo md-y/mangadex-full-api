@@ -1,3 +1,4 @@
+const settings = require("../enum/settings");
 const https = require("https");
 const fs = require("fs");
 const Util = require("../util");
@@ -7,8 +8,24 @@ const Util = require("../util");
  */
 class Agent {
     constructor() {
+        /**
+         * Current session token
+         */
         this.sessionId = null;
+        /**
+         * When this session expiries
+         */
         this.sessionExpiration = null;
+        /**
+         * Required for maintaining a persistent session. 
+         * Always used when it's not null.
+         */
+        this.persistentId = null;
+        /**
+         * Using settings.hentai enum.
+         * Default: Shown (H and Non-H)
+         */
+        this.hentaiSetting = settings.hentai.shown;
     }
 
     /**
@@ -36,7 +53,7 @@ class Agent {
                 path: "/ajax/actions.ajax.php?function=login",
                 method: "POST",
                 headers: {
-                    referer: "https://mangadex.org/login",
+                    "referer": "https://mangadex.org/login",
                     "User-Agent": "mangadex-full-api",
                     "X-Requested-With": "XMLHttpRequest",
                     "Content-Type": "multipart/form-data; boundary=" + boundary
@@ -45,11 +62,20 @@ class Agent {
     
             const req = https.request(options, (res) => {
                 for (let i of res.headers["set-cookie"]) {
+                    // Current Session
                     if (i.includes("mangadex_session")) {
                         let m = (/mangadex_session=([^;]+);.+expires=([^;]+)/gmi).exec(i);
                         if (m.length >= 3) {
                             this.sessionId = m[1];
                             this.sessionExpiration = new Date(m[2]);
+                            if (!rememberMe) break;
+                        }
+                    }
+                    // Persistent Session
+                    if (i.includes("mangadex_rememberme_token")) {
+                        let m = (/mangadex_rememberme_token=([^;]+);/).exec(i);
+                        if (m.length >= 2) {
+                            this.persistentId = m[1];
                             break;
                         }
                     }
@@ -68,16 +94,18 @@ class Agent {
     /**
      * Checks filepath for a cached sessionId. If none is found,
      * login() is called and the sessionId is cached. The file is stored unencrypted.
-     * @param {*} filepath 
-     * @param {*} username 
-     * @param {*} password 
-     * @param {*} persistent Creates a persistent session viewable at https://mangadex.org/settings (default: false)
+     * @param {String} filepath 
+     * @param {String} username 
+     * @param {String} password 
+     * @param {Boolean} persistent Creates a persistent session viewable at https://mangadex.org/settings (default: false)
+     * @returns {Promise}
      */
-    cacheLogin(filepath, username, password, persistent=false) {
+    cacheLogin(filepath, username, password, persistent=true) {
         const resetCache = function (agentInstance, resolve, reject) {
             agentInstance.login(username, password, persistent).then((a) => {
                 try {
-                    fs.writeFileSync(filepath, a.sessionId + "; " + a.sessionExpiration, "utf8");
+                    // Session; Expiration; Persistent (if it has value)
+                    fs.writeFileSync(filepath, `${a.sessionId}; ${a.sessionExpiration}${(a.persistentId ? "; " + a.persistentId : "")}`, "utf8");
                     resolve(a);
                 } catch(err) {
                     reject(err);
@@ -101,21 +129,29 @@ class Agent {
                     } else return reject(err); // Other Errors
                 }
                 
+                /*  
+                    CACHE FILE LAYOUT:
+                    last used session token; last used session expiration; persistent token
+                */
                 let data = file.split("; ");
                 this.sessionId = data[0];
                 if (data.length > 1) this.sessionExpiration = new Date(data[1]); 
+                if (data.length > 2) this.persistentId = data[2];
                 
-                // Out of Date Token
-                if (this.sessionExpiration && this.sessionExpiration < Date.now()) {
-                    resetCache(this, resolve, reject);
-                    return;
-                }
-
-                // Final check if the sessionId is working
+                // Check if current tokens work and use Util.getHttps() automatic update of the current session token
                 Util.getMatches("https://mangadex.org/login", {
                     "logged": /You are logged in/gmi
                 }).then((m)=>{
-                    if (m.logged) return resolve(this);
+                    if (m.logged) {
+                        // Reset cache for current session (if it's out of data) with automatic update
+                        if (data.length > 1 && new Date(data[1]) < Date.now()) {
+                            data[0] = this.sessionId;
+                            data[1] = this.sessionExpiration;
+                            fs.writeFileSync(filepath, data.join("; "), "utf8");
+                        }
+                        
+                        return resolve(this);
+                    }
                     else resetCache(this, resolve, reject);
                 });
             });

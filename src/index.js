@@ -20,6 +20,7 @@ module.exports = {
     language: require("./enum/language"),
     genre: require("./enum/genre"),
     link: require("./enum/link"),
+    settings: require("./enum/settings"),
 
     // Re-add to maintain hints
     agent: agentInstance
