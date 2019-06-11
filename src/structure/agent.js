@@ -2,6 +2,7 @@ const settings = require("../enum/settings");
 const https = require("https");
 const fs = require("fs");
 const Util = require("../util");
+const User = require("./user");
 
 /**
  * Represents this API as a user.
@@ -26,6 +27,11 @@ class Agent {
          * Default: Shown (H and Non-H)
          */
         this.hentaiSetting = settings.hentai.shown;
+
+        /**
+         * This agent's user object. Filled by agent.fillUser()
+         */
+        this.user = new User();
     }
 
     /**
@@ -162,9 +168,10 @@ class Agent {
      * Sends a DM to a target user.
      * Warning: MangaDex only notifies of failed http requests, not message requests
      * (ie your message may not be delivered even on a successful callback).
-     * @param {*} target Target user's username
-     * @param {*} subject Message Subject
-     * @param {*} body Message Body (BBCode Format)
+     * @param {String} target Target user's username
+     * @param {String} subject Message Subject
+     * @param {String} body Message Body (BBCode Format)
+     * @returns {Promise}
      */
     sendMessage(target, subject, body) {
         return new Promise((resolve, reject) => {
@@ -197,6 +204,20 @@ class Agent {
 
             req.write(Util.generateMultipartPayload(boundary, payload));
             req.end();
+        });
+    }
+
+    /**
+     * Fills agent.user with the agent's information. It must be logged in.
+     */
+    fillUser() {
+        return new Promise((resolve, reject) => {
+            Util.getMatches("https://mangadex.org", {
+                "userid": /<a.+href=["']\/user\/(\d+)\/[^"']+["'].+class="[^"']+dropdown-toggle".+>/gmi             
+            }).then((m) => {
+                if (!m.userid) reject("Cannot find User ID. Is the agent logged in?");
+                this.user.fill(m.userid).then(resolve).catch(reject);
+            }).catch(reject);
         });
     }
 }
