@@ -39,6 +39,7 @@ api.agent.login("a_User", "password123", false).then(() => {
 [User](#User) <br>
 [Thread](#Thread) <br>
 [Home](#Home) <br>
+[MDList](#MDList) <br>
 
 ## Agent
 **Called with api.agent**
@@ -367,6 +368,54 @@ let home = new Home();
 home.fill().then(()=>{
     console.log(`${home.topRating[0].title} is the highest rated manga on MangaDex.`);
 });
+
+```
+
+## MDList
+
+|Property|Type|Information
+|-|-|-
+|id|```Number```| This MDList's MangaDex ID (Same as owner's)
+|manga|```Array<Manga>```| All manga in this MDList
+|banner|```String```| Partial url to the MDList header banner (use getFullURL())
+|pages|```Number```| Number of pages in the MDList
+
+### ```Promise fill(id, [pages])```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+|Pages|```Number```| Number of Pages to Parse (Default: 1) | Yes
+
+Calls and fills object with info from MangaDex return. Promise returns the object.
+
+### ```Promise fillByUser(user, [pages])```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|User|```User```| MangaDex User Object | No
+|Pages|```Number```| Number of Pages to Parse (Default: 1) | Yes
+
+Uses a user object to execute fill() on their MDList.
+
+### ```Promise getNumberOfPages(id)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|ID|```Number```| MangaDex Object ID | No
+
+Retrieves the number of pages in this MDList.
+
+### ```String getFullURL(property)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|Property|```String```| Search Keyword(s) | No
+
+Returns the full URL of a partially stored one.
+
+```javascript
+
+let list = new MDList();
+let pages = await list.getNumberOfPages(LIST_ID);
+await list.fill(LIST_ID, pages);
+console.log(`There are ${list.manga.length} manga in this MDList.`)
 
 ```
 

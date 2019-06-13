@@ -14,6 +14,7 @@ module.exports = {
     Thread: require("./structure/thread"),
     Post: require("./structure/post"),
     Home: require("./structure/home"),
+    MDList: require("./structure/mdlist"),
     
     Util: require("./util"),
 
