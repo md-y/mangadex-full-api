@@ -9,6 +9,7 @@ module.exports = {
      */
     getHTTPS: function(url) {
         return new Promise((resolve, reject) => {
+            if (!url) reject("No URL.");
             let urlObj = new URL(url);
             let options = {
                 host: urlObj.host,
@@ -56,6 +57,7 @@ module.exports = {
      */
     getJSON: function(url) {
         return new Promise((resolve, reject) => {
+            if (!url) reject("No URL.");
             module.exports.getHTTPS(url).then(payload => {
                 try {
                     let obj = JSON.parse(payload);
@@ -75,6 +77,7 @@ module.exports = {
      */
     getMatches: function(url, regex) {
         return new Promise((resolve, reject) => {
+            if (!url || !regex) reject("Invalid Arguments.");
             module.exports.getHTTPS(url).then(body => {
                 let payload = {};
                 let m;
@@ -100,6 +103,7 @@ module.exports = {
     quickSearch: function(query, regex) {
         let url = "https://mangadex.org/quick_search/";
         return new Promise((resolve, reject) => {
+            if (!query || !regex) reject("Invalid Arguments.");
             module.exports.getMatches(url + encodeURIComponent(query), {
                 "results": regex,
                 "error": /Certain features disabled for guests during DDoS mitigation/gmi
@@ -124,7 +128,7 @@ module.exports = {
      * @param {String} boundary Any String
      * @param {Object} obj Name-Content Key-Value Pairs
      */
-    generateMultipartPayload: function(boundary, obj) {
+    generateMultipartPayload: function(boundary = "mfa", obj = {}) {
         payload = "";
         for (let i in obj) {
             payload +=  `--${boundary}\n` +

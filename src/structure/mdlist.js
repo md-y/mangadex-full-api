@@ -8,7 +8,7 @@ const MANGA_PER_PAGE = 40;
  * Represents a MangaDex MDList
  */
 class MDList extends APIObject {
-    parse(data) {
+    _parse(data) {
         /**
          * MangaDex MDList ID
          * @type {Number}
@@ -53,6 +53,7 @@ class MDList extends APIObject {
         if (!pages) pages = 1;
 
         return new Promise((resolve, reject) => {
+            if (!id) reject("No id specified or found.");
             let completed = 0;
 
             let titles = [];
@@ -74,7 +75,7 @@ class MDList extends APIObject {
 
                     if (completed >= pages) {
                         if (!banner && !total && mangas.length == 0) reject("Unable to parse MDList. Do you have permission?");
-                        this.parse({title: titles, manga: mangas, id: id, banner: banner, total: total});
+                        this._parse({title: titles, manga: mangas, id: id, banner: banner, total: total});
                         resolve(this);
                     } 
                 }).catch(reject);
@@ -99,6 +100,7 @@ class MDList extends APIObject {
         if (!id) id = this.id;
 
         return new Promise((resolve, reject) => {
+            if (!id) reject("No id specified or found.");
             Util.getMatches(web + id.toString(), {
                 "total": /\d+ to \d+ of (\d+) titles/gmi
             }).then((matches) => {

@@ -47,6 +47,7 @@ class Agent {
         this.sessionExpiration = null;
 
         return new Promise((resolve, reject) => {
+            if (!username || !password) reject("Not enough login info.");
             const payload = {
                 "login_username": username,
                 "login_password": password,
@@ -108,6 +109,7 @@ class Agent {
      */
     cacheLogin(filepath, username, password, persistent=true) {
         const resetCache = function (agentInstance, resolve, reject) {
+            if (!username || !password) reject("Not enough login info.");
             agentInstance.login(username, password, persistent).then((a) => {
                 try {
                     // Session; Expiration; Persistent (if it has value)
@@ -120,6 +122,7 @@ class Agent {
         };
 
         return new Promise((resolve, reject) => {
+            if (!filepath) reject("No filepath specified.");
             fs.readFile(filepath, "utf8", (err, file) => {
                 // Errors
                 if (err) {
@@ -176,6 +179,7 @@ class Agent {
     sendMessage(target, subject, body) {
         return new Promise((resolve, reject) => {
             if (!this.sessionId) reject("No Agent Login.");
+            if (!target || !subject || !body) reject("Not enough arguments.");
 
             const payload = {
                 "recipient": target,

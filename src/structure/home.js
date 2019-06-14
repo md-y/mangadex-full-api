@@ -13,7 +13,7 @@ class Home {
         if (requestData) return this.fill();
     }
 
-    parse(data) {
+    _parse(data) {
         const tabLength = 42;
         const rankingLength = 10;
         const ranges = [0, 
@@ -101,7 +101,7 @@ class Home {
                 "ids-post": /<a[^>]*href=["']\/title\/(\d+)\/[^"']+["'][^>]*>[^<]+<\/a>(?![\w\W]+top_follows)/gmi, 
                 "titles-post": /<a[^>]*href=["']\/title\/\d+\/[^"']+["'][^>]*>([^<]+)<\/a>(?![\w\W]+top_follows)/gmi
             }).then((matches) => {
-                this.parse(matches);
+                this._parse(matches);
                 resolve(this);
             }).catch(reject);
         });

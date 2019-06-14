@@ -8,7 +8,7 @@ const APIObject = require("./apiobject");
  * Represents a Manga with all information on a Manga's homepage
  */
 class Manga extends APIObject {
-    parse(data) {
+    _parse(data) {
         /**
          * MangaDex Manga ID
          * @type {Number}
@@ -89,7 +89,7 @@ class Manga extends APIObject {
 
                 // Create chapter object
                 let c = new Chapter();
-                c.parse(chapterObject);
+                c._parse(chapterObject);
                 this.chapters.push(c);
             }
             this.chapters.reverse(); // Fix Order
@@ -129,12 +129,13 @@ class Manga extends APIObject {
         const finish = function(manga, resolve) {
             // Only execute when both requests have responded
             if (last) {
-                manga.parse(obj);
+                manga._parse(obj);
                 resolve(manga);
             } else last = true;
         } 
 
         return new Promise((resolve, reject) => {
+            if (!id) reject("No id specified or found.");
             Util.getJSON(jsonAPI + id.toString()).then((json) => {
                 obj = {...obj, ...json, id: id};
                 finish(this, resolve);

@@ -6,7 +6,7 @@ const Group = require("./group");
  * Represents a Chapter with pages
  */
 class Chapter extends APIObject {
-    parse(data) {
+    _parse(data) {
         /**
          * MangaDex Chapter ID
          * @type {Number}
@@ -86,8 +86,9 @@ class Chapter extends APIObject {
         else this.id = id;
 
         return new Promise((resolve, reject) => {
+            if (!id) reject("No id specified or found.");
             util.getJSON(api + id.toString()).then((json) => {
-                this.parse(json);
+                this._parse(json);
                 resolve(this);
             }).catch(reject);
         });

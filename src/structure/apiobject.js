@@ -30,7 +30,7 @@ class APIObject {
      * Loads data from API calls
      * @param {Object} data Information that will override current info
      */
-    parse(data) {
+    _parse(data) {
         this.id = data.id;
     }
 

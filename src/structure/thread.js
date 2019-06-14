@@ -7,7 +7,7 @@ const Util = require("../util");
  * Represents a MangaDex forum/comments thread
  */
 class Thread extends APIObject {
-    parse(data) {
+    _parse(data) {
         /**
          * MangaDex Thread ID
          * @type {Number}
@@ -45,6 +45,7 @@ class Thread extends APIObject {
         if (!pages) pages = 1;
 
         return new Promise((resolve, reject) => {
+            if (!id) reject("No id specified or found.");
             let obj = {id: id, pages: 0}; // Pages integer to keep track of fufilled requests
             let pageObjects = new Array(pages); // Array of matches objects
 
@@ -69,7 +70,7 @@ class Thread extends APIObject {
                                 else obj[e] = obj[e].concat(p[e]);
                             }
                         }
-                        this.parse(obj);
+                        this._parse(obj);
                         resolve(this);
                     }
                 }).catch(reject);;

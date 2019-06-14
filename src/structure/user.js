@@ -5,7 +5,7 @@ const Util = require("../util");
  * Represents a MangaDex user
  */
 class User extends APIObject {
-    parse(data) {
+    _parse(data) {
         /**
          * MangaDex User ID
          * @type {Number}
@@ -60,6 +60,7 @@ class User extends APIObject {
         if (!id) id = this.id;
 
         return new Promise((resolve, reject) => {
+            if (!id) reject("No id specified or found.");
             Util.getMatches(web + id.toString(), {
                 "username": /card-header[\w\W]*?<span[^>]*class=["']mx-1["']>(.+)<\/span>/gmi,
                 "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]+flag-(\w{2})["']/gmi,
@@ -69,7 +70,7 @@ class User extends APIObject {
                 "biography": /Biography:<\/div>\s*<div class=["'].+["']>([\w\W\n]+)<\/div>\s{1,2}<\/div.+\s.+\s.+Actions:/gmi,
                 "avatar": /alt=["']Avatar["'] src=["']([^"']+)["']/gmi
             }).then((matches) => {
-                this.parse({...matches, id: id});
+                this._parse({...matches, id: id});
                 resolve(this);
             }).catch(reject);
         });
