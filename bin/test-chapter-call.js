@@ -1,6 +1,6 @@
 const api = require("../src/index");
 
-const [chapter, promise] = new api.Chapter(527948);
-promise.then(()=>{
+(async function() {
+    const chapter = await new api.Chapter(527948, true);
     console.log(`This chapter is in ${api.language[chapter.language]}`);
-}).catch(console.error)
+})();

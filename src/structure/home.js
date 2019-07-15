@@ -7,7 +7,7 @@ const Manga = require("./manga");
 class Home {
 
     /**
-     * @param {*} requestData Automatically call and return fill()?
+     * @param {Boolean} requestData Automatically call and return fill()?
      */
     constructor(requestData) {
         if (requestData) return this.fill();
@@ -37,7 +37,7 @@ class Home {
 
             let payload = [];
             for (let i = min; i < max; i++) {
-                let m = new Manga(series.ids[i], true);
+                let m = new Manga(series.ids[i]);
                 m.title = series.titles[i];
                 payload.push(m);
             }

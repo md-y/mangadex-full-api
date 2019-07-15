@@ -93,7 +93,8 @@ Fills agent.user with information about the agent. It must be logged in.
 (async function() {
     await agent.cacheLogin("./bin/cache.txt", USERNAME, PASSWORD);
 
-    let manga = await (new Manga).fillByQuery(QUERY);
+    let manga = new Manga();
+    await manga.fillByQuery(QUERY);
     await agent.sendMessage(RECIPIENT, "Manga Info", `${manga.title} by ${manga.authors} and ${manga.artists}.`);
 
     console.log(`Manga Info Sent to ${RECIPIENT}.`);
@@ -153,8 +154,8 @@ Returns the full URL of a partially stored one.
 ```javascript
 
 // Example: bin/test-manga-call.js
-var [manga, promise] = new Manga(mangaID);
-promise.then(()=>{
+var manga = new Manga(MANGA_ID);
+manga.fill().then(()=>{
     console.log(`${manga.title} by ${manga.authors.join(", ")}`);
 });
 
@@ -194,10 +195,8 @@ Returns the full URL of a partially stored one.
 ```javascript
 
 // Example: bin/test-chapter-call.js
-const [chapter, promise] = new Chapter(527948);
-promise.then(()=>{
-    console.log(`This chapter is in ${language[chapter.language]}`);
-}).catch(console.error)
+const chapter = await new Chapter(527948, true);
+console.log(`This chapter is in ${language[chapter.language]}`);
 
 ```
 
@@ -248,8 +247,8 @@ Returns the full URL of a partially stored one.
 ```javascript
 
 // Example: bin/test-group-call.js
-const [chapter, promise] = new Group(2233);
-promise.then(()=>{
+const group = new Group(2233);
+group.fill().then(()=>{
     console.log(`${group.title} has uploaded ${group.uploads} chapters and has ${group.followers} followers and ${group.views} views.`);
 }).catch(console.error)
 
@@ -333,10 +332,8 @@ Returns the full URL of a partially stored one.
 ```javascript
 
 // Example: bin/test-thread-call.js
-var thread = new Thread();
-thread.fill(56429, 2).then(()=>{
-    console.log(`${thread.posts[0].author.username}'s original post: ${thread.posts[0].text}`);
-});
+var thread = await new Thread(56429, true, 2);
+console.log(`${thread.posts[0].author.username}'s original post: ${thread.posts[0].text}`);
 
 ```
 

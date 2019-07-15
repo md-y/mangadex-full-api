@@ -29,7 +29,7 @@ class Thread extends APIObject {
         // Keep this last
         if (!(data.postID && data.userID && data.username && data.text)) return; // Abort if missing any
         for (let i = 0; i < data.postID.length; i++) {
-            let author = new User(data.userID[i], true);
+            let author = new User(data.userID[i]);
             author.username = data.username[i];
 
             this.posts.push(new Post(data.postID[i], author, data.text[i]));

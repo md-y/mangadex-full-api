@@ -65,14 +65,14 @@ class Group extends APIObject {
          * Contains ID only, use fill() for full data.
          * @type {User}
          */
-        this.leader = data.leader ? new User(parseInt(data.leader), true) : undefined;
+        this.leader = data.leader ? new User(parseInt(data.leader)) : undefined;
 
         /**
          * Array of members (Web Parsing)
          * @type {Array<User>}
          */
         this.members = []
-        if (data.members) for (let i of data.members) this.members.push(new User(i, true));
+        if (data.members) for (let i of data.members) this.members.push(new User(i));
     }
 
     fill(id) {

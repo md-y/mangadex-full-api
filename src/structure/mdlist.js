@@ -19,7 +19,7 @@ class MDList extends APIObject {
         // manga, but this negates variable confusion.
         let mangas = [];
         for (let i in data.manga) {
-            let m = new Manga(data.manga[i], true);
+            let m = new Manga(data.manga[i]);
             m.title = data.title[i];
             mangas.push(m);
         }

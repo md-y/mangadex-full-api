@@ -3,27 +3,29 @@
  */
 class APIObject {
     /**
-     * @param {Number} id MangaDex ID (Optional).
-     * @param {Boolean} dontRequest When true, the object will not be filled from the constructor (Optional)
-     * @returns {Array<APIObject, Promise>} (Optional) Returns a two-element array when an agrument is included.
-     * Index zero is this object, the other is the fill() promise.
+     * @param {Number} id MangaDex ID
+     * @param {Boolean} request Automatically call fill() and return a promise? (Default: False)
+     * @param {Object} extraArg An extra argument for fill(); usually for page count (eg MDList)
+     * @returns {Promise} Only returns when request is true.
      * 
      * @example 
      * // Manga:
-     * var [manga, promise] = new Manga(47);
-     * promise.then(()=>{
-     *  console.log(manga.description);
-     * });
+     * let manga = await new Manga(47, true);
+     * console.log("Retrieved manga: " + manga.title);
      * 
      */
-    constructor(id, dontRequest) {
+    constructor(id, request = false, extraArg = undefined) {
         /**
          * MangaDex ID
          * @type {Number}
          */
         this.id = id;
-        
-        if (id && !dontRequest) return [this, this.fill(id)];
+
+        if (request) {
+            if (extraArg) return this.fill(this.id, extraArg);
+            else return this.fill(this.id);
+        }
+        else return this;
     }
 
     /**

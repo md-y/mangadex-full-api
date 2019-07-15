@@ -54,7 +54,7 @@ class Chapter extends APIObject {
          * @type {Array<Number>}
          */
         this.groups = [];
-        for (let i of [data.group_id, data.group_id_2, data.group_id_3]) if (i != 0) this.groups.push(new Group(i, true));
+        for (let i of [data.group_id, data.group_id_2, data.group_id_3]) if (i != 0) this.groups.push(new Group(i));
 
         /**
          * Number of comments for this chapter, not manga
