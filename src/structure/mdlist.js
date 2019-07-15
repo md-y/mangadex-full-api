@@ -60,7 +60,8 @@ class MDList extends APIObject {
             let mangas = [];
             let banner, total;
 
-            for (let i = 0; i < pages; i++) {
+            // i is 1 (inclusive) to pages (inclusive)
+            for (let i = 1; i <= pages; i++) {
                 Util.getMatches(web + id.toString() + "/0/0/" + i.toString(), {
                     "title": /<a.+class=["'][^"']+manga_title[^"']+["'].+title="(.+?)".+>/gmi,
                     "manga": /<a.+class=["'][^"']+manga_title[^"']+["'].+href=["']\/title\/(\d+)\/.+["'].+>/gmi,
@@ -92,15 +93,14 @@ class MDList extends APIObject {
     }
 
     /**
-     * Retrieves and returns the number of pages for this MDList,
+     * Retrieves and returns the number of pages for a MDList,
      * and sets the pages field.
      */
-    getNumberOfPages(id) {
+    static getNumberOfPages(id) {
         const web = "https://mangadex.org/list/"; 
-        if (!id) id = this.id;
 
         return new Promise((resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject("No id specified.");
             Util.getMatches(web + id.toString(), {
                 "total": /\d+ to \d+ of (\d+) titles/gmi
             }).then((matches) => {

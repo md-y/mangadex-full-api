@@ -396,7 +396,7 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 
 Uses a user object to execute fill() on their MDList.
 
-### ```Promise getNumberOfPages(id)```
+### ```static Promise getNumberOfPages(id)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
@@ -413,7 +413,7 @@ Returns the full URL of a partially stored one.
 ```javascript
 
 let list = new MDList();
-let pages = await list.getNumberOfPages(LIST_ID);
+let pages = await MDList.getNumberOfPages(LIST_ID);
 await list.fill(LIST_ID, pages);
 console.log(`There are ${list.manga.length} manga in this MDList.`)
 
