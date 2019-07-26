@@ -1,6 +1,7 @@
 const util = require("../util");
 const APIObject = require("./apiobject");
 const Group = require("./group");
+const chapterType = require("../enum/chapter-type");
 
 /**
  * Represents a Chapter with pages
@@ -12,6 +13,22 @@ class Chapter extends APIObject {
          * @type {Number}
          */
         this.id = data.id;
+
+        /**
+         * Type of chapter (delayed, external, etc.)?
+         * @type {Number} See chapter-type.js
+         */
+        this.type = chapterType.internal;
+        if (data.status != "OK") this.type = chapterType[data.status];
+
+        /**
+         * Applicable link to chapter. It's either the MD Link, Group delayed link, or
+         * external link.
+         * @type {String}
+         */
+        this.link = this.getFullURL("id");
+        if (this.type == chapterType.delayed) this.link = data.group_website;
+        else if (this.type == chapterType.external) this.link = data.external;
 
         /**
          * Unix timestamp

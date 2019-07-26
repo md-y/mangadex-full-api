@@ -22,6 +22,7 @@ module.exports = {
     genre: require("./enum/genre"),
     link: require("./enum/link"),
     settings: require("./enum/settings"),
+    chapterType: require("./enum/chapter-type"),
 
     // Re-add to maintain hints
     agent: agentInstance

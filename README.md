@@ -166,6 +166,8 @@ manga.fill().then(()=>{
 |Property|Type|Information
 |-|-|-
 |id|```Number```| This chapter's MangaDex ID
+|type|```Number```| What type is this chapter (internal, delayed, or external)? See ```chapter-types.js```
+|link|```String```| Applicable link to chapter. It's either the MD Link, group delayed link, or external link.
 |timestamp|```Number```| Unix timestamp of chapter upload
 |volume|```Number```| The volume this chapter is from
 |chapter|```Number```| The chapter's number
