@@ -38,7 +38,7 @@ module.exports = {
                 let payload = "";
 
                 if (res.statusCode == 503 || res.statusCode == 502 || res.statusCode == 403) reject(`MangaDex is currently in DDOS mitigation mode. (Status code ${res.statusCode})`);
-                else if (res.statusCode >= 400) reject(`MangaDex is currently unavailable. (Status code ${res.statusCode})`);
+                else if (res.statusCode >= 500) reject(`MangaDex is currently unavailable. (Status code ${res.statusCode})`);
 
                 res.on('data', (data) => {
                     payload += data;
