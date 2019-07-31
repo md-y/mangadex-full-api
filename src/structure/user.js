@@ -91,7 +91,7 @@ class User extends APIObject {
 
     /**
      * Gets full MangaDex HTTPS link. 
-     * @param {"id"|"avatar"} property A property in this object
+     * @param {"id"|"avatar"|"flag"} property A property in this object
      * Unknown properties defaults to MangaDex's homepage
      * @returns {String} String with link
      */
@@ -104,6 +104,8 @@ class User extends APIObject {
                 return homepage + "/user/" + this.id.toString();
             case "avatar":
                 return homepage + "/images/avatars/" + this.id.toString() + ".png";
+            case "flag":
+                return homepage + "/images/flags/" + this.language.toLowerCase() + ".png";
         }
     }
 

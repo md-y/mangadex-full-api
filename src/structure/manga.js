@@ -167,7 +167,7 @@ class Manga extends APIObject {
 
     /**
      * Gets full MangaDex HTTPS link. 
-     * @param {"cover"|"id"} property A property in this object
+     * @param {"cover"|"id"|"flag"} property A property in this object
      * Unknown properties defaults to MangaDex's homepage
      * @returns {String} String with link
      */

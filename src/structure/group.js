@@ -116,7 +116,7 @@ class Group extends APIObject {
 
     /**
      * Gets full MangaDex HTTPS link. 
-     * @param {"id"} property A property in this object
+     * @param {"id"|"flag"} property A property in this object
      * Unknown properties defaults to MangaDex's homepage
      * @returns {String} String with link
      */
@@ -127,6 +127,8 @@ class Group extends APIObject {
                 return homepage;
             case "id":
                 return homepage + "/group/" + this.id.toString();
+            case "flag":
+                return homepage + "/images/flags/" + this.language.toLowerCase() + ".png";
         }
     }
 
