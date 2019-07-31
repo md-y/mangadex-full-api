@@ -146,7 +146,7 @@ Fills object with the most relevent result from a search. Promise returns the ob
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
-|Property|```String```| Search Keyword(s) | No
+|Property|```String```| ```"cover"```, ```"id"```, or ```"flag"``` | No
 
 Returns the full URL of a partially stored one.
 
@@ -189,7 +189,7 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
-|Property|```String```| Search Keyword(s) | No
+|Property|```String```| ```"id"``` or ```"flag"``` | No
 
 Returns the full URL of a partially stored one.
 
@@ -241,7 +241,7 @@ Fills object with the most relevent result from a search. Promise returns the ob
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
-|Property|```String```| Search Keyword(s) | No
+|Property|```String```| ```"id"``` or ```"flag"``` | No
 
 Returns the full URL of a partially stored one.
 
@@ -293,7 +293,7 @@ Fills object with the most relevent result from a search. Promise returns the ob
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
-|Property|```String```| Search Keyword(s) | No
+|Property|```String```| ```"id"```, ```"avatar"```, or ```"flag"``` | No
 
 Returns the full URL of a partially stored one.
 
@@ -327,7 +327,7 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
-|Property|```String```| Search Keyword(s) | No
+|Property|```String```| ```"id"``` | No
 
 Returns the full URL of a partially stored one.
 
@@ -405,7 +405,7 @@ Retrieves the number of pages in this MDList.
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
-|Property|```String```| Search Keyword(s) | No
+|Property|```String```| ```"id"``` or ```"banner"``` | No
 
 Returns the full URL of a partially stored one.
 
