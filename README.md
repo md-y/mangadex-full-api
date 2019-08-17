@@ -87,6 +87,9 @@ Sends a Direct Message to a specified user from the Agent user.
 
 Fills agent.user with information about the agent. It must be logged in.
 
+### ```Promise getHistory()```
+Returns (up to) the last 10 manga read by the agent as an array.
+
 ```javascript
 
 // Async example

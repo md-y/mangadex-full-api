@@ -3,6 +3,7 @@ const https = require("https");
 const fs = require("fs");
 const Util = require("../util");
 const User = require("./user");
+const Manga = require("./manga");
 
 /**
  * Represents this API as a user.
@@ -222,6 +223,27 @@ class Agent {
                 if (!m.userid) reject("Cannot find User ID. Is the agent logged in?");
                 this.user.fill(m.userid).then(resolve).catch(reject);
             }).catch(reject);
+        });
+    }
+
+    /**
+     * Returns (up to) the last 10 manga read by this agent.
+     */
+    getHistory() {
+        return new Promise((resolve, reject) => {
+            Util.getMatches("https://mangadex.org/history", {
+                "ids": /<a.+class=["'][^'"]*manga_title[^'"]*["'].+title=["'][^'"]+["'].+href=["']\/title\/(\d+)\/[^'"]+["'].+<\/a>/gmi,
+                "titles":  /<a.+class=["'][^'"]*manga_title[^'"]*["'].+title=["']([^'"]+)["'].+href=["']\/title\/\d+\/[^'"]+["'].+<\/a>/gmi
+            }).then((m) => {
+                if (!m.ids) m.ids = [];
+                let history = [];
+                for (let i in m["ids"]) {
+                    let manga = new Manga(m.ids[i], false);
+                    manga.title = m["titles"][i];
+                    history.push(manga);
+                }
+                resolve(history);
+            });
         });
     }
 }
