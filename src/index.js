@@ -23,6 +23,8 @@ module.exports = {
     link: require("./enum/link"),
     settings: require("./enum/settings"),
     chapterType: require("./enum/chapter-type"),
+    demographic: require("./enum/demographic"),
+    pubStatus: require("./enum/pubstatus"),
 
     // Re-add to maintain hints
     agent: agentInstance
