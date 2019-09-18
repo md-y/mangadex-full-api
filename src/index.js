@@ -18,6 +18,8 @@ module.exports = {
     
     Util: require("./util"),
 
+    // Enums are organized to convert MD Ids to readable info
+    // ie, keys are the Ids
     language: require("./enum/language"),
     genre: require("./enum/genre"),
     link: require("./enum/link"),
@@ -25,6 +27,7 @@ module.exports = {
     chapterType: require("./enum/chapter-type"),
     demographic: require("./enum/demographic"),
     pubStatus: require("./enum/pubstatus"),
+    listingOrder: require("./enum/listing-order"),
 
     // Re-add to maintain hints
     agent: agentInstance
