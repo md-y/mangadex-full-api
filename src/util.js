@@ -138,5 +138,35 @@ module.exports = {
         }
         payload += `--${boundary}--`;
         return payload;
+    },
+    /**
+     * Gets a key by value.
+     * @param {Object}
+     * @param {String} value 
+     * @returns {String}
+     */
+    getKeyByValue: function(obj, value) {
+        // Direct search
+        let keyResult = Object.keys(obj).find(key => obj[key] === value);
+        if (keyResult) return keyResult;
+
+        // Includes value
+        if (typeof value === "string") keyResult = Object.keys(obj).find(key => obj[key].toLowerCase().includes(value));
+        return keyResult;
+    },
+    /**
+     * Convert a key and value array to a key array
+     * @param {Object} en Enum object with integer keys
+     * @param {Array} arr Element array 
+     */
+    parseEnumArray: function(en, arr) {
+        let newArray = [];
+        for (i in arr) {
+            if (isNaN(arr[i])) {
+                let elem = this.getKeyByValue(en, arr[i]);
+                if (elem) newArray.push(elem);;
+            } else newArray.push(arr[i]);
+        }
+        return newArray;
     }
 }
