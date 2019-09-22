@@ -10,20 +10,18 @@ module.exports = {
     getHTTPS: function(url) {
         return new Promise((resolve, reject) => {
             if (!url) reject("No URL.");
-            let urlObj = new URL(url);
             let options = {
-                host: urlObj.host,
-                path: urlObj.pathname,
                 headers: {
-                    "User-Agent": "mangadex-full-api"
+                    "User-Agent": "mangadex-full-api",
+                    "Cookie": ""
                 }
             };
-            options.headers["Cookie"] = "";
+            
             if (index.agent.sessionId) options.headers["Cookie"] += "mangadex_session=" + index.agent.sessionId + "; ";
             if (index.agent.persistentId) options.headers["Cookie"] += "mangadex_rememberme_token=" + index.agent.persistentId + "; ";
             options.headers["Cookie"] += "mangadex_h_toggle=" + index.agent.hentaiSetting;
 
-            https.get(options, (res) => {
+            https.get(new URL(url), options, (res) => {
                 // Update current session token if new one is given.
                 for (let i of res.headers["set-cookie"]) {
                     let m = (/mangadex_session=([^;]+);.+expires=([^;]+)/gmi).exec(i);
