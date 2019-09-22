@@ -4,6 +4,13 @@ const genre = require("../enum/genre");
 const link = require("../enum/link");
 const APIObject = require("./apiobject");
 
+// Full Search
+const langs = require("../enum/language");
+const sLangs = require("../enum/searchable-langs");
+const demographics = require("../enum/demographic");
+const pubstatus = require("../enum/pubstatus");
+const searchOrder = require("../enum/listing-order");
+
 /**
  * Represents a Manga with all information on a Manga's homepage
  */
@@ -166,6 +173,19 @@ class Manga extends APIObject {
     }
 
     /**
+     * Executes Manga.fullSearch() then executes fill() with the most relevent manga.
+     * @param {Object} searchObj 
+     */
+    fillByFullQuery(searchObj) {
+        return new Promise((resolve, reject) => {
+            Manga.fullSearch(searchObj).then((res) => {
+                if (res.length == 0) reject("No Manga Found");
+                else this.fill(res[0].id).then(resolve).catch(reject);
+            });
+        });
+    }
+
+    /**
      * Gets full MangaDex HTTPS link. 
      * @param {"cover"|"id"|"flag"} property A property in this object
      * Unknown properties defaults to MangaDex's homepage
@@ -202,6 +222,98 @@ class Manga extends APIObject {
     static search(query) {
         const regex = /<a.+href=["']\/title\/(\d+)\/\S+["'].+class=["'].+manga_title.+["']>.+<\/a>/gmi;
         return Util.quickSearch(query, regex);
+    }
+    
+    /**
+     * MangaDex full search, not quicksearch
+     * @param {Object} searchObj An object containing search parameters.
+     * @example Search object example
+     *  fullSearch({
+     *      title: "Sangatsu no Lion",
+     *      author: "Umino Chica",
+     *      artist: "Umino Chica",
+     *      demographic: [1, 2, 3, "Josei"], // You can use strings too
+     *      pubstatus: [1, 2, 3, 4],
+     *      language: "JP", // Original Language
+     *      excludeAll: false, // True = AND mode; False = OR Mode
+     *      includeAll: true, // Same as above
+     *      includeTags: [4, 5, "Romance"],
+     *      excludeTags: [50],
+     *      order: "Rating (Des)" // Number or string; Des = starts with highest rated
+     *  });
+     */
+    static fullSearch(searchObj) {
+        return new Promise((resolve, reject) => {
+            let url = "https://mangadex.org/search?";
+
+            if ("title" in searchObj) url += "title=" + encodeURIComponent(searchObj.title) + "&";
+            if ("author" in searchObj) url += "author=" + encodeURIComponent(searchObj.author) + "&"; 
+            if ("artist" in searchObj) url += "artist=" + encodeURIComponent(searchObj.artist) + "&"; 
+
+            if ("demographic" in searchObj) {
+                let demos = Util.parseEnumArray(demographics, searchObj.demographic);
+                url += "demos=" + demos.join(",") + "&";
+            }
+
+            if ("pubstatus" in searchObj) {
+                let statuses = Util.parseEnumArray(pubstatus, searchObj.pubstatus);
+                url += "statuses=" + statuses.join(",") + "&";
+            }
+
+            if ("language" in searchObj) {
+                let langId = 0;
+                if (typeof searchObj.language === 'string') {
+                    if (searchObj.language.length == 2 && searchObj.language in sLangs) langId = sLangs[searchObj.language];
+                    else {
+                        let langCode = Util.getKeyByValue(langs, searchObj.language);
+                        if (langCode in sLangs) langId = sLangs[langCode];
+                    }
+                } else if (typeof searchObj.language === "number") langId = searchObj.language;
+                url += "lang_id=" + langId + "&";
+            }
+
+            // Default is to not exclude all, so ignore if false/undefined
+            if (searchObj.excludeAll) url += "tag_mode_exc=all&";
+            // Default is to include all, so ignore only if false
+            if (searchObj.includeAll === false) url += "tag_mode_inc=any&"
+
+            // Include and Exlude tags/genres
+            let tags = [];
+            if ("includeTags" in searchObj) {
+                tags = Util.parseEnumArray(genre, searchObj.includeTags);
+            }
+            if ("excludeTags" in searchObj) {
+                let exTags = Util.parseEnumArray(genre, searchObj.excludeTags);
+                for (i of exTags) tags.push("-" + i.toString());
+            }
+            if (tags.length > 0) url += "tags=" + tags.join(",") + "&";
+
+            if ("order" in searchObj) {
+                let sOrder = 0;
+                if (typeof searchObj.order === "string") {
+                    let orderKey = Util.getKeyByValue(searchOrder, searchObj.order);
+                    if (orderKey) sOrder = orderKey;
+                } else if (typeof searchObj.order === "number") sOrder = searchObj.order;
+                url += "s=" + sOrder; // Last append, so no '&'
+            }
+            
+            if (url.endsWith("&")) url = url.substr(0, url.length - 1);
+            
+            Util.getMatches(url, {
+                "id": /<a.+class=["'].+manga_title.+["'].+href=["']\/title\/(\d+)\/\S+["'].*>/gmi,
+                "title": /<a.+class=["'].+manga_title.+["'].+>(.+)<\/a>/gmi
+            }).then((matches) => {
+                if (!matches.id) resolve([]);
+                
+                let results = [];
+                for (let i in matches.id) {
+                    let m = new Manga(matches.id[i]);
+                    m.title = matches.title[i];
+                    results.push(m);
+                }
+                resolve(results);
+            }).catch(reject);
+        });
     }
 }
 

@@ -130,7 +130,30 @@ Returns (up to) the last 10 manga read by the agent as an array.
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
 
-Searches for a manga using keywords. Promise returns a list of MangaDex IDs sorted by relevance.
+Searches for manga using keywords and quick search. Promise returns a list of MangaDex IDs sorted by relevance.
+
+### ```static Promise fullSearch(searchObj)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|searchObj|```Object```| Search parameters | No
+
+Searches for manga using parameters as an object. 
+
+```javascript
+Manga.fullSearch({
+    title: "Sangatsu no Lion",
+    author: "Umino Chica",
+    artist: "Umino Chica",
+    demographic: [1, 2, 3, "Josei"], // You can use strings too
+    pubstatus: [1, 2, 3, 4],
+    language: "JP", // Original Language
+    excludeAll: false, // True = AND mode; False = OR Mode
+    includeAll: true, // Same as above
+    includeTags: [4, 5, "Romance"],
+    excludeTags: [50],
+    order: "Rating (Des)" // Number or string; Des = starts with highest rated
+});
+```
 
 ### ```Promise fill(id)```
 |Arguments|Type|Informaation|Optional
@@ -144,7 +167,14 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 |-|-|-|-
 |Query|```String```| Search Keyword(s) | No
 
-Fills object with the most relevent result from a search. Promise returns the object.
+Fills object with the most relevent result from ```.search()```. Promise returns the object.
+
+### ```Promise fillByFullQuery(query)```
+|Arguments|Type|Informaation|Optional
+|-|-|-|-
+|searchObj|```Object```| Search parameters | No
+
+Fills object with the most relevent result from ```.fullSearch()```. Promise returns the object.
 
 ### ```String getFullURL(property)```
 |Arguments|Type|Informaation|Optional
