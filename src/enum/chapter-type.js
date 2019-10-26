@@ -14,4 +14,4 @@ module.exports = {
      * Not hosted on MangaDex
      */
     "external": 2
-}
+};

@@ -8,4 +8,4 @@
      2: "Shoujo",
      3: "Seinen",
      4: "Josei"
- }
+ };

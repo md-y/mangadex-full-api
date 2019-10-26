@@ -41,4 +41,4 @@ module.exports = {
     TR: "Turkish",
     UA: "Ukrainian",
     VN: "Vietnamese"
-}
+};

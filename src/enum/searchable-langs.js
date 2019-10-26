@@ -17,4 +17,4 @@ module.exports = {
     TH: 32,
     PH: 34,
     HK: 35
-}
+};

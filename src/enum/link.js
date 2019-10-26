@@ -67,4 +67,4 @@ module.exports = {
         name: "CD Japan",
         prefix: ""
     }
-}
+};

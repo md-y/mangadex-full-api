@@ -15,4 +15,4 @@ module.exports = {
     9: "Views (Des)",
     10: "Follows (Asc)",
     11: "Follows (Des)"
-}
+};
