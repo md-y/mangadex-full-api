@@ -17,9 +17,9 @@ module.exports = {
                 }
             };
             
-            if (index.agent.sessionId) options.headers["Cookie"] += "mangadex_session=" + index.agent.sessionId + "; ";
-            if (index.agent.persistentId) options.headers["Cookie"] += "mangadex_rememberme_token=" + index.agent.persistentId + "; ";
-            options.headers["Cookie"] += "mangadex_h_toggle=" + index.agent.hentaiSetting;
+            if (index.agent.sessionId) options.headers.Cookie += "mangadex_session=" + index.agent.sessionId + "; ";
+            if (index.agent.persistentId) options.headers.Cookie += "mangadex_rememberme_token=" + index.agent.persistentId + "; ";
+            options.headers.Cookie += "mangadex_h_toggle=" + index.agent.hentaiSetting;
 
             https.get(new URL(url), options, (res) => {
                 // Update current session token if new one is given.
@@ -110,7 +110,7 @@ module.exports = {
 
                 if (!matches.results) matches.results = [];
                 if (!(matches.results instanceof Array)) matches.results = [matches.results];
-                matches.results.forEach((e, i, a)=> {a[i] = parseInt(e)});
+                matches.results.forEach((e, i, a)=> { a[i] = parseInt(e); });
                 resolve(matches.results);
             }).catch(reject);
         });
@@ -159,12 +159,12 @@ module.exports = {
      */
     parseEnumArray: function(en, arr) {
         let newArray = [];
-        for (i in arr) {
+        for (let i in arr) {
             if (isNaN(arr[i])) {
                 let elem = this.getKeyByValue(en, arr[i]);
-                if (elem) newArray.push(elem);;
+                if (elem) newArray.push(elem);
             } else newArray.push(arr[i]);
         }
         return newArray;
     }
-}
+};

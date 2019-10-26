@@ -66,14 +66,14 @@ class Thread extends APIObject {
                     if (obj.pages == pages) { // Upon final request completion...
                         for (let p of pageObjects) {
                             for (let e in p) { // For every element in each page
-                                if (!obj[e]) obj[e] = p[e]
+                                if (!obj[e]) obj[e] = p[e];
                                 else obj[e] = obj[e].concat(p[e]);
                             }
                         }
                         this._parse(obj);
                         resolve(this);
                     }
-                }).catch(reject);;
+                }).catch(reject);
             }
         });
     }
@@ -85,7 +85,7 @@ class Thread extends APIObject {
      * @returns {String} String with link
      */
     getFullURL(property) {
-        const homepage = "https://mangadex.org"
+        const homepage = "https://mangadex.org";
         switch(property) {
             default:
                 return homepage;

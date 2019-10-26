@@ -1,4 +1,4 @@
-module.exports = {}
+module.exports = {};
 
 // Pre-export
 var Agent = require("./structure/agent");
@@ -31,4 +31,4 @@ module.exports = {
 
     // Re-add to maintain hints
     agent: agentInstance
-}
+};

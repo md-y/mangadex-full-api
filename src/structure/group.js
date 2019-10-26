@@ -71,7 +71,7 @@ class Group extends APIObject {
          * Array of members (Web Parsing)
          * @type {Array<User>}
          */
-        this.members = []
+        this.members = [];
         if (data.members) for (let i of data.members) this.members.push(new User(i));
     }
 
@@ -121,7 +121,7 @@ class Group extends APIObject {
      * @returns {String} String with link
      */
     getFullURL(property) {
-        const homepage = "https://mangadex.org"
+        const homepage = "https://mangadex.org";
         switch(property) {
             default:
                 return homepage;

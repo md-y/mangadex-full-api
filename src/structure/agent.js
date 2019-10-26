@@ -237,9 +237,9 @@ class Agent {
             }).then((m) => {
                 if (!m.ids) m.ids = [];
                 let history = [];
-                for (let i in m["ids"]) {
+                for (let i in m.ids) {
                     let manga = new Manga(m.ids[i], false);
-                    manga.title = m["titles"][i];
+                    manga.title = m.titles[i];
                     history.push(manga);
                 }
                 resolve(history);

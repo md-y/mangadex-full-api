@@ -34,7 +34,7 @@ class User extends APIObject {
          * Number of chapters uploaded (Web Parsing)
          * @type {String}
          */
-        this.uploads = data.uploads ? parseInt(data.uploads.replace(/\D/g, "")) : undefined;;
+        this.uploads = data.uploads ? parseInt(data.uploads.replace(/\D/g, "")) : undefined;
 
         /**
          * Username (Web Parsing)
@@ -96,7 +96,7 @@ class User extends APIObject {
      * @returns {String} String with link
      */
     getFullURL(property) {
-        const homepage = "https://mangadex.org"
+        const homepage = "https://mangadex.org";
         switch(property) {
             default:
                 return homepage;

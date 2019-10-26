@@ -127,7 +127,7 @@ class Manga extends APIObject {
 
     fill(id) {
         const jsonAPI = "https://mangadex.org/api/manga/"; 
-        const web = "https://mangadex.org/title/"
+        const web = "https://mangadex.org/title/";
 
         if (!id) id = this.id;
         let last = false; // Flag to trigger resolve()
@@ -139,7 +139,7 @@ class Manga extends APIObject {
                 manga._parse(obj);
                 resolve(manga);
             } else last = true;
-        } 
+        };
 
         return new Promise((resolve, reject) => {
             if (!id) reject("No id specified or found.");
@@ -155,7 +155,7 @@ class Manga extends APIObject {
             }).then((matches) => {
                 obj = {...obj, ...matches};
                 finish(this, resolve);
-            }).catch(reject);;
+            }).catch(reject);
         });
     }
 
@@ -192,7 +192,7 @@ class Manga extends APIObject {
      * @returns {String} String with link
      */
     getFullURL(property) {
-        const homepage = "https://mangadex.org"
+        const homepage = "https://mangadex.org";
         switch(property) {
             default:
                 return homepage;
@@ -211,7 +211,7 @@ class Manga extends APIObject {
      */
     get genreNames() {
         let payload = [];
-        for (let i of this.genres) payload.push(genre[i])
+        for (let i of this.genres) payload.push(genre[i]);
         return payload;
     }
 
@@ -275,7 +275,7 @@ class Manga extends APIObject {
             // Default is to not exclude all, so ignore if false/undefined
             if (searchObj.excludeAll) url += "tag_mode_exc=all&";
             // Default is to include all, so ignore only if false
-            if (searchObj.includeAll === false) url += "tag_mode_inc=any&"
+            if (searchObj.includeAll === false) url += "tag_mode_inc=any&";
 
             // Include and Exlude tags/genres
             let tags = [];
@@ -284,7 +284,7 @@ class Manga extends APIObject {
             }
             if ("excludeTags" in searchObj) {
                 let exTags = Util.parseEnumArray(genre, searchObj.excludeTags);
-                for (i of exTags) tags.push("-" + i.toString());
+                for (let i of exTags) tags.push("-" + i.toString());
             }
             if (tags.length > 0) url += "tags=" + tags.join(",") + "&";
 

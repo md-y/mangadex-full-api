@@ -119,7 +119,7 @@ class MDList extends APIObject {
      * @returns {String} String with link
      */
     getFullURL(property) {
-        const homepage = "https://mangadex.org"
+        const homepage = "https://mangadex.org";
         switch(property) {
             default:
                 return homepage;
