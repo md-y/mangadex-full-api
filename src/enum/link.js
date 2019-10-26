@@ -66,5 +66,26 @@ module.exports = {
     cdj: {
         name: "CD Japan",
         prefix: ""
+    },
+    /**
+     * Kitsu
+     */
+    kt: {
+        name: "Kitsu",
+        prefix: "https://kitsu.io/manga/"
+    },
+    /**
+     * Anime-Planet
+     */
+    ap: {
+        name: "Anime Planet",
+        prefix: "https://www.anime-planet.com/manga/"
+    },
+    /**
+     * AniList
+     */
+    al: {
+        name: "AniList",
+        prefix: "https://anilist.co/manga/"
     }
 };
