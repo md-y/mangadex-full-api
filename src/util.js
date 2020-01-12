@@ -10,6 +10,9 @@ module.exports = {
     getHTTPS: function(url) {
         return new Promise((resolve, reject) => {
             if (!url) reject("No URL.");
+
+            if (index.agent.domainOverride) url = url.replace("mangadex.org", index.agent.domainOverride);
+
             let options = {
                 headers: {
                     "User-Agent": "mangadex-full-api",
@@ -37,6 +40,7 @@ module.exports = {
 
                 if (res.statusCode == 503 || res.statusCode == 502 || res.statusCode == 403) reject(`MangaDex is currently in DDOS mitigation mode. (Status code ${res.statusCode})`);
                 else if (res.statusCode >= 500) reject(`MangaDex is currently unavailable. (Status code ${res.statusCode})`);
+                else if (res.statusCode == 404) reject("Cannot reach Mangadex.org (404). Use agent.domainOverride for a mirror.");
 
                 res.on('data', (data) => {
                     payload += data;

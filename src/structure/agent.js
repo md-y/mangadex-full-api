@@ -33,6 +33,11 @@ class Agent {
          * This agent's user object. Filled by agent.fillUser()
          */
         this.user = new User();
+
+        /**
+         * Domain override for replacing "mangadex.org" with another domain.
+         */
+        this.domainOverride = null;
     }
 
     /**

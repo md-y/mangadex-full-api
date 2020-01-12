@@ -8,6 +8,24 @@ No other NPM dependencies.
 
 ```npm install mangadex-full-api```
 
+[Documentation](#Documentation) 
+
+# Fix For Mangadex Migration
+```javascript
+
+const api = require("mangadex-full-api");
+
+/*
+    Add to the beginning of your code and
+    before any calls to the API.
+    Replace "mangadex.cc" with any working domain.
+*/
+api.agent.domainOverride = "mangadex.cc";
+
+```
+
+# Examples
+
 ```javascript
 
 // A Couple of Examples
@@ -51,6 +69,7 @@ api.agent.login("a_User", "password123", false).then(() => {
 |persistentId|```String```| Rember me token
 |hentaiSetting|```Number```| Hentai toggle setting (Default: Shown). See ```settings.hentai```
 |user|```User```| This agent as a MangaDex user object.
+|domainOverride|```String```| Domain to replace "mangadex.org" with
 
 ### ```Promise login(username, password, [rememberMe])```
 |Arguments|Type|Informaation|Optional
