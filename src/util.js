@@ -108,9 +108,9 @@ module.exports = {
             if (!query || !regex) reject("Invalid Arguments.");
             module.exports.getMatches(url + encodeURIComponent(query), {
                 "results": regex,
-                "error": /Certain features disabled for guests during DDoS mitigation/gmi
+                "error": /<!-- login_container -->/gmi // Only appears when not logged in.
             }).then(matches => {
-                if (matches.error != undefined) reject("MangaDex is in DDOS mitigation mode. No search available. Using agent?");
+                if (matches.error != undefined) reject("MangaDex is in DDOS mitigation mode. No search available. Not using agent?");
 
                 if (!matches.results) matches.results = [];
                 if (!(matches.results instanceof Array)) matches.results = [matches.results];
