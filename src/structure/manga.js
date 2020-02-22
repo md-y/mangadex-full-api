@@ -151,7 +151,7 @@ class Manga extends APIObject {
             Util.getMatches(web + id.toString(), {
                 "views": /title=["']views["']\D+(\d[\d,.]+)<\/li>/gmi,
                 "rating": /title=["']Bayesian rating["']\D+(\d[\d,.]+)/gmi,
-                "altTitles": /<li [^>]+><span[^>]+fa-book[\s"'][^>]+><\/span>([^<]+)<\/li>/gmi
+                "altTitles": /<li [^>]*><span[^>]*fa-book[\s"'][^>]*><\/span>([^<]+)<\/li>/gmi
             }).then((matches) => {
                 obj = {...obj, ...matches};
                 finish(this, resolve);
@@ -220,7 +220,7 @@ class Manga extends APIObject {
      * @param {String} query Quicksearch query like a name or description
      */
     static search(query) {
-        const regex = /<a.+href=["']\/title\/(\d+)\/\S+["'].+class=["'].+manga_title.+["']>.+<\/a>/gmi;
+        const regex = /<a[^>]*href=["']\/title\/(\d+)\/\S+["'][^>]*manga_title[^>]*>/gmi;
         return Util.quickSearch(query, regex);
     }
     
@@ -298,10 +298,10 @@ class Manga extends APIObject {
             }
             
             if (url.endsWith("&")) url = url.substr(0, url.length - 1);
-            
+
             Util.getMatches(url, {
-                "id": /<a.+class=["'].+manga_title.+["'].+href=["']\/title\/(\d+)\/\S+["'].*>/gmi,
-                "title": /<a.+class=["'].+manga_title.+["'].+>(.+)<\/a>/gmi
+                "id": /<a[^>]*href=["']\/title\/(\d+)\/\S+["'][^>]*>[^<]+/gmi,
+                "title": /<a[^>]*href=["']\/title\/\d+\/\S+["'][^>]*>([^<]+)/gmi
             }).then((matches) => {
                 if (!matches.id) resolve([]);
                 

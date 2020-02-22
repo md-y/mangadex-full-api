@@ -51,10 +51,10 @@ class Thread extends APIObject {
 
             for (let page = 1; page <= pages; page++) {
                 Util.getMatches(web + id.toString() + "/" + page.toString(), {
-                    "postID": /<tr[^>]+id=["']post_(\d+)["'][^>]*>/gmi,
-                    "userID": /<div[^>]+>[\s]+<span[^>]+><a[^>]+href=["']\/user\/(\d+)\/[^"']+["'][^>]*>/gmi,
-                    "username": /<div[^>]+>[\s]+<span[^>]+><a[^>]+>([^<]+)</gmi,
-                    "text": /<div[^>]+class=["']postbody mb-3 mt-4["'][^>]*>((?:(?!<\/div>)[\w\W])+)<\/div>/gmi,
+                    "postID": /<tr[^>]*id=["']post_(\d+)["'][^>]*>/gmi,
+                    "userID": /<div[^>]*>[\s]+<span[^>]*><a[^>]*href=["']\/user\/(\d+)\/[^"']+["'][^>]*>/gmi,
+                    "username": /<div[^>]*>[\s]+<span[^>]*><a[^>]*>([^<]+)</gmi,
+                    "text": /<div[^>]*class=["']postbody mb-3 mt-4["'][^>]*>((?:(?!<\/div>)[\w\W])+)<\/div>/gmi,
                     "page": /<nav>[\w\W]+<a class='page-link'>(\d+)<\/a>/gmi
                 }).then(matches => {
                     let pageNum = 1;

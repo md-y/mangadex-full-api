@@ -83,7 +83,7 @@ class Group extends APIObject {
             if (!id) reject("No id specified or found.");
             Util.getMatches(web + id.toString(), {
                 "title": /<span class=["']mx-1["']>(.*?)<\/span>/gmi,
-                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]+flag-(\w{2})["']/gmi,
+                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]*flag-(\w{2})["']/gmi,
                 "views": /Stats:[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>/gmi,
                 "followers": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>/gmi,
                 "uploads": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>/gmi,
@@ -93,7 +93,7 @@ class Group extends APIObject {
                 "email": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Email["']/gmi,
                 "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s*?<\/div>\s*?<ul/gmi,
                 "leader": /Leader:[\w\W]*?href=["']\/user\/(\d+)\/.+["']>/gmi,
-                "members": /<li[^>]+><span[^>]+><\/span>\s?<a[^\/]+\/user\/(\d+)\/[^"']+["']>[^>]+><\/li>/gmi
+                "members": /<li[^>]*><span[^>]*><\/span>\s?<a[^\/]+\/user\/(\d+)\/[^"']+["']>[^>]*><\/li>/gmi
             }).then(matches => {
                 this._parse({...matches, id: id});
                 resolve(this);

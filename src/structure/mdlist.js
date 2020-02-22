@@ -63,9 +63,9 @@ class MDList extends APIObject {
             // i is 1 (inclusive) to pages (inclusive)
             for (let i = 1; i <= pages; i++) {
                 Util.getMatches(web + id.toString() + "/0/0/" + i.toString(), {
-                    "title": /<a.+class=["'][^"']+manga_title[^"']+["'].+title="(.+?)".+>/gmi,
-                    "manga": /<a.+class=["'][^"']+manga_title[^"']+["'].+href=["']\/title\/(\d+)\/.+["'].+>/gmi,
-                    "banner": /<img.+alt=["']Banner["'].+src=["']([^"']+)["'].+>/gmi,
+                    "title": /<a[^>]*class=["'][^"']+manga_title[^"']+["'][^>]*title="(.+?)"[^>]*>/gmi,
+                    "manga": /<a[^>]*class=["'][^"']+manga_title[^"']+["'][^>]*href=["']\/title\/(\d+)\/[^>]*["'][^>]*>/gmi,
+                    "banner": /<img[^>]*alt=["']Banner["'][^>]*src=["']([^"']+)["'][^>]*>/gmi,
                     "total": /\d+ to \d+ of (\d+) titles/gmi
                 }).then((matches) => {
                     if (matches.title) titles = titles.concat(matches.title);

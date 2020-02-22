@@ -63,7 +63,7 @@ class User extends APIObject {
             if (!id) reject("No id specified or found.");
             Util.getMatches(web + id.toString(), {
                 "username": /card-header[\w\W]*?<span[^>]*class=["']mx-1["']>(.+)<\/span>/gmi,
-                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]+flag-(\w{2})["']/gmi,
+                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]*flag-(\w{2})["']/gmi,
                 "views": /title=["']Views["'][\D\s\n]+([\d,]+)<\/li>/gmi,
                 "uploads": /title=["']Chapters uploaded["'][\D\s\n]+([\d,]+)<\/li>/gmi,
                 "website": /Website:[\d\D\n]+<a href=["']([^<>\s]+)["'].+>[^\s]+<\/a><\/div>/gmi,
