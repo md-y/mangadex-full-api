@@ -10,7 +10,7 @@ No other NPM dependencies.
 
 [Documentation](#Documentation) 
 
-# Fix For Mangadex Migration
+# Fix For Mangadex Migration (No Longer Needed)
 ```javascript
 
 const api = require("mangadex-full-api");
