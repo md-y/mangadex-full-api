@@ -1,10 +1,13 @@
 {
   "name": "mangadex-full-api",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
   "scripts": {
     "test": "node bin/test-manga-call.js && node bin/test-chapter-call.js && node bin/test-group-call.js && node bin/test-user-call.js && node bin/test-thread-call.js && node bin/test-home.js"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   },
   "repository": {
     "type": "git",
