@@ -67,6 +67,7 @@ class Agent {
                 method: "POST",
                 headers: {
                     "referer": "https://mangadex.org/login",
+                    "Access-Control-Allow-Origin": "*",
                     "User-Agent": "mangadex-full-api",
                     "X-Requested-With": "XMLHttpRequest",
                     "Content-Type": "multipart/form-data; boundary=" + boundary
@@ -200,6 +201,7 @@ class Agent {
                 method: "POST",
                 headers: {
                     referer: "https://mangadex.org/messages/send",
+                    "Access-Control-Allow-Origin": "*",
                     "User-Agent": "mangadex-full-api",
                     "X-Requested-With": "XMLHttpRequest",
                     "Content-Type": "multipart/form-data; boundary=" + boundary,

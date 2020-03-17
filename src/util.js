@@ -16,7 +16,8 @@ module.exports = {
             let options = {
                 headers: {
                     "User-Agent": "mangadex-full-api",
-                    "Cookie": ""
+                    "Cookie": "",
+                    "Access-Control-Allow-Origin": "*"
                 }
             };
             
@@ -26,12 +27,14 @@ module.exports = {
 
             https.get(new URL(url), options, (res) => {
                 // Update current session token if new one is given.
-                for (let i of res.headers["set-cookie"]) {
-                    let m = (/mangadex_session=([^;]+);.+expires=([^;]+)/gmi).exec(i);
-                    if (m && m.length >= 3) {
-                        index.agent.sessionId = m[1];
-                        index.agent.sessionExpiration = new Date(m[2]);
-                        break;
+                if ("set-cookie" in res.headers) {
+                    for (let i of res.headers["set-cookie"]) {
+                        let m = (/mangadex_session=([^;]+);.+expires=([^;]+)/gmi).exec(i);
+                        if (m && m.length >= 3) {
+                            index.agent.sessionId = m[1];
+                            index.agent.sessionExpiration = new Date(m[2]);
+                            break;
+                        }
                     }
                 }
 
