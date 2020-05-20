@@ -80,5 +80,6 @@ module.exports = {
     80: "Traditional Games",
     81: "Virtual Reality",
     82: "Zombies",
-    83: "Incest"
+    83: "Incest",
+    84: "Mafia"
 };
