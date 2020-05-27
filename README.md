@@ -230,6 +230,7 @@ manga.fill().then(()=>{
 |commentCount|```Number```| Number of comments on this chapter
 |longstrip|```Boolean```| Longstrip (e.g. WebToon style) or not?
 |pages|```Array<String>```| Array of each page image's URL
+|saverPages|```Array<String>```| Array of each page image's URL, but from its corresponding [data-saver](https://mangadex.org/thread/253605) server
 
 ### ```Promise fill(id)```
 |Arguments|Type|Informaation|Optional

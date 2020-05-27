@@ -95,6 +95,16 @@ class Chapter extends APIObject {
             if (data.server == "/data/") data.server = "https://mangadex.org/data/"; // Home image server
             for (let i of data.page_array) this.pages.push(data.server + data.hash + "/" + i);
         }
+
+        /**
+         * Data-saver server version of page URLs. Requires hash, server, and page_array keys from API
+         * @type {Array<String>}
+         */
+        if (!(this.pages instanceof Array)) this.saverPages = undefined;
+        else {
+            this.saverPages = [];
+            for (let i of this.pages) this.saverPages.push(i.replace("/data/", "/data-saver/"));
+        }
     }
 
     fill(id) {
