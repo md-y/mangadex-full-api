@@ -143,6 +143,7 @@ Returns (up to) the last 10 manga read by the agent as an array.
 |views|```Number```| Amount of manga views
 |rating|```Number```| Manga's Bayesian rating
 |altTitles|```Array<String>```| Alternate names for this manga.
+|url|```String```| URL to the manga's homepage.
 
 ### ```static Promise search(query)```
 |Arguments|Type|Informaation|Optional
@@ -231,6 +232,7 @@ manga.fill().then(()=>{
 |longstrip|```Boolean```| Longstrip (e.g. WebToon style) or not?
 |pages|```Array<String>```| Array of each page image's URL
 |saverPages|```Array<String>```| Array of each page image's URL, but from its corresponding [data-saver](https://mangadex.org/thread/253605) server
+|url|```String```| URL to the chapters's homepage.
 
 ### ```Promise fill(id)```
 |Arguments|Type|Informaation|Optional

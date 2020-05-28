@@ -105,6 +105,13 @@ class Chapter extends APIObject {
             this.saverPages = [];
             for (let i of this.pages) this.saverPages.push(i.replace("/data/", "/data-saver/"));
         }
+
+        /**
+         * URL to chapter homepage (AKA the first page)
+         * @type {String}
+         */
+        if (this.id) this.url = "https://mangadex.org/chapter/" + this.id;
+        else this.url = undefined;
     }
 
     fill(id) {

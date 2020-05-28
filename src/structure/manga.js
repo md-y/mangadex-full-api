@@ -123,6 +123,13 @@ class Manga extends APIObject {
             this.altTitles = [];
             for (let i of data.altTitles) this.altTitles.push(decodeURI(i));
         }
+
+        /**
+         * URL to manga homepage
+         * @type {String}
+         */
+        if (this.id) this.url = "https://mangadex.org/title/" + this.id;
+        else this.url = undefined;
     }
 
     fill(id) {
