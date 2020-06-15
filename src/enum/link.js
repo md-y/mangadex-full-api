@@ -87,5 +87,12 @@ module.exports = {
     al: {
         name: "AniList",
         prefix: "https://anilist.co/manga/"
+    },
+    /**
+     * Doujinshi.org
+     */
+    dj: {
+        name: "Doujinshi.org",
+        prefix: "https://www.doujinshi.org/book/"
     }
 };
