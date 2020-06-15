@@ -78,17 +78,17 @@ async function agentTest(username, password) {
 async function beginTesting() {
     // CORE FUNCTIONS TEST
     await coreTest()
-    .catch(err => console.log("Error while testing:", err))
+    .catch(err => console.log("Error while testing:", err));
 
     // EXTRA FUNCTIONS TEST
     await extraTest()
-    .catch(err => console.log("Error while testing:", err))
+    .catch(err => console.log("Error while testing:", err));
 
     // AGENT TEST
     // If username and password args are present
     if (process.argv.length >= 4) {
         await agentTest(...process.argv.slice(2, 4))
-        .catch(err => console.log("Error while testing:", err))
+        .catch(err => console.log("Error while testing:", err));
     } else {
         console.log("[!] WARN: Skipping Agent testing. (No username or password in args)");
     }
