@@ -142,6 +142,8 @@ Returns (up to) the last 10 manga read by the agent as an array.
 |chapters|```Array<Chapter>```| Array of all chapters for this manga. Contains only minimal information like ID and title; use ```Chapter.fill()``` 
 |views|```Number```| Amount of manga views
 |rating|```Number```| Manga's Bayesian rating
+|ratingMean|```Number```| Manga's Mean Rating
+|ratingUserCount|```Number```| Number of users who have left a rating.
 |altTitles|```Array<String>```| Alternate names for this manga.
 |url|```String```| URL to the manga's homepage.
 

@@ -109,10 +109,23 @@ class Manga extends APIObject {
         this.views = data.views ? parseInt(data.views.replace(/\D/g, "")) : undefined;
 
         /**
-         * Bayesian Rating (Web Parsing)
+         * Bayesian Rating
          * @type {String}
          */
-        this.rating = data.rating ? parseFloat(data.rating) : undefined;
+        // Parse float is needed because MD returns ratings as strings for some reason.
+        this.rating = data.manga.rating.bayesian ? parseFloat(data.manga.rating.bayesian) : undefined;
+
+        /**
+         * Mean Rating
+         * @type {String}
+         */
+        this.ratingMean = data.manga.rating.mean ? parseFloat(data.manga.rating.mean) : undefined;
+
+        /**
+         * Number of Users who have Rated
+         * @type {String}
+         */
+        this.ratingUserCount = data.manga.rating.users ? parseFloat(data.manga.rating.users) : undefined;
 
         /**
          * Alternate Titles (Web Parsing)
@@ -157,7 +170,6 @@ class Manga extends APIObject {
 
             Util.getMatches(web + id.toString(), {
                 "views": /title=["']views["']\D+(\d[\d,.]+)<\/li>/gmi,
-                "rating": /title=["']Bayesian rating["']\D+(\d[\d,.]+)/gmi,
                 "altTitles": /<li [^>]*><span[^>]*fa-book[\s"'][^>]*><\/span>([^<]+)<\/li>/gmi
             }).then((matches) => {
                 obj = {...obj, ...matches};
