@@ -309,9 +309,8 @@ class Manga extends APIObject {
 
             if ("order" in searchObj) {
                 let sOrder = 0;
-                if (typeof searchObj.order === "string") {
-                    let orderKey = Util.getKeyByValue(searchOrder, searchObj.order);
-                    if (orderKey) sOrder = orderKey;
+                if (typeof searchObj.order === "string" && searchObj.order in searchOrder) {
+                    sOrder = searchOrder[searchObj.order];
                 } else if (typeof searchObj.order === "number") sOrder = searchObj.order;
                 url += "s=" + sOrder; // Last append, so no '&'
             }
