@@ -2,21 +2,12 @@ const APIObject = require("./apiobject");
 const Util = require("../util");
 const Manga = require("./manga");
 const listOrder = require("../enum/listing-order");
+const viewingCategory = require("../enum/viewing-categories");
 
 /**
  * Represents a MangaDex MDList
  */
 class MDList extends APIObject {
-    static category = {
-        ALL: 0,
-        READING: 1,
-        COMPLETED: 2,
-        ON_HOLD: 3,
-        PLAN_TO_READ: 4,
-        DROPPED: 5,
-        RE_READING: 6
-    };
-
     _parse(data) {
         /**
          * MangaDex MDList ID
@@ -43,16 +34,17 @@ class MDList extends APIObject {
     }
 
     /**
-     * @param {Category} category Mangadex follow category. Default: category.ALL
      * @param {Number|String} order Order of the list, specified by the enum 'listingOrder.'
+     * @param {Number} category Mangadex follow category. Default: All. See enum 'viewingCategories'
      */
-    fill(id, category = MDList.category.ALL, order = 0) {
+    fill(id, order = 0, category = viewingCategory.ALL) {
         if (!id) id = this.id;
 
         if (typeof order === "string") {
             if (order in listOrder) order = listOrder[order];
             else order = 0;
         }
+        if (!(category in Object.values(viewingCategory))) category = 0;
 
         return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
@@ -84,7 +76,7 @@ class MDList extends APIObject {
             let totalManga = initalMatches.manga;
 
             // Remove Tutorial
-            if (initalMatches.manga[0] == "30461") initalMatches.manga.splice(0, 1);
+            if (totalManga[0] == "30461") totalManga.splice(0, 1);
             
             // Skip first page (already called above)
             for (let page = 2; page <= pages; page++) {
@@ -119,11 +111,11 @@ class MDList extends APIObject {
     /**
      * Requests a MDList from a user account.
      * @param {User} user MangaDex User Object
-     * @param {Category} category Mangadex follow category. Default: category.ALL
      * @param {Number|String} order The list order (enum/listing-order)
+     * @param {Number} category Mangadex follow category. Default: All. See enum 'viewingCategories'
      */
-    fillByUser(user, category, order) {
-        return this.fill(user.id, category, order);
+    fillByUser(user, order, category) {
+        return this.fill(user.id, order, category);
     }
 
     /**

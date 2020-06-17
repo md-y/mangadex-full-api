@@ -28,6 +28,7 @@ module.exports = {
     demographic: require("./enum/demographic"),
     pubStatus: require("./enum/pubstatus"),
     listingOrder: require("./enum/listing-order"),
+    viewingCategories: require("./enum/viewing-categories"),
 
     // Re-add to maintain hints
     agent: agentInstance
