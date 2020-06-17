@@ -7,6 +7,16 @@ const listOrder = require("../enum/listing-order");
  * Represents a MangaDex MDList
  */
 class MDList extends APIObject {
+    static category = {
+        ALL: 0,
+        READING: 1,
+        COMPLETED: 2,
+        ON_HOLD: 3,
+        PLAN_TO_READ: 4,
+        DROPPED: 5,
+        RE_READING: 6
+    };
+
     _parse(data) {
         /**
          * MangaDex MDList ID
@@ -33,9 +43,10 @@ class MDList extends APIObject {
     }
 
     /**
+     * @param {Category} category Mangadex follow category. Default: category.ALL
      * @param {Number|String} order Order of the list, specified by the enum 'listingOrder.'
      */
-    fill(id, order = 0) {
+    fill(id, category = MDList.category.ALL, order = 0) {
         if (!id) id = this.id;
 
         if (typeof order === "string") {
@@ -45,7 +56,7 @@ class MDList extends APIObject {
 
         return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
-            const web = `https://mangadex.org/list/${id}/0/${order}/`;
+            const web = `https://mangadex.org/list/${id}/${category}/${order}/`;
 
             let matchObject = {
                 "titles": /<a[^>]*class="[^"]*manga_title[^"]*"[^>]*>([^<]*)</gmi,
@@ -71,7 +82,7 @@ class MDList extends APIObject {
             if (!initalMatches.titles || !initalMatches.manga) reject("Could not find manga details.");
             let totalTitles = initalMatches.titles;
             let totalManga = initalMatches.manga;
-            
+
             // Skip first page (already called above)
             for (let page = 2; page <= pages; page++) {
                 let matches = await Util.getMatches(web + page.toString(), matchObject);
@@ -105,10 +116,11 @@ class MDList extends APIObject {
     /**
      * Requests a MDList from a user account.
      * @param {User} user MangaDex User Object
+     * @param {Category} category Mangadex follow category. Default: category.ALL
      * @param {Number|String} order The list order (enum/listing-order)
      */
-    fillByUser(user, order) {
-        return this.fill(user.id, order);
+    fillByUser(user, category, order) {
+        return this.fill(user.id, category, order);
     }
 
     /**
