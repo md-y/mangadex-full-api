@@ -83,6 +83,9 @@ class MDList extends APIObject {
             let totalTitles = initalMatches.titles;
             let totalManga = initalMatches.manga;
 
+            // Remove Tutorial
+            if (initalMatches.manga[0] == "30461") initalMatches.manga.splice(0, 1);
+            
             // Skip first page (already called above)
             for (let page = 2; page <= pages; page++) {
                 let matches = await Util.getMatches(web + page.toString(), matchObject);
