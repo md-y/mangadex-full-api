@@ -439,7 +439,7 @@ home.fill().then(()=>{
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
-|Order|```Number|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
+|Order|```Number\|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
 |Category|```Number```| Category of the returned list (eg Dropped and Re-Reading) (see ```enum/viewing-categories.js```) | Yes
 
 Calls and fills object with info from MangaDex return. Promise returns the object.
@@ -448,7 +448,7 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |User|```User```| MangaDex User Object | No
-|Order|```Number|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
+|Order|```Number\|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
 |Category|```Number```| Category of the returned list (eg Dropped and Re-Reading) (see ```enum/viewing-categories.js```) | Yes
 
 Uses a user object to execute fill() on their MDList.
