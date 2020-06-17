@@ -23,7 +23,8 @@ module.exports = {
             
             if (index.agent.sessionId) options.headers.Cookie += "mangadex_session=" + index.agent.sessionId + "; ";
             if (index.agent.persistentId) options.headers.Cookie += "mangadex_rememberme_token=" + index.agent.persistentId + "; ";
-            options.headers.Cookie += "mangadex_h_toggle=" + index.agent.hentaiSetting;
+            options.headers.Cookie += "mangadex_h_toggle=" + index.agent.hentaiSetting + "; ";
+            options.headers.Cookie += "mangadex_title_mode=2"; // If there's no agent, this will have 100 manga per MDList page
 
             https.get(new URL(url), options, (res) => {
                 // Update current session token if new one is given.

@@ -1,8 +1,7 @@
 const APIObject = require("./apiobject");
 const Util = require("../util");
 const Manga = require("./manga");
-
-const MANGA_PER_PAGE = 40;
+const listOrder = require("../enum/listing-order");
 
 /**
  * Represents a MangaDex MDList
@@ -15,22 +14,6 @@ class MDList extends APIObject {
          */
         this.id = data.id;
 
-        // Yes I know manga is plural for multiple
-        // manga, but this negates variable confusion.
-        let mangas = [];
-        for (let i in data.manga) {
-            let m = new Manga(data.manga[i]);
-            m.title = data.title[i];
-            mangas.push(m);
-        }
-
-        /**
-         * All mangas in the user's mdlist. 
-         * They are parts, meaning the must be filled().
-         * @type {Array<Manga>}
-         */
-        this.manga = mangas;
-
         /**
          * Partial banner image url. Use getFullURL();
          * @type {String}
@@ -38,78 +21,94 @@ class MDList extends APIObject {
         this.banner = data.banner;
 
         /**
-         * Number of pages in the MDList
-         * @type {Number}
+         * List of manga, sorted by what was called with fill().
+         * @type {Array<Manga>}
          */
-        this.pages = Math.ceil(data.total / MANGA_PER_PAGE);
+        this.manga = [];
+        for (let i in data.manga) {
+            let m = new Manga(data.manga[i]);
+            if (data.titles.length >= data.manga.length) m.title = data.titles[i];
+            this.manga.push(m);
+        }
     }
 
     /**
-     * @param {Number} pages How many pages to read? Default: 1
+     * @param {Number|String} order Order of the list, specified by the enum 'listingOrder.'
      */
-    fill(id, pages) {
-        const web = "https://mangadex.org/list/"; 
+    fill(id, order = 0) {
         if (!id) id = this.id;
-        if (!pages) pages = 1;
 
-        return new Promise((resolve, reject) => {
+        if (typeof order === "string") {
+            if (order in listOrder) order = listOrder[order];
+            else order = 0;
+        }
+
+        return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
-            let completed = 0;
+            const web = `https://mangadex.org/list/${id}/0/${order}/`;
 
-            let titles = [];
-            let mangas = [];
-            let banner, total;
+            let matchObject = {
+                "titles": /<a[^>]*class="[^"]*manga_title[^"]*"[^>]*>([^<]*)</gmi,
+                "manga": /<a[^>]*href=["']\/title\/(\d+)\/[^>]*["'][^>]*>/gmi
+            };
 
-            // i is 1 (inclusive) to pages (inclusive)
-            for (let i = 1; i <= pages; i++) {
-                Util.getMatches(web + id.toString() + "/0/0/" + i.toString(), {
-                    "title": /<a[^>]*class=["'][^"']+manga_title[^"']+["'][^>]*title="(.+?)"[^>]*>/gmi,
-                    "manga": /<a[^>]*class=["'][^"']+manga_title[^"']+["'][^>]*href=["']\/title\/(\d+)\/[^>]*["'][^>]*>/gmi,
-                    "banner": /<img[^>]*alt=["']Banner["'][^>]*src=["']([^"']+)["'][^>]*>/gmi,
-                    "total": /\d+ to \d+ of (\d+) titles/gmi
-                }).then((matches) => {
-                    if (matches.title) titles = titles.concat(matches.title);
-                    if (matches.manga) mangas = mangas.concat(matches.manga);
-                    if (matches.total && !total) total = matches.total;
-                    if (matches.banner && !banner) banner = matches.banner;
-                    completed++;
+            // Initial Call
+            let initalMatches = await Util.getMatches(web + "1", {
+                ...matchObject,
+                "page": /\d+ to (\d+) of \d+ titles/gmi,
+                "total": /\d+ to \d+ of (\d+) titles/gmi,
+                "banner": /<img[^>]*alt=["']Banner["'][^>]*src=["']([^"']+)["'][^>]*>/gmi
+            });
 
-                    if (completed >= pages) {
-                        if (!banner && !total && mangas.length == 0) reject("Unable to parse MDList. Do you have permission?");
-                        this._parse({title: titles, manga: mangas, id: id, banner: banner, total: total});
-                        resolve(this);
-                    } 
-                }).catch(reject);
+            let banner = initalMatches.banner;
+            if (initalMatches.banner instanceof Array) banner = banner[0];
+
+            let total = parseFloat(initalMatches.total);
+            // Lists with 1 page dont have the "x out of x etc", so assume 1 page
+            let pages = 1;
+            if (initalMatches.page && initalMatches.total) pages = Math.ceil(total / parseFloat(initalMatches.page));
+
+            if (!initalMatches.titles || !initalMatches.manga) reject("Could not find manga details.");
+            let totalTitles = initalMatches.titles;
+            let totalManga = initalMatches.manga;
+            
+            // Skip first page (already called above)
+            for (let page = 2; page <= pages; page++) {
+                let matches = await Util.getMatches(web + page.toString(), matchObject);
+                if (!matches.titles || !matches.manga) continue;
+
+                // Remove Tutorial
+                if (matches.manga[0] == "30461") matches.manga.splice(0, 1);
+
+                totalManga = totalManga.concat(matches.manga);
+                totalTitles = totalTitles.concat(matches.titles);
             }
+
+            // Convert strings to ints (or floats because js is weird)
+            totalManga = totalManga.map(parseFloat);
+            // and remove duplicates (because there are extra matches)
+            totalManga = totalManga.filter((elem, i, arr) => {
+                // If elem occurs before index i, filter it out. 
+                return !arr.slice(i + 1).includes(elem);
+            });
+            
+            this._parse({
+                id: id,
+                banner: banner,
+                titles: totalTitles,
+                manga: totalManga
+            });
+            resolve(this);
         });
     }
 
     /**
      * Requests a MDList from a user account.
      * @param {User} user MangaDex User Object
+     * @param {Number|String} order The list order (enum/listing-order)
      */
-    fillByUser(user, pages) {
-        return this.fill(user.id, pages);
-    }
-
-    /**
-     * Retrieves and returns the number of pages for a MDList,
-     * and sets the pages field.
-     */
-    static getNumberOfPages(id) {
-        const web = "https://mangadex.org/list/"; 
-
-        return new Promise((resolve, reject) => {
-            if (!id) reject("No id specified.");
-            Util.getMatches(web + id.toString(), {
-                "total": /\d+ to \d+ of (\d+) titles/gmi
-            }).then((matches) => {
-                if (!matches.total) reject("Unable to parse MDList. Do you have permission?");
-                let pages = Math.ceil(matches.total / MANGA_PER_PAGE);
-                this.pages = pages;
-                resolve(pages);
-            }).catch(reject);
-        });
+    fillByUser(user, order) {
+        return this.fill(user.id, order);
     }
 
     /**
