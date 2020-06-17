@@ -2,6 +2,7 @@ const APIObject = require("./apiobject");
 const Util = require("../util");
 const Manga = require("./manga");
 const listOrder = require("../enum/listing-order");
+const viewingCategory = require("../enum/viewing-categories");
 
 /**
  * Represents a MangaDex MDList
@@ -34,18 +35,20 @@ class MDList extends APIObject {
 
     /**
      * @param {Number|String} order Order of the list, specified by the enum 'listingOrder.'
+     * @param {Number} category Mangadex follow category. Default: All. See enum 'viewingCategories'
      */
-    fill(id, order = 0) {
+    fill(id, order = 0, category = viewingCategory.ALL) {
         if (!id) id = this.id;
 
         if (typeof order === "string") {
             if (order in listOrder) order = listOrder[order];
             else order = 0;
         }
+        if (!(category in Object.values(viewingCategory))) category = 0;
 
         return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
-            const web = `https://mangadex.org/list/${id}/0/${order}/`;
+            const web = `https://mangadex.org/list/${id}/${category}/${order}/`;
 
             let matchObject = {
                 "titles": /<a[^>]*class="[^"]*manga_title[^"]*"[^>]*>([^<]*)</gmi,
@@ -71,6 +74,9 @@ class MDList extends APIObject {
             if (!initalMatches.titles || !initalMatches.manga) reject("Could not find manga details.");
             let totalTitles = initalMatches.titles;
             let totalManga = initalMatches.manga;
+
+            // Remove Tutorial
+            if (totalManga[0] == "30461") totalManga.splice(0, 1);
             
             // Skip first page (already called above)
             for (let page = 2; page <= pages; page++) {
@@ -106,9 +112,10 @@ class MDList extends APIObject {
      * Requests a MDList from a user account.
      * @param {User} user MangaDex User Object
      * @param {Number|String} order The list order (enum/listing-order)
+     * @param {Number} category Mangadex follow category. Default: All. See enum 'viewingCategories'
      */
-    fillByUser(user, order) {
-        return this.fill(user.id, order);
+    fillByUser(user, order, category) {
+        return this.fill(user.id, order, category);
     }
 
     /**

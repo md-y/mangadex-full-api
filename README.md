@@ -435,19 +435,21 @@ home.fill().then(()=>{
 |manga|```Array<Manga>```| All manga in this MDList
 |banner|```String```| Partial url to the MDList header banner (use getFullURL())
 
-### ```Promise fill(id, [order])```
+### ```Promise fill(id, [order], [category])```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |ID|```Number```| MangaDex Object ID | No
 |Order|```Number|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
+|Category|```Number```| Category of the returned list (eg Dropped and Re-Reading) (see ```enum/viewing-categories.js```) | Yes
 
 Calls and fills object with info from MangaDex return. Promise returns the object.
 
-### ```Promise fillByUser(user, [order])```
+### ```Promise fillByUser(user, [order], [category])```
 |Arguments|Type|Informaation|Optional
 |-|-|-|-
 |User|```User```| MangaDex User Object | No
 |Order|```Number|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
+|Category|```Number```| Category of the returned list (eg Dropped and Re-Reading) (see ```enum/viewing-categories.js```) | Yes
 
 Uses a user object to execute fill() on their MDList.
 
@@ -461,8 +463,8 @@ Returns the full URL of a partially stored one.
 ```javascript
 
 let list = new MDList();
-await list.fill(LIST_ID, listingOrder["Follows (Des)"]);
-console.log(`There are ${list.manga.length} manga in this MDList.`)
+await list.fill(LIST_ID, listingOrder["Follows (Des)"], viewingCategories.DROPPED);
+console.log(`There are ${list.manga.length} dropped manga in this MDList.`)
 
 ```
 
