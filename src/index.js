@@ -15,6 +15,7 @@ module.exports = {
     Post: require("./structure/post"),
     Home: require("./structure/home"),
     MDList: require("./structure/mdlist"),
+    MDNet: require("./structure/mdnet"),
     
     Util: require("./util"),
 
