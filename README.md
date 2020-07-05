@@ -58,6 +58,7 @@ api.agent.login("a_User", "password123", false).then(() => {
 [Thread](#Thread) <br>
 [Home](#Home) <br>
 [MDList](#MDList) <br>
+[MDNet (Mangadex@Home)](#MDNet) <br>
 
 ## Agent
 **Called with api.agent**
@@ -465,6 +466,30 @@ Returns the full URL of a partially stored one.
 let list = new MDList();
 await list.fill(LIST_ID, listingOrder["Follows (Des)"], viewingCategories.DROPPED);
 console.log(`There are ${list.manga.length} dropped manga in this MDList.`)
+
+```
+
+## MDNet
+
+**Called with api.MDNet** <br>
+**(MDNet is the same as Mangadex@Home)**
+
+### ```static Promise getClient(id)```
+|Arguments|Type|Information|Optional
+|-|-|-|-
+|id| ```Number``` | ID of client | No
+
+Returns information about a MDNet Client. 
+Information includes its status, its total bytes served, and its failure rate.
+
+### ```static Promise getAllClients()```
+
+Returns information the same as ```getClient()``` for every MDNet client as an array.
+
+```javascript
+
+let clients = await MDNet.getAllClients();
+console.log(`There are ${clients.filter(e => e.available).length} online currently.`);
 
 ```
 
