@@ -132,7 +132,7 @@ class MDList extends APIObject {
             case "id":
                 return homepage + "/list/" + this.id.toString();
             case "banner":
-                return homepage + this.banner;
+                return this.banner;
         }
     }
 }
