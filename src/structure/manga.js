@@ -322,11 +322,17 @@ class Manga extends APIObject {
                 "title": /<a[^>]*href=["']\/title\/\d+\/\S+["'][^>]*>([^<]+)/gmi
             }).then((matches) => {
                 if (!matches.id) resolve([]);
-                
+                let title = null;
+
+                if (!Array.isArray(matches.id)) {
+                    matches.id = [matches.id];
+                    title = matches.title;
+                }
+
                 let results = [];
                 for (let i in matches.id) {
                     let m = new Manga(matches.id[i]);
-                    m.title = matches.title[i];
+                    m.title = title ? title : matches.title[i];
                     results.push(m);
                 }
                 resolve(results);
