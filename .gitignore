@@ -64,6 +64,6 @@ typings/
 bin/page.txt
 bin/debug.js
 bin/cache.txt
-todo.txt
 
 .idea
+.todo
