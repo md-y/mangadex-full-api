@@ -26,58 +26,63 @@ class Manga extends APIObject {
          * Main title for a manga
          * @type {String}
          */
-        this.title = data.manga.title;
+        this.title = data.title;
 
         /**
          * Current cover.
-         * Partial URL (ex "images/manga/47.png?1545745341"). Use getFullURL to get full url.
          * @type {String}
          */
-        this.cover = data.manga.cover_url;
+        this.cover = data.mainCover;
+
+        /**
+         * Cover list of urls
+         * @type {Array<String>}
+         */
+        this.covers = data.covers ? data.covers.map(e => "https://mangadex.org" + e) : undefined;
 
         /**
          * Original (published) manga language code
          * @type {String}
          */
-        this.language = data.manga.lang_flag ? data.manga.lang_flag.toUpperCase(): undefined;
+        this.language = data.publication.language? data.publication.language.toUpperCase() : undefined;
 
         /**
          * Array of the manga's genres
          * @type {Array<Number>}
          */
-        this.genres = data.manga.genres;
+        this.genres = data.tags;
 
         /**
          * Artist(s) name(s)
          * @type {Array<String>}
          */
-        this.artists = data.manga.artist ? data.manga.artist.split(", ") : [];
+        this.artists = data.artist;
 
         /**
          * Author(s) name(s)
          * @type {Array<String>}
          */
-        this.authors = data.manga.author ? data.manga.author.split(", ") : [];
+        this.authors = data.author;
 
         /**
          * Hentai or not?
          * @type {Boolean}
          */
-        this.hentai = data.manga.hentai == undefined ? undefined : (data.manga.hentai == 1); // Needs ==undefined to get around 0 == false
+        this.hentai = data.isHentai !== undefined ? data.isHentai : undefined;
 
         /**
          * MangaDex description. 
          * Formatted for HTML
          * @type {String}
          */
-        this.description = data.manga.description;
+        this.description = data.description;
 
         /**
          * Links to manga information on other sites.
          * Replaces raw values with enum/link when available, but still uses MangaDex keys.
          * @type {Array<String>}
          */
-        this.links = data.manga.links;
+        this.links = data.links;
         if (this.links) for (let i in this.links) if (link[i]) this.links[i] = link[i].prefix + this.links[i];
 
         /**
@@ -86,11 +91,11 @@ class Manga extends APIObject {
          * @type {Array<Chapter>}
          */
         this.chapters = undefined;
-        if (data.chapter) {
+        if (data.chapters) {
             this.chapters = [];
-            for (let i in data.chapter) {
+            for (let i in data.chapters) {
                 // Simulate api/chapter return object
-                let chapterObject = data.chapter[i];
+                let chapterObject = data.chapters[i];
                 chapterObject.manga_id = this.id;
                 chapterObject.id = parseInt(i);
 
@@ -99,42 +104,41 @@ class Manga extends APIObject {
                 c._parse(chapterObject);
                 this.chapters.push(c);
             }
-            this.chapters.reverse(); // Fix Order
+            this.chapters.reverse(); // Change Order
         }
 
         /**
-         * Viewcount (Web Parsing)
+         * Viewcount
          * @type {String}
          */
-        this.views = data.views ? parseInt(data.views.replace(/\D/g, "")) : undefined;
+        this.views = data.views;
 
         /**
          * Bayesian Rating
          * @type {String}
          */
-        // Parse float is needed because MD returns ratings as strings for some reason.
-        this.rating = data.manga.rating.bayesian ? parseFloat(data.manga.rating.bayesian) : undefined;
+        this.rating = data.rating.bayesian;
 
         /**
          * Mean Rating
          * @type {String}
          */
-        this.ratingMean = data.manga.rating.mean ? parseFloat(data.manga.rating.mean) : undefined;
+        this.ratingMean = data.rating.mean;
 
         /**
          * Number of Users who have Rated
          * @type {String}
          */
-        this.ratingUserCount = data.manga.rating.users ? parseFloat(data.manga.rating.users) : undefined;
+        this.ratingUserCount = data.rating.users;
 
         /**
-         * Alternate Titles (Web Parsing)
+         * Alternate Titles
          * @type {Array<String>}
          */
         this.altTitles = undefined;
         if (data.altTitles) {
             this.altTitles = [];
-            for (let i of data.altTitles) this.altTitles.push(decodeURI(i));
+            for (let i of data.altTitles) this.altTitles.push(i);
         }
 
         /**
@@ -146,35 +150,26 @@ class Manga extends APIObject {
     }
 
     fill(id) {
-        const jsonAPI = "https://mangadex.org/api/manga/"; 
-        const web = "https://mangadex.org/title/";
+        const newAPI = "https://mangadex.org/api/v2/manga/"; 
+        // Old API needed for: Chapter list, cover list
+        const oldAPI = "https://mangadex.org/api/manga/";
 
         if (!id) id = this.id;
-        let last = false; // Flag to trigger resolve()
-        let obj = {};
-
-        const finish = function(manga, resolve) {
-            // Only execute when both requests have responded
-            if (last) {
-                manga._parse(obj);
-                resolve(manga);
-            } else last = true;
-        };
-
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
-            Util.getJSON(jsonAPI + id.toString()).then((json) => {
-                obj = {...obj, ...json, id: id};
-                finish(this, resolve);
-            }).catch(reject);
 
-            Util.getMatches(web + id.toString(), {
-                "views": /title=["']views["']\D+(\d[\d,.]+)<\/li>/gmi,
-                "altTitles": /<li [^>]*><span[^>]*fa-book[\s"'][^>]*><\/span>([^<]+)<\/li>/gmi
-            }).then((matches) => {
-                obj = {...obj, ...matches};
-                finish(this, resolve);
-            }).catch(reject);
+            // API v2
+            let newRes = await Util.getJSON(newAPI + id.toString());
+            if(!newRes || newRes.status !== "OK") reject("Invalid API response.");
+            let obj = newRes.data;
+
+            // Old/Legacy API
+            let oldRes = await Util.getJSON(oldAPI + id.toString());
+            obj.chapters = oldRes.chapter;
+            obj.covers = oldRes.manga.covers;
+
+            this._parse(obj);
+            resolve(this);
         });
     }
 
