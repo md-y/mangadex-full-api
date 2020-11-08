@@ -13,37 +13,25 @@ class User extends APIObject {
         this.id = data.id;
 
         /**
-         * Viewcount (Web Parsing)
+         * Viewcount
          * @type {String}
          */
-        this.views = data.views ? parseInt(data.views.replace(/\D/g, "")) : undefined;
+        this.views = data.views;
 
         /**
-         * User language code (Web Parsing)
+         * Markdown-Formatted Biography
          * @type {String}
          */
-        this.language = data.language ? data.language.toUpperCase(): undefined;
+        this.biography = data.biography;
 
         /**
-         * HTML-Formatted Biography (Web Parsing)
-         * @type {String}
-         */
-        this.biography = data.biography ? data.biography.replace(/<\s*br\s*\/>/gmi, ""): undefined; // Removes <br />
-
-        /**
-         * Number of chapters uploaded (Web Parsing)
-         * @type {String}
-         */
-        this.uploads = data.uploads ? parseInt(data.uploads.replace(/\D/g, "")) : undefined;
-
-        /**
-         * Username (Web Parsing)
+         * Username 
          * @type {String}
          */
         this.username = data.username;
 
         /**
-         * User Website URL (Web Parsing)
+         * User Website URL
          * @type {Object}
          */
         this.website  = data.website;
@@ -52,27 +40,60 @@ class User extends APIObject {
          * Avatar Image URL
          * @type {String}
          */
-        this.avatar = data.avatar;
+        this.avatar = data.avatar !== null ? data.avatar : "https://mangadex.org/images/avatars/default1.jpg";
+
+        /**
+         * Level ID (Adminstrator, Moderator, etc)
+         * @type {Number}
+         */
+        this.levelId = data.levelId;
+
+        /**
+         * Last Seen Timestamp
+         * @type {Number}
+         */
+        this.timeLastSeen = data.lastSeen;
+
+        /**
+         * Joined Timestamp
+         * @type {Number}
+         */
+        this.timeJoined = data.joined;
+
+        /**
+         * Number of Chapters Uploaded
+         * @type {Number}
+         */
+        this.uploads = data.uploads;
+
+        /**
+         * Premium Account?
+         * @type {Boolean}
+         */
+        this.premium = data.premium;
+
+        /**
+         * Mangadex @ Home Contributor?
+         * @type {Boolean}
+         */
+        this.mdAtHome = data.mdAtHome;
+        if (this.mdAtHome !== undefined) this.mdAtHome = this.mdAtHome === 1;
     }
 
     fill(id) {
-        const web = "https://mangadex.org/user/"; 
+        const api = "https://mangadex.org/api/v2/user/"; 
         if (!id) id = this.id;
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
-            Util.getMatches(web + id.toString(), {
-                "username": /card-header[\w\W]*?<span[^>]*class=["']mx-1["']>(.+)<\/span>/gmi,
-                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]*flag-(\w{2})["']/gmi,
-                "views": /title=["']Views["'][\D\s\n]+([\d,]+)<\/li>/gmi,
-                "uploads": /title=["']Chapters uploaded["'][\D\s\n]+([\d,]+)<\/li>/gmi,
-                "website": /Website:[\d\D\n]+<a href=["']([^<>\s]+)["'].+>[^\s]+<\/a><\/div>/gmi,
-                "biography": /Biography:<\/div>\s*<div class=["'].+["']>([\w\W\n]+)<\/div>\s{1,2}<\/div.+\s.+\s.+Actions:/gmi,
-                "avatar": /alt=["']Avatar["'] src=["']([^"']+)["']/gmi
-            }).then((matches) => {
-                this._parse({...matches, id: id});
-                resolve(this);
-            }).catch(reject);
+            
+            // API v2
+            let res = await Util.getJSON(api + id.toString());
+            if (!res) reject("Invalid API response");
+            if (res.status !== "OK") reject("API responsed with an error: " + data.message);
+
+            this._parse(res.data);
+            resolve(this);
         });
     }
 
