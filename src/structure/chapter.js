@@ -78,10 +78,12 @@ class Chapter extends APIObject {
          * @type {Array<Number>}
          */
         this.groups = [];
-        for (let i of data.groups) {
-            let group = new Group(i.id);
-            group.title = i.name;
-            this.groups.push(group);
+        if (data.groups) {
+            for (let i of data.groups) {
+                let group = new Group(i.id);
+                group.title = i.name;
+                this.groups.push(group);
+            }
         }
 
         /**
