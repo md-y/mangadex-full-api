@@ -14,90 +14,123 @@ class Group extends APIObject {
         this.id = data.id;
 
         /**
-         * Viewcount (Web Parsing)
+         * Viewcount
          * @type {String}
          */
-        this.views = data.views ? parseInt(data.views.replace(/\D/g, "")) : undefined;
+        this.views = data.views;
 
         /**
-         * Group language code (Web Parsing)
+         * Group language code
          * @type {String}
          */
         this.language = data.language ? data.language.toUpperCase(): undefined;
 
         /**
-         * Group description (Web Parsing)
+         * Group description
          * @type {String}
          */
-        this.description = data.description ? data.description.replace(/<\s*br\s*\/>/gmi, ""): undefined; // Removes <br />
+        this.description = data.description;
 
         /**
-         * Followers (Web Parsing)
+         * Followers
          * @type {String}
          */
-        this.followers = data.followers ? parseInt(data.followers.replace(/\D/g, "")) : undefined;
+        this.followers = data.follows;
 
         /**
-         * Number of chapters uploaded (Web Parsing)
+         * Number of chapters uploaded
          * @type {String}
          */
-        this.uploads = data.uploads ? parseInt(data.uploads.replace(/\D/g, "")) : undefined;
+        this.uploads = data.chapters;
 
         /**
-         * Official Group Name (Web Parsing)
+         * Official Group Name
          * @type {String}
          */
-        this.title = data.title;
+        this.title = data.name;
 
         /**
-         * Official Group Links (Web Parsing)
+         * Official Group Links
          * Website, Discord, IRC, and Email
          * @type {Object}
          */
         this.links = {};
         if (data.website) this.links.website = data.website;
         if (data.discord) this.links.discord = data.discord;
-        if (data.irc) this.links.irc = data.irc;
+        if (data.ircServer) this.links.ircServer = data.ircServer;
+        if (data.ircChannel) this.links.ircChannel = data.ircChannel;
         if(data.email) this.links.email = data.email;
 
         /**
-         * Leader User Object (Web Parsing)
+         * Leader User Object
          * Contains ID only, use fill() for full data.
          * @type {User}
          */
-        this.leader = data.leader ? new User(parseInt(data.leader)) : undefined;
+        this.leader = undefined;
+        if (data.leader) {
+            let user = new User(data.leader.id);
+            user.username = data.leader.name;
+            this.leader = user;
+        }
 
         /**
-         * Array of members (Web Parsing)
+         * Array of members
          * @type {Array<User>}
          */
         this.members = [];
-        if (data.members) for (let i of data.members) this.members.push(new User(i));
+        if (data.members) {
+            for (let i of data.members) {
+                let user = new User(i.id);
+                user.username = i.name;
+                this.members.push(user);
+            }
+        }
+
+        /**
+         * Foundation Date
+         * @type {String}
+         */
+        this.founded = data.founded;
+
+        /**
+         * Locked?
+         * @type {Boolean}
+         */
+        this.locked = data.isLocked !== undefined ? data.isLocked : undefined;
+
+        /**
+         * Inactive?
+         * @type {Boolean}
+         */
+        this.inactive = data.isInactive !== undefined ? data.isInactive : undefined;
+
+        /**
+         * Group Delay in Seconds
+         * @type {Number}
+         */
+        this.delay = data.delay;
+
+        /**
+         * Banner URL
+         * @type {String}
+         */
+        this.banner = data.banner ? data.banner : "https://mangadex.org/images/groups/default.png";
     }
 
     fill(id) {
-        const web = "https://mangadex.org/group/"; 
+        const web = "https://mangadex.org/api/v2/group/"; 
         if (!id) id = this.id;
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
-            Util.getMatches(web + id.toString(), {
-                "title": /<span class=["']mx-1["']>(.*?)<\/span>/gmi,
-                "language": /<span class=["']mx-1["']>.*?<\/span>\s*?<span[^>]*flag-(\w{2})["']/gmi,
-                "views": /Stats:[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>/gmi,
-                "followers": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>[\D\n]+[\d,]+<\/li>/gmi,
-                "uploads": /Stats:[\D\n]+[\d,]+<\/li>[\D\n]+[\d,]+<\/li>[\D\n]+([\d,]+)<\/li>/gmi,
-                "website": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Website["']/gmi,
-                "discord": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Discord["']/gmi,
-                "irc": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']IRC["']/gmi,
-                "email": /Links:[\d\D\n]+<a target=["']_blank["'] href=["']([^<>\s]+)["']><span[^<>]+title=["']Email["']/gmi,
-                "description": /Description[\w\W\n]+<div class=["']card-body["']>([\w\W\n]+)<\/div>\s*?<\/div>\s*?<ul/gmi,
-                "leader": /Leader:[\w\W]*?href=["']\/user\/(\d+)\/.+["']>/gmi,
-                "members": /<li[^>]*><span[^>]*><\/span>\s?<a[^\/]+\/user\/(\d+)\/[^"']+["']>[^>]*><\/li>/gmi
-            }).then(matches => {
-                this._parse({...matches, id: id});
-                resolve(this);
-            }).catch(reject);
+
+            // API v2
+            let res = await Util.getJSON(web + id.toString());
+            if (!res) reject("Invalid API response");
+            if (res.status !== "OK") reject("API responsed with an error: " + res.message);
+
+            this._parse(res.data);
+            resolve(this);
         });
     }
 
