@@ -10,20 +10,6 @@ No other NPM dependencies.
 
 [Documentation](#Documentation) 
 
-# Fix For Mangadex Migration (No Longer Needed)
-```javascript
-
-const api = require("mangadex-full-api");
-
-/*
-    Add to the beginning of your code and
-    before any calls to the API.
-    Replace "mangadex.cc" with any working domain.
-*/
-api.agent.domainOverride = "mangadex.cc";
-
-```
-
 # Examples
 
 ```javascript
@@ -135,10 +121,11 @@ Returns (up to) the last 10 manga read by the agent as an array.
 |artists|```Array<String>```| All artists for this manga
 |genres|```Array<Number>```| Array of the manga's genres' IDs.
 |genreNames|```Array<String>```| Array of genre names in the same order as their IDs: ```.genres```
-|cover|```String```| Partial main cover URL. See ```getFullURL('cover')```
+|cover|```String```| Current Cover URL
+|covers|```Array<String>```| All cover URLs
 |language|```String```| Original language code (e.g. JP, EN, DE). See ```language.js```
 |hentai|```Boolean```| Hentai or not?
-|description|```String```| HTML Formated description string
+|description|```String```| Formated description string
 |links|```Array<String>```| Array of full URLs to additional links (e.g. MangaUpdates, MAL, BookWalker). See ```links.js```
 |chapters|```Array<Chapter>```| Array of all chapters for this manga. Contains only minimal information like ID and title; use ```Chapter.fill()``` 
 |views|```Number```| Amount of manga views
@@ -232,7 +219,6 @@ manga.fill().then(()=>{
 |parentMangaID|```Number```| The ID of the manga this chapter is from
 |groups|```Array<Group>```| The groups that translated this chapter
 |commentCount|```Number```| Number of comments on this chapter
-|longstrip|```Boolean```| Longstrip (e.g. WebToon style) or not?
 |pages|```Array<String>```| Array of each page image's URL
 |saverPages|```Array<String>```| Array of each page image's URL, but from its corresponding [data-saver](https://mangadex.org/thread/253605) server
 |url|```String```| URL to the chapters's homepage.
@@ -274,6 +260,11 @@ console.log(`This chapter is in ${language[chapter.language]}`);
 |links|```Object```| Links to the group's website, Discord, IRC, and/or email.
 |leader|```User```| The group's leader.
 |members|```Array<User>```| All non-leader members of this group.
+|founded|```String```| The date the group was made.
+|locked|```Boolean```| Is the group locked?
+|inactive|```Boolean```| Is the group inactive?
+|delay|```Number```| The delay (in seconds) on each groups published chapter
+|banner|```String```| URL to the group's banner/header
 
 ### ```static Promise search(query)```
 |Arguments|Type|Information|Optional
@@ -321,11 +312,15 @@ group.fill().then(()=>{
 |id|```Number```| This user's MangaDex ID
 |username|```String```| The user's username
 |biography|```String```| HTML Formated biography string
-|language|```String```| The language code for this user. See ```language.js```
 |views|```Number```| Amount of profile views
 |uploads|```Number```| Amount chapters uploaded by this user
 |website|```String```| Link to user's website
 |avatar|```String```| Link to user's avatar image
+|levelId|```Number```| Level (admin, moderator, etc) of the user
+|timeLastSeen|```Number```| Timestamp of when the person was last seen
+|timeJoined|```Number```| Timestamp of when the user joined
+|premium|```Boolean```| Is this user a donor/premium user?
+|mdAtHome|```Boolean```| Is this user a MangaDex @ Home Contributor?
 
 ### ```static Promise search(query)```
 |Arguments|Type|Information|Optional
