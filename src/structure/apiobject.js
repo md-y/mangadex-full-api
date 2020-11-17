@@ -47,6 +47,18 @@ class APIObject {
             resolve(this);
         });
     }
+
+    /**
+     * Returns a new object with the respones from fill().
+     * @example
+     * // Same as:
+     * (new Object()).fill(id)
+     * @param {Number} id ID of MangaDex object
+     * @param  {...any} extraArgs 
+     */
+    static async get(id, ...extraArgs) {
+        return await (new this()).fill(id, ...extraArgs);
+    }
 }
 
 module.exports = APIObject;
