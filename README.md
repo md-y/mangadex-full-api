@@ -18,18 +18,17 @@ No other NPM dependencies.
 
 const api = require("mangadex-full-api");
 
-api.agent.login("a_User", "password123", false).then(() => {
+api.agent.login("mfa", "mangadex-full-api", false).then(async () => {
 
     var manga = new api.Manga();
-    manga.fillByQuery("Ancient Magus Bride").then((manga) => {
-        console.log(`${manga.title} by ${manga.authors.join(", ")}`);
-    });
+    await manga.fillByQuery("Ancient Magus Bride");
+    console.log(`${manga.title} by ${manga.authors.join(", ")}`);
+    
+    let chapterId = manga.chapters[0].id;
 
-    var group = new api.Group();
-    group.fillByQuery("MangaDex Scans").then((group) => {
-        console.log(`${group.title} has uploaded ${group.uploads} chapters and has ${group.followers} followers and ${group.views} views.`);
-    });
-
+    // New v4.0.0 Method
+    let chapter = await api.Chapter.get(chapterId);
+    console.log(`Vol. ${chapter.volume} Ch. ${chapter.chapter} (${chapter.language}) of ${manga.title} has ${chapter.views} views.`);
 });
 
 ```
@@ -193,6 +192,11 @@ Fills object with the most relevent result from ```.fullSearch()```. Promise ret
 
 Returns the full URL of a partially stored one.
 
+### ```static Promise get(id)```
+|Arguments|Type|Information|Optional
+|-|-|-|-
+|id|```Number```| MangaDex Object ID | False
+Returns an instance of this object with ```fill()``` already called.
 
 ```javascript
 
@@ -222,6 +226,7 @@ manga.fill().then(()=>{
 |pages|```Array<String>```| Array of each page image's URL
 |saverPages|```Array<String>```| Array of each page image's URL, but from its corresponding [data-saver](https://mangadex.org/thread/253605) server
 |url|```String```| URL to the chapters's homepage.
+|views|```Number```| Number of views for this chapter
 
 ### ```Promise fill(id)```
 |Arguments|Type|Information|Optional
@@ -237,6 +242,11 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 
 Returns the full URL of a partially stored one.
 
+### ```static Promise get(id)```
+|Arguments|Type|Information|Optional
+|-|-|-|-
+|id|```Number```| MangaDex Object ID | False
+Returns an instance of this object with ```fill()``` already called.
 
 ```javascript
 
@@ -294,6 +304,11 @@ Fills object with the most relevent result from a search. Promise returns the ob
 
 Returns the full URL of a partially stored one.
 
+### ```static Promise get(id)```
+|Arguments|Type|Information|Optional
+|-|-|-|-
+|id|```Number```| MangaDex Object ID | False
+Returns an instance of this object with ```fill()``` already called.
 
 ```javascript
 
@@ -349,6 +364,12 @@ Fills object with the most relevent result from a search. Promise returns the ob
 |Property|```String```| ```"id"```, ```"avatar"```, or ```"flag"``` | No
 
 Returns the full URL of a partially stored one.
+
+### ```static Promise get(id)```
+|Arguments|Type|Information|Optional
+|-|-|-|-
+|id|```Number```| MangaDex Object ID | False
+Returns an instance of this object with ```fill()``` already called.
 
 
 ```javascript
