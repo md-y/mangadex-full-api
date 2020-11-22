@@ -112,6 +112,12 @@ class Chapter extends APIObject {
             this.saverPages = [];
             for (let i of this.pages) this.saverPages.push(i.replace("/data/", "/data-saver/"));
         }
+
+        /**
+         * Viewcount for this chapter
+         * @type {Number}
+         */
+        this.views = data.views;
     }
 
     fill(id) {
@@ -124,6 +130,9 @@ class Chapter extends APIObject {
 
             // API v2
             let res = await Util.getJSON(api + id.toString());
+            if (!res) reject("Invalid API response");
+            if (res.status !== "OK") reject("API responsed with an error: " + res.message);
+
             this._parse(res.data);
             resolve(this);
         });
