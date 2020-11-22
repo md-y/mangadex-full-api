@@ -55,6 +55,7 @@ class APIObject {
      * (new Object()).fill(id)
      * @param {Number} id ID of MangaDex object
      * @param  {...any} extraArgs 
+     * @returns {Promise<APIObject>}
      */
     static async get(id, ...extraArgs) {
         return await (new this()).fill(id, ...extraArgs);
