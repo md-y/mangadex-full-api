@@ -160,7 +160,9 @@ class Manga extends APIObject {
 
             // API v2
             let newRes = await Util.getJSON(newAPI + id.toString());
-            if(!newRes || newRes.status !== "OK") reject("Invalid API response.");
+            if (!newRes) reject("Invalid API response");
+            if (newRes.status !== "OK") reject("API responsed with an error: " + newRes.message);
+
             let obj = newRes.data;
 
             // Old/Legacy API
