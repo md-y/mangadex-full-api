@@ -196,6 +196,7 @@ Returns the full URL of a partially stored one.
 |Arguments|Type|Information|Optional
 |-|-|-|-
 |id|```Number```| MangaDex Object ID | False
+
 Returns an instance of this object with ```fill()``` already called.
 
 ```javascript
@@ -246,6 +247,7 @@ Returns the full URL of a partially stored one.
 |Arguments|Type|Information|Optional
 |-|-|-|-
 |id|```Number```| MangaDex Object ID | False
+
 Returns an instance of this object with ```fill()``` already called.
 
 ```javascript
@@ -308,6 +310,7 @@ Returns the full URL of a partially stored one.
 |Arguments|Type|Information|Optional
 |-|-|-|-
 |id|```Number```| MangaDex Object ID | False
+
 Returns an instance of this object with ```fill()``` already called.
 
 ```javascript
@@ -369,6 +372,7 @@ Returns the full URL of a partially stored one.
 |Arguments|Type|Information|Optional
 |-|-|-|-
 |id|```Number```| MangaDex Object ID | False
+
 Returns an instance of this object with ```fill()``` already called.
 
 
