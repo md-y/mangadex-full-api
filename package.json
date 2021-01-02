@@ -36,5 +36,8 @@
   "bugs": {
     "url": "https://github.com/md-y/mangadex-full-api/issues"
   },
-  "homepage": "https://github.com/md-y/mangadex-full-api#readme"
+  "homepage": "https://github.com/md-y/mangadex-full-api#readme",
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  }
 }
