@@ -3,8 +3,10 @@
   "version": "4.0.0",
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
+  "types": "./@types/index.d.ts",
   "scripts": {
-    "test": "node ./bin/fulltest.js"
+    "test": "node ./bin/fulltest.js",
+    "gen-types": "tsc"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -36,5 +38,8 @@
   "bugs": {
     "url": "https://github.com/md-y/mangadex-full-api/issues"
   },
-  "homepage": "https://github.com/md-y/mangadex-full-api#readme"
+  "homepage": "https://github.com/md-y/mangadex-full-api#readme",
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  }
 }

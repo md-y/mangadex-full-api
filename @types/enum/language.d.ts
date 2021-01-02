@@ -1,0 +1,43 @@
+/**
+ * MangaDex language codes
+ */
+export type exports = string;
+declare const SA: string;
+declare const BD: string;
+declare const BG: string;
+declare const MM: string;
+declare const CT: string;
+declare const CN: string;
+declare const HK: string;
+declare const CZ: string;
+declare const DK: string;
+declare const NL: string;
+declare const GB: string;
+declare const PH: string;
+declare const FI: string;
+declare const FR: string;
+declare const DE: string;
+declare const GR: string;
+declare const HU: string;
+declare const ID: string;
+declare const IT: string;
+declare const JP: string;
+declare const KR: string;
+declare const LT: string;
+declare const MY: string;
+declare const MN: string;
+declare const IR: string;
+declare const PL: string;
+declare const BR: string;
+declare const PT: string;
+declare const RO: string;
+declare const RU: string;
+declare const RS: string;
+declare const ES: string;
+declare const MX: string;
+declare const SE: string;
+declare const TH: string;
+declare const TR: string;
+declare const UA: string;
+declare const VN: string;
+export {};
