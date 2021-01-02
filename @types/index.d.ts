@@ -139,6 +139,7 @@ export declare const genre: {
     82: string;
     83: string;
     84: string;
+    85: string;
 };
 export declare const link: {
     bw: {

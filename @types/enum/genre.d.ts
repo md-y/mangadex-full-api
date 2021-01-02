@@ -78,6 +78,7 @@ declare const _exports: {
     82: string;
     83: string;
     84: string;
+    85: string;
 };
 export = _exports;
 /**
