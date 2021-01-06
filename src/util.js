@@ -44,13 +44,22 @@ module.exports = {
 
                 if (res.statusCode == 503 || res.statusCode == 502 || res.statusCode == 403) reject(`MangaDex is currently in DDOS mitigation mode. (Status code ${res.statusCode})`);
                 else if (res.statusCode >= 500) reject(`MangaDex is currently unavailable. (Status code ${res.statusCode})`);
-                else if (res.statusCode == 404) reject("Cannot reach Mangadex.org (404). Use agent.domainOverride for a mirror.");
+                //non existing mangas return a 404 but the response has data!
+                //else if (res.statusCode == 404) reject("Cannot reach Mangadex.org (404). Use agent.domainOverride for a mirror.");
 
                 res.on('data', (data) => {
                     payload += data;
                 });
 
                 res.on('end', () => {
+                    if (res.statusCode == 404) { //filter 404's
+                        let resJSON = JSON.parse(payload); 
+                        if (resJSON.message) { //message exists
+                            reject(resJSON.message); //reject with message
+                        } else {
+                            reject("Cannot reach Mangadex.org (404). Use agent.domainOverride for a mirror.");  //default for 404
+                        }
+                    }
                     resolve(payload);
                 });
             }).on('error', reject);
