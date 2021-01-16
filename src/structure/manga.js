@@ -150,9 +150,9 @@ class Manga extends APIObject {
     }
 
     fill(id) {
-        const newAPI = "https://mangadex.org/api/v2/manga/"; 
+        const newAPI = "https://api.mangadex.org/v2/manga/"; 
         // Old API needed for: Chapter list, cover list
-        const oldAPI = "https://mangadex.org/api/manga/";
+        const oldAPI = "https://api.mangadex.org/v1/manga/";
 
         if (!id) id = this.id;
         return new Promise(async (resolve, reject) => {
