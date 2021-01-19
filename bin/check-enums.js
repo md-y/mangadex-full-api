@@ -8,7 +8,7 @@ const checkFunctions = [
     // Tags/Genre
     async function() {
         let oldTags = require("../src/enum/genre");
-        let newTags = await getData("https://mangadex.org/api/v2/tag", "Tags/Genre");
+        let newTags = await getData("https://api.mangadex.org/v2/tag", "Tags/Genre");
 
         let changed = false;
         for (let i of newTags) {
@@ -23,7 +23,7 @@ const checkFunctions = [
     // Categories/Follow Types
     async function() {
         let oldTypes = require("../src/enum/viewing-categories");
-        let newTypes = await getData("https://mangadex.org/api/v2/follows", "Categories/Follow Types");
+        let newTypes = await getData("https://api.mangadex.org/v2/follows", "Categories/Follow Types");
 
         let oldTypesIDs = Object.values(oldTypes);
         let changed = false;

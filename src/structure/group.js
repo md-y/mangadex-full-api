@@ -118,7 +118,7 @@ class Group extends APIObject {
     }
 
     fill(id) {
-        const web = "https://mangadex.org/api/v2/group/"; 
+        const web = "https://api.mangadex.org/v2/group/"; 
         if (!id) id = this.id;
 
         return new Promise(async (resolve, reject) => {

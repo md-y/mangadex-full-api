@@ -121,7 +121,7 @@ class Chapter extends APIObject {
     }
 
     fill(id) {
-        const api = "https://mangadex.org/api/v2/chapter/"; 
+        const api = "https://api.mangadex.org/v2/chapter/"; 
         if (!id) id = this.id;
         else this.id = id;
 
