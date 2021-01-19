@@ -81,7 +81,7 @@ class User extends APIObject {
     }
 
     fill(id) {
-        const api = "https://mangadex.org/api/v2/user/"; 
+        const api = "https://api.mangadex.org/v2/user/"; 
         if (!id) id = this.id;
 
         return new Promise(async (resolve, reject) => {
