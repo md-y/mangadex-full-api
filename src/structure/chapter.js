@@ -97,10 +97,10 @@ class Chapter extends APIObject {
          * @type {Array<String>}
          */
         this.pages = [];
-        if (data.serverFallback && data.hash && data.pages) {
+        if (data.server && data.hash && data.pages) {
             this.pages = [];
-            if (data.serverFallback == "/data/") data.serverFallback = "https://mangadex.org/data/"; // Home image server
-            for (let i of data.pages) this.pages.push(data.serverFallback + data.hash + "/" + i);
+            if (data.server == "/data/") data.server = "https://mangadex.org/data/"; // Home image server
+            for (let i of data.pages) this.pages.push(data.server + data.hash + "/" + i);
         }
 
         /**

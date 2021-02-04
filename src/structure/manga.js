@@ -38,7 +38,7 @@ class Manga extends APIObject {
          * Cover list of urls
          * @type {Array<String>}
          */
-        this.covers = data.covers ? data.covers.map(e => "https://mangadex.org" + e) : undefined;
+        this.covers = data.covers ? data.covers.map(e => e.url) : undefined;
 
         /**
          * Original (published) manga language code
@@ -150,25 +150,30 @@ class Manga extends APIObject {
     }
 
     fill(id) {
-        const newAPI = "https://api.mangadex.org/v2/manga/"; 
-        // Old API needed for: Chapter list, cover list
-        const oldAPI = "https://api.mangadex.org/v1/manga/";
+        const api = "https://api.mangadex.org/v2/manga/"; 
 
         if (!id) id = this.id;
         return new Promise(async (resolve, reject) => {
             if (!id) reject("No id specified or found.");
 
             // API v2
-            let newRes = await Util.getJSON(newAPI + id.toString());
+            let newRes = await Util.getJSON(api + id.toString());
             if (!newRes) reject("Invalid API response");
             if (newRes.status !== "OK") reject("API responsed with an error: " + newRes.message);
 
             let obj = newRes.data;
 
-            // Old/Legacy API
-            let oldRes = await Util.getJSON(oldAPI + id.toString());
-            obj.chapters = oldRes.chapter;
-            obj.covers = oldRes.manga.covers;
+            // Chapter API
+            let chaptersRes = await Util.getJSON(api + id.toString() + "/chapters");
+            if (!chaptersRes) reject("Invalid API response for manga chapters");
+            if (chaptersRes.status !== "OK") reject("API responsed with an error for manga chapters: " + newRes.message);
+            obj.chapters = chaptersRes.data.chapters;
+
+            // Cover API
+            let coverRes = await Util.getJSON(api + id.toString() + "/covers");
+            if (!coverRes) reject("Invalid API response for manga covers");
+            if (coverRes.status !== "OK") reject("API responsed with an error for manga covers: " + newRes.message);
+            obj.covers = coverRes.data;
 
             this._parse(obj);
             resolve(this);
