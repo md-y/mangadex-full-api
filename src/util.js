@@ -43,12 +43,12 @@ module.exports = {
                 let payload = "";
                 let contentType = res.headers["content-type"];
 
-                if (res.statusCode == 503 || res.statusCode == 502 || res.statusCode == 403) reject(`MangaDex is currently in DDOS mitigation mode. (Status code ${res.statusCode})`);
-                else if (res.statusCode >= 500) reject(`MangaDex is currently unavailable. (Status code ${res.statusCode})`);
+                if (res.statusCode >= 500) reject(`MangaDex is currently unavailable or in DDOS mitigation mode. (Status code ${res.statusCode})`);
+                else if (res.statusCode == 403) reject("You are not authenticated. Please log in. (Status code 403)");
                 else if (res.statusCode == 404) {
                     if (contentType.indexOf("json") == -1) reject("Page not found or the mangadex.org domain is unavailable. (Status code 404)");
                     else {
-                        let endpointIndex = res.url.indexOf("/api/");
+                        let endpointIndex = res.url.indexOf("/v2/");
                         if (endpointIndex == -1) reject("JSON Object unavailable or the mangadex.org domain is unavailable. (Status code 404)");
                         else reject(`API Object (${res.url.slice(endpointIndex)}) not found or the mangadex.org domain is unavailable. (Status code 404)`);
                     }
