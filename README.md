@@ -125,7 +125,7 @@ Returns (up to) the last 10 manga read by the agent as an array.
 |language|```String```| Original language code (e.g. JP, EN, DE). See ```language.js```
 |hentai|```Boolean```| Hentai or not?
 |description|```String```| Formated description string
-|links|```Array<String>```| Array of full URLs to additional links (e.g. MangaUpdates, MAL, BookWalker). See ```links.js```
+|links|```Object```| Full URLs to additional links (e.g. MangaUpdates, MAL, BookWalker). See ```links.js```
 |chapters|```Array<Chapter>```| Array of all chapters for this manga. Contains only minimal information like ID and title; use ```Chapter.fill()``` 
 |views|```Number```| Amount of manga views
 |rating|```Number```| Manga's Bayesian rating
