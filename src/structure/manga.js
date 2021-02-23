@@ -80,7 +80,7 @@ class Manga extends APIObject {
         /**
          * Links to manga information on other sites.
          * Replaces raw values with enum/link when available, but still uses MangaDex keys.
-         * @type {Array<String>}
+         * @type {Object}
          */
         this.links = data.links;
         if (this.links) for (let i in this.links) if (link[i]) this.links[i] = link[i].prefix + this.links[i];
@@ -109,25 +109,25 @@ class Manga extends APIObject {
 
         /**
          * Viewcount
-         * @type {String}
+         * @type {Number}
          */
         this.views = data.views;
 
         /**
          * Bayesian Rating
-         * @type {String}
+         * @type {Number}
          */
         this.rating = data.rating.bayesian;
 
         /**
          * Mean Rating
-         * @type {String}
+         * @type {Number}
          */
         this.ratingMean = data.rating.mean;
 
         /**
          * Number of Users who have Rated
-         * @type {String}
+         * @type {Number}
          */
         this.ratingUserCount = data.rating.users;
 
