@@ -93,7 +93,7 @@ class Chapter extends APIObject {
         this.commentCount = data.comments;
 
         /**
-         * Links to each pages. Uses the Mangadex.org domain, not Mangadex @ Home due to instability
+         * Links to each pages.
          * @type {Array<String>}
          */
         this.pages = [];
@@ -107,10 +107,22 @@ class Chapter extends APIObject {
          * Data-saver server version of page URLs. 
          * @type {Array<String>}
          */
-        if (!(this.pages instanceof Array)) this.saverPages = undefined;
-        else {
-            this.saverPages = [];
+        this.saverPages = [];
+        if (this.pages instanceof Array) {
             for (let i of this.pages) this.saverPages.push(i.replace("/data/", "/data-saver/"));
+        }
+
+        /**
+         * Pages using the fallback server. 
+         * If there is no fallback, this is the same as the regular pages.
+         * Fallback servers are also more unstable, ironically. Be prepared for 404s and 500s.
+         * @type {Array<String>}
+         */
+        this.fallbackPages = this.pages;
+        if (this.pages instanceof Array && data.serverFallback && data.serverFallback !== data.server) {
+            this.fallbackPages = [];
+            if (data.serverFallback == "/data/") data.serverFallback = "https://mangadex.org/data/";
+            for (let i of data.pages) this.fallbackPages.push(data.serverFallback + data.hash + "/" + i);
         }
 
         /**
