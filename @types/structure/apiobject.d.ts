@@ -42,4 +42,11 @@ declare class APIObject {
      * @returns {Promise} Promise resolve argument is this object
      */
     fill(id: number): Promise<any>;
+    /**
+     * Deprecated. Simply use direct property (ie .url, .flag, or .banner)
+     * @deprecated
+     * @param {String} property Partial URL element
+     * @type {String}
+     */
+    getFullURL(property: string): any;
 }

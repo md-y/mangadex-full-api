@@ -64,17 +64,11 @@ declare class User extends APIObject {
      * @type {Boolean}
      */
     mdAtHome: boolean;
+    url: string;
     /**
      * Executes User.search() then executes fill() with the most relevent user.
      * @param {String} query Quicksearch query like a name or description
      */
     fillByQuery(query: string): any;
-    /**
-     * Gets full MangaDex HTTPS link.
-     * @param {"id"|"avatar"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property: "id" | "avatar" | "flag"): string;
 }
 import APIObject = require("./apiobject");

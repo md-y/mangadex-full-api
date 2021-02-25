@@ -9,18 +9,12 @@ declare class Thread extends APIObject {
      * @type {Number}
      */
     pages: number;
+    url: string;
     /**
      * Array of posts in this thread (Web Parsing)
      * @type {Array<Post>}
      */
     posts: Array<Post>;
-    /**
-     * Gets full MangaDex HTTPS link.
-     * @param {"id"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property: "id"): string;
 }
 import APIObject = require("./apiobject");
 import Post = require("./post");

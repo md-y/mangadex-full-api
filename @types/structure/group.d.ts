@@ -81,18 +81,13 @@ declare class Group extends APIObject {
      * @type {String}
      */
     banner: string;
+    url: string;
+    flag: string;
     /**
      * Executes Group.search() then executes fill() with the most relevent user.
      * @param {String} query Quicksearch query like a name or description
      */
     fillByQuery(query: string): any;
-    /**
-     * Gets full MangaDex HTTPS link.
-     * @param {"id"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property: "id" | "flag"): string;
 }
 import APIObject = require("./apiobject");
 import User = require("./user");

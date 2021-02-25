@@ -79,7 +79,7 @@ declare class Manga extends APIObject {
      * Replaces raw values with enum/link when available, but still uses MangaDex keys.
      * @type {Object}
      */
-    links: Object;
+    links: any;
     /**
      * Basic information about each chapter in this manga.
      * Call fill() on each of these to request more info.
@@ -112,6 +112,7 @@ declare class Manga extends APIObject {
      */
     altTitles: Array<string>;
     url: string;
+    flag: string;
     /**
      * Executes Manga.search() then executes fill() with the most relevent manga.
      * @param {String} query Quicksearch query like a name or description
@@ -122,13 +123,6 @@ declare class Manga extends APIObject {
      * @param {Object} searchObj
      */
     fillByFullQuery(searchObj: any): any;
-    /**
-     * Gets full MangaDex HTTPS link.
-     * @param {"cover"|"id"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property: "cover" | "id" | "flag"): string;
     /**
      * Array of genre names instead of IDs. Uses /enum/genre
      * @type {Array<String>}

@@ -5,7 +5,7 @@ export = MDList;
 declare class MDList extends APIObject {
     constructor(id: number, request?: boolean, extraArg?: any);
     /**
-     * Partial banner image url. Use getFullURL();
+     * Banner image url
      * @type {String}
      */
     banner: string;
@@ -14,6 +14,7 @@ declare class MDList extends APIObject {
      * @type {Array<Manga>}
      */
     manga: Array<Manga>;
+    url: string;
     /**
      * Requests a MDList from a user account.
      * @param {User} user MangaDex User Object
@@ -21,13 +22,6 @@ declare class MDList extends APIObject {
      * @param {Number} category Mangadex follow category. Default: All. See enum 'viewingCategories'
      */
     fillByUser(user: any, order: number | string, category: number): any;
-    /**
-     * Gets full MangaDex HTTPS link.
-     * @param {"id"|"banner"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property: "id" | "banner"): string;
 }
 import APIObject = require("./apiobject");
 import Manga = require("./manga");

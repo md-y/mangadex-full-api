@@ -1,5 +1,3 @@
-import Group = require('./group');
-
 export = Chapter;
 /**
  * Represents a Chapter with pages
@@ -59,22 +57,28 @@ declare class Chapter extends APIObject {
      */
     commentCount: number;
     /**
-     * Links to each pages. Uses the Mangadex.org domain, not Mangadex @ Home due to instability
+     * Links to each pages.
      * @type {Array<String>}
      */
     pages: Array<string>;
-    saverPages: Array<string>|undefined;
+    /**
+     * Data-saver server version of page URLs.
+     * @type {Array<String>}
+     */
+    saverPages: Array<string>;
+    /**
+     * Pages using the fallback server.
+     * If there is no fallback, this is the same as the regular pages.
+     * Fallback servers are also more unstable, ironically. Be prepared for 404s and 500s.
+     * @type {Array<String>}
+     */
+    fallbackPages: Array<string>;
     /**
      * Viewcount for this chapter
      * @type {Number}
      */
     views: number;
-    /**
-     * Gets full MangaDex HTTPS link.
-     * @param {"id"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property: "id" | "flag"): string;
+    flag: string;
 }
 import APIObject = require("./apiobject");
+import Group = require("./group");
