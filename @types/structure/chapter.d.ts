@@ -1,3 +1,5 @@
+import Group = require('./group');
+
 export = Chapter;
 /**
  * Represents a Chapter with pages
@@ -48,9 +50,9 @@ declare class Chapter extends APIObject {
     parentMangaID: number;
     /**
      * IDs of translation groups for this chapter
-     * @type {Array<Number>}
+     * @type {Array<Group>}
      */
-    groups: Array<number>;
+    groups: Array<Group>;
     /**
      * Number of comments for this chapter, not manga
      * @type {Number}
@@ -61,7 +63,7 @@ declare class Chapter extends APIObject {
      * @type {Array<String>}
      */
     pages: Array<string>;
-    saverPages: any[];
+    saverPages: Array<string>|undefined;
     /**
      * Viewcount for this chapter
      * @type {Number}

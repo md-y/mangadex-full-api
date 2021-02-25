@@ -75,7 +75,7 @@ class Chapter extends APIObject {
 
         /**
          * IDs of translation groups for this chapter
-         * @type {Array<Number>}
+         * @type {Array<Group>}
          */
         this.groups = [];
         if (data.groups) {

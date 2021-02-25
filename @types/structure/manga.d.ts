@@ -77,9 +77,9 @@ declare class Manga extends APIObject {
     /**
      * Links to manga information on other sites.
      * Replaces raw values with enum/link when available, but still uses MangaDex keys.
-     * @type {Array<String>}
+     * @type {Object}
      */
-    links: Array<string>;
+    links: Object;
     /**
      * Basic information about each chapter in this manga.
      * Call fill() on each of these to request more info.
@@ -88,24 +88,24 @@ declare class Manga extends APIObject {
     chapters: Array<Chapter>;
     /**
      * Viewcount
-     * @type {String}
+     * @type {Number}
      */
-    views: string;
+    views: number;
     /**
      * Bayesian Rating
-     * @type {String}
+     * @type {Number}
      */
-    rating: string;
+    rating: number;
     /**
      * Mean Rating
-     * @type {String}
+     * @type {Number}
      */
-    ratingMean: string;
+    ratingMean: number;
     /**
      * Number of Users who have Rated
-     * @type {String}
+     * @type {Number}
      */
-    ratingUserCount: string;
+    ratingUserCount: number;
     /**
      * Alternate Titles
      * @type {Array<String>}
