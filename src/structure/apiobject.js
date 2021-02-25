@@ -60,6 +60,22 @@ class APIObject {
     static async get(id, ...extraArgs) {
         return await (new this()).fill(id, ...extraArgs);
     }
+
+    /**
+     * Deprecated. Simply use direct property (ie .url, .flag, or .banner)
+     * @deprecated
+     * @param {String} property Partial URL element
+     * @type {String}
+     */
+    getFullURL(property) {
+        if (property === "id") property = "url";
+        if (property in this && typeof(this[property]) === "string") {
+            console.warn(`The method getFullURL is deprecated! Please use the '${property}' property instead.`);
+            return this[property];
+        }
+        console.warn("The method getFullURL is deprecated! (And you didn't even use it correctly)");
+        return "https://mangadex.org"; // This is a stupid default, but it's what the old method used
+    }
 }
 
 module.exports = APIObject;

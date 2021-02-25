@@ -118,6 +118,13 @@ class Chapter extends APIObject {
          * @type {Number}
          */
         this.views = data.views;
+
+        /**
+         * URL to this chapter's language flag
+         * @type {String}
+         */
+        if (this.language) this.flag = "https://mangadex.org/images/flags/" + this.language.toLowerCase() + ".png";
+        else this.flag = undefined;
     }
 
     fill(id) {
@@ -136,24 +143,6 @@ class Chapter extends APIObject {
             this._parse(res.data);
             resolve(this);
         });
-    }
-
-    /**
-     * Gets full MangaDex HTTPS link. 
-     * @param {"id"|"flag"} property A property in this object 
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property) {
-        const homepage = "https://mangadex.org";
-        switch(property) {
-            default:
-                return homepage;
-            case "id":
-                return homepage + "/chapter/" + this.id.toString();
-            case "flag":
-                return homepage + "/images/flags/" + this.language.toLowerCase() + ".png";
-        }
     }
 }
 

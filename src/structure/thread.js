@@ -21,6 +21,13 @@ class Thread extends APIObject {
         this.pages = data.pages;
 
         /**
+         * URL to thread homepage
+         * @type {String}
+         */
+        if (this.id) this.url = "https://mangadex.org/thread/" + this.id.toString();
+        else this.url = undefined;
+
+        /**
          * Array of posts in this thread (Web Parsing)
          * @type {Array<Post>}
          */
@@ -76,22 +83,6 @@ class Thread extends APIObject {
                 }).catch(reject);
             }
         });
-    }
-
-    /**
-     * Gets full MangaDex HTTPS link. 
-     * @param {"id"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property) {
-        const homepage = "https://mangadex.org";
-        switch(property) {
-            default:
-                return homepage;
-            case "id":
-                return homepage + "/thread/" + this.id.toString();
-        }
     }
 }
 

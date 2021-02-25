@@ -16,7 +16,7 @@ class MDList extends APIObject {
         this.id = data.id;
 
         /**
-         * Partial banner image url. Use getFullURL();
+         * Banner image url
          * @type {String}
          */
         this.banner = data.banner;
@@ -31,6 +31,13 @@ class MDList extends APIObject {
             if (data.titles.length >= data.manga.length) m.title = data.titles[i];
             this.manga.push(m);
         }
+        
+        /**
+         * URL to MDList homepage
+         * @type {String}
+         */
+        if (this.id) this.url = "https://mangadex.org/list/" + this.id;
+        else this.url = undefined;
     }
 
     /**
@@ -116,24 +123,6 @@ class MDList extends APIObject {
      */
     fillByUser(user, order, category) {
         return this.fill(user.id, order, category);
-    }
-
-    /**
-     * Gets full MangaDex HTTPS link. 
-     * @param {"id"|"banner"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property) {
-        const homepage = "https://mangadex.org";
-        switch(property) {
-            default:
-                return homepage;
-            case "id":
-                return homepage + "/list/" + this.id.toString();
-            case "banner":
-                return this.banner;
-        }
     }
 }
 

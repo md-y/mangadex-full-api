@@ -147,6 +147,13 @@ class Manga extends APIObject {
          */
         if (this.id) this.url = "https://mangadex.org/title/" + this.id;
         else this.url = undefined;
+
+        /**
+         * Link to this manga's flag.
+         * @type {String}
+         */
+        if (this.language) this.flag = "https://mangadex.org/images/flags/" + this.language.toLowerCase() + ".png";
+        else this.flag = undefined;
     }
 
     fill(id) {
@@ -204,26 +211,6 @@ class Manga extends APIObject {
                 else this.fill(res[0].id).then(resolve).catch(reject);
             });
         });
-    }
-
-    /**
-     * Gets full MangaDex HTTPS link. 
-     * @param {"cover"|"id"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property) {
-        const homepage = "https://mangadex.org";
-        switch(property) {
-            default:
-                return homepage;
-            case "cover":
-                return homepage + this.cover;
-            case "id":
-                return homepage + "/manga/" + this.id.toString();
-            case "flag":
-                return homepage + "/images/flags/" + this.language.toLowerCase() + ".png";
-        }
     }
 
     /**

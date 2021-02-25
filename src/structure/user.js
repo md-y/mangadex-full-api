@@ -1,5 +1,6 @@
 const APIObject = require("./apiobject");
 const Util = require("../util");
+const MDList = require("./mdlist");
 
 /**
  * Represents a MangaDex user
@@ -78,6 +79,13 @@ class User extends APIObject {
          */
         this.mdAtHome = data.mdAtHome;
         if (this.mdAtHome !== undefined) this.mdAtHome = this.mdAtHome === 1;
+
+        /**
+         * URL to user homepage
+         * @type {String}
+         */
+        if (this.id) this.url = "https://mangadex.org/user/" + this.id.toString();
+        else this.url = undefined;
     }
 
     fill(id) {
@@ -108,26 +116,6 @@ class User extends APIObject {
                 else this.fill(parseInt(res[0])).then(resolve).catch(reject);
             }).catch(reject);
         });
-    }
-
-    /**
-     * Gets full MangaDex HTTPS link. 
-     * @param {"id"|"avatar"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property) {
-        const homepage = "https://mangadex.org";
-        switch(property) {
-            default:
-                return homepage;
-            case "id":
-                return homepage + "/user/" + this.id.toString();
-            case "avatar":
-                return homepage + "/images/avatars/" + this.id.toString() + ".png";
-            case "flag":
-                return homepage + "/images/flags/" + this.language.toLowerCase() + ".png";
-        }
     }
 
     /**

@@ -133,6 +133,7 @@ Returns (up to) the last 10 manga read by the agent as an array.
 |ratingUserCount|```Number```| Number of users who have left a rating.
 |altTitles|```Array<String>```| Alternate names for this manga.
 |url|```String```| URL to the manga's homepage.
+|flag|```String```| URL to the manga's language flag.
 
 ### ```static Promise search(query)```
 |Arguments|Type|Information|Optional
@@ -185,13 +186,6 @@ Fills object with the most relevent result from ```.search()```. Promise returns
 
 Fills object with the most relevent result from ```.fullSearch()```. Promise returns the object.
 
-### ```String getFullURL(property)```
-|Arguments|Type|Information|Optional
-|-|-|-|-
-|Property|```String```| ```"cover"```, ```"id"```, or ```"flag"``` | No
-
-Returns the full URL of a partially stored one.
-
 ### ```static Promise get(id)```
 |Arguments|Type|Information|Optional
 |-|-|-|-
@@ -228,6 +222,7 @@ manga.fill().then(()=>{
 |saverPages|```Array<String>```| Array of each page image's URL, but from its corresponding [data-saver](https://mangadex.org/thread/253605) server
 |url|```String```| URL to the chapters's homepage.
 |views|```Number```| Number of views for this chapter
+|flag|```String```| URL to this chapter's language flag.
 
 ### ```Promise fill(id)```
 |Arguments|Type|Information|Optional
@@ -235,13 +230,6 @@ manga.fill().then(()=>{
 |ID|```Number```| MangaDex Object ID | No
 
 Calls and fills object with info from MangaDex return. Promise returns the object.
-
-### ```String getFullURL(property)```
-|Arguments|Type|Information|Optional
-|-|-|-|-
-|Property|```String```| ```"id"``` or ```"flag"``` | No
-
-Returns the full URL of a partially stored one.
 
 ### ```static Promise get(id)```
 |Arguments|Type|Information|Optional
@@ -277,6 +265,8 @@ console.log(`This chapter is in ${language[chapter.language]}`);
 |inactive|```Boolean```| Is the group inactive?
 |delay|```Number```| The delay (in seconds) on each groups published chapter
 |banner|```String```| URL to the group's banner/header
+|url|```String```| URL to the group's homepage
+|flag|```String```| URL to the group's language flag
 
 ### ```static Promise search(query)```
 |Arguments|Type|Information|Optional
@@ -298,13 +288,6 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 |Query|```String```| Search Keyword(s) | No
 
 Fills object with the most relevent result from a search. Promise returns the object.
-
-### ```String getFullURL(property)```
-|Arguments|Type|Information|Optional
-|-|-|-|-
-|Property|```String```| ```"id"``` or ```"flag"``` | No
-
-Returns the full URL of a partially stored one.
 
 ### ```static Promise get(id)```
 |Arguments|Type|Information|Optional
@@ -339,6 +322,7 @@ group.fill().then(()=>{
 |timeJoined|```Number```| Timestamp of when the user joined
 |premium|```Boolean```| Is this user a donor/premium user?
 |mdAtHome|```Boolean```| Is this user a MangaDex @ Home Contributor?
+|url|```String```| URL to this user's profile page
 
 ### ```static Promise search(query)```
 |Arguments|Type|Information|Optional
@@ -360,13 +344,6 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 |Query|```String```| Search Keyword(s) | No
 
 Fills object with the most relevent result from a search. Promise returns the object.
-
-### ```String getFullURL(property)```
-|Arguments|Type|Information|Optional
-|-|-|-|-
-|Property|```String```| ```"id"```, ```"avatar"```, or ```"flag"``` | No
-
-Returns the full URL of a partially stored one.
 
 ### ```static Promise get(id)```
 |Arguments|Type|Information|Optional
@@ -393,6 +370,7 @@ user.fillByQuery("mdy").then(()=>{
 |id|```Number```| This thread's MangaDex ID
 |pages|```Number```| The number of pages searched for this thread
 |posts|```Array<Post>```| An array of Post objects.
+|url|```String```| URL to this thread's first page
 
 ### ```Promise fill(id, [pages])```
 |Arguments|Type|Information|Optional
@@ -401,13 +379,6 @@ user.fillByQuery("mdy").then(()=>{
 |Pages|```Number```| Number of Pages to Parse (Default: 1) | Yes
 
 Calls and fills object with info from MangaDex return. Promise returns the object.
-
-### ```String getFullURL(property)```
-|Arguments|Type|Information|Optional
-|-|-|-|-
-|Property|```String```| ```"id"``` | No
-
-Returns the full URL of a partially stored one.
 
 ```javascript
 
@@ -454,7 +425,8 @@ home.fill().then(()=>{
 |-|-|-
 |id|```Number```| This MDList's MangaDex ID (Same as owner's)
 |manga|```Array<Manga>```| All manga in this MDList
-|banner|```String```| Partial url to the MDList header banner (use getFullURL())
+|banner|```String```| URL to the MDList header banner
+|url|```String```| URL to the MDList's homepage
 
 ### ```Promise fill(id, [order], [category])```
 |Arguments|Type|Information|Optional
@@ -473,13 +445,6 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 |Category|```Number```| Category of the returned list (eg Dropped and Re-Reading) (see ```enum/viewing-categories.js```) | Yes
 
 Uses a user object to execute fill() on their MDList.
-
-### ```String getFullURL(property)```
-|Arguments|Type|Information|Optional
-|-|-|-|-
-|Property|```String```| ```"id"``` or ```"banner"``` | No
-
-Returns the full URL of a partially stored one.
 
 ```javascript
 

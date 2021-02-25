@@ -115,6 +115,20 @@ class Group extends APIObject {
          * @type {String}
          */
         this.banner = data.banner ? data.banner : "https://mangadex.org/images/groups/default.png";
+
+        /**
+         * URL to group homepage
+         * @type {String}
+         */
+        if (this.id) this.url = "https://mangadex.org/group/" + this.id.toString();
+        else this.url = undefined;
+
+        /**
+         * URL to this group's language flag
+         * @type {String}
+         */
+        if (this.language) this.flag = "https://mangadex.org/images/flags/" + this.language.toLowerCase() + ".png";
+        else this.flag = undefined;
     }
 
     fill(id) {
@@ -145,24 +159,6 @@ class Group extends APIObject {
                 else this.fill(parseInt(res[0])).then(resolve).catch(reject);
             }).catch(reject);
         });
-    }
-
-    /**
-     * Gets full MangaDex HTTPS link. 
-     * @param {"id"|"flag"} property A property in this object
-     * Unknown properties defaults to MangaDex's homepage
-     * @returns {String} String with link
-     */
-    getFullURL(property) {
-        const homepage = "https://mangadex.org";
-        switch(property) {
-            default:
-                return homepage;
-            case "id":
-                return homepage + "/group/" + this.id.toString();
-            case "flag":
-                return homepage + "/images/flags/" + this.language.toLowerCase() + ".png";
-        }
     }
 
     /**
