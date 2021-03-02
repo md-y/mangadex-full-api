@@ -67,8 +67,8 @@ class MDList extends APIObject {
             try {
                 initalMatches = await Util.getMatches(web + "1", {
                     ...matchObject,
-                    "page": /\d+ to (\d+) of \d+ titles/gmi,
-                    "total": /\d+ to \d+ of (\d+) titles/gmi,
+                    "page": /[\d,]+ to ([\d,]+) of [\d,]+ titles/gmi,
+                    "total": /[\d,]+ to [\d,]+ of ([\d,]+) titles/gmi,
                     "banner": /<img[^>]*alt=["']Banner["'][^>]*src=["']([^"']+)["'][^>]*>/gmi
                 });
             } catch (err) {
@@ -79,10 +79,10 @@ class MDList extends APIObject {
             let banner = initalMatches.banner;
             if (initalMatches.banner instanceof Array) banner = banner[0];
 
-            let total = parseFloat(initalMatches.total);
+            let total = parseFloat(initalMatches.total.replace(",", ""));
             // Lists with 1 page dont have the "x out of x etc", so assume 1 page
             let pages = 1;
-            if (initalMatches.page && initalMatches.total) pages = Math.ceil(total / parseFloat(initalMatches.page));
+            if (initalMatches.page && !isNaN(total)) pages = Math.ceil(total / parseFloat(initalMatches.page.replace(",", "")));
 
             if (!initalMatches.titles || !initalMatches.manga) {
                 reject(new Error("Could not find manga details."));
