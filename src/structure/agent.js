@@ -53,7 +53,7 @@ class Agent {
         this.sessionExpiration = null;
 
         return new Promise((resolve, reject) => {
-            if (!username || !password) reject("Not enough login info.");
+            if (!username || !password) reject(new Error("Not enough login info."));
             const payload = {
                 "login_username": username,
                 "login_password": password,
@@ -96,9 +96,11 @@ class Agent {
                 }
 
                 if (this.sessionId) resolve(this);
-                else reject("Failed to retrieve session id.");
+                else reject(new Error("Failed to retrieve session id."));
 
-            }).on('error', reject);
+            }).on('error', (err) => {
+                reject(new Error("Failed to send login request: " + err));
+            });
 
             req.write(Util.generateMultipartPayload(boundary, payload));
             req.end();
@@ -116,7 +118,7 @@ class Agent {
      */
     cacheLogin(filepath, username, password, persistent=true) {
         const resetCache = function (agentInstance, resolve, reject) {
-            if (!username || !password) reject("Not enough login info.");
+            if (!username || !password) reject(new Error("Not enough login info."));
             agentInstance.login(username, password, persistent).then((a) => {
                 try {
                     // Session; Expiration; Persistent (if it has value)
@@ -129,7 +131,7 @@ class Agent {
         };
 
         return new Promise((resolve, reject) => {
-            if (!filepath) reject("No filepath specified.");
+            if (!filepath) reject(new Error("No filepath specified."));
             fs.readFile(filepath, "utf8", (err, file) => {
                 // Errors
                 if (err) {
@@ -169,7 +171,7 @@ class Agent {
                         return resolve(this);
                     }
                     else resetCache(this, resolve, reject);
-                });
+                }).catch(reject);
             });
         });
     }
@@ -185,8 +187,8 @@ class Agent {
      */
     sendMessage(target, subject, body) {
         return new Promise((resolve, reject) => {
-            if (!this.sessionId) reject("No Agent Login.");
-            if (!target || !subject || !body) reject("Not enough arguments.");
+            if (!this.sessionId) reject(new Error("No Agent Login."));
+            if (!target || !subject || !body) reject(new Error("Not enough arguments."));
 
             const payload = {
                 "recipient": target,
@@ -211,7 +213,7 @@ class Agent {
 
             const req = https.request(options, (res) => {
                 if (res.statusCode < 400) resolve(target, subject, body);
-                else reject("Failed with " + res.statusCode + " response code.");
+                else reject(new Error("Failed with " + res.statusCode + " response code."));
             });
 
             req.write(Util.generateMultipartPayload(boundary, payload));
@@ -227,7 +229,7 @@ class Agent {
             Util.getMatches("https://mangadex.org", {
                 "userid": /<a[^>]*href=["']\/user\/(\d+)\/[^"']+["'][^>]*class="[^"']+dropdown-toggle"[^>]*>/gmi             
             }).then((m) => {
-                if (!m.userid) reject("Cannot find User ID. Is the agent logged in?");
+                if (!m.userid) reject(new Error("Cannot find User ID. Is the agent logged in?"));
                 this.user.fill(m.userid).then(resolve).catch(reject);
             }).catch(reject);
         });
@@ -250,7 +252,7 @@ class Agent {
                     history.push(manga);
                 }
                 resolve(history);
-            });
+            }).catch(reject);
         });
     }
 }

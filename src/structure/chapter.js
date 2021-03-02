@@ -142,18 +142,20 @@ class Chapter extends APIObject {
     fill(id) {
         const api = "https://api.mangadex.org/v2/chapter/"; 
         if (!id) id = this.id;
-        else this.id = id;
 
         return new Promise(async (resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject(new Error("No id specified or found."));
 
             // API v2
-            let res = await Util.getJSON(api + id.toString());
-            if (!res) reject("Invalid API response");
-            if (res.status !== "OK") reject("API responsed with an error: " + res.message);
+            try {
+                let res = await Util.getJSON(api + id.toString());
+                if (res.status !== "OK") reject(new Error("API responsed with an error: " + res.message));
 
-            this._parse(res.data);
-            resolve(this);
+                this._parse(res.data);
+                resolve(this);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 }

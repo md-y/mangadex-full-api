@@ -93,15 +93,18 @@ class User extends APIObject {
         if (!id) id = this.id;
 
         return new Promise(async (resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject(new Error("No id specified or found."));
             
             // API v2
-            let res = await Util.getJSON(api + id.toString());
-            if (!res) reject("Invalid API response");
-            if (res.status !== "OK") reject("API responsed with an error: " + data.message);
+            try {
+                let res = await Util.getJSON(api + id.toString());
+                if (res.status !== "OK") reject(new Error("API responsed with an error: " + data.message));
 
-            this._parse(res.data);
-            resolve(this);
+                this._parse(res.data);
+                resolve(this);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -112,7 +115,7 @@ class User extends APIObject {
     fillByQuery(query) {
         return new Promise((resolve, reject) => {
             User.search(query).then((res)=>{
-                if (res.length == 0) reject("No User Found"); 
+                if (res.length == 0) reject(new Error("No User Found")); 
                 else this.fill(parseInt(res[0])).then(resolve).catch(reject);
             }).catch(reject);
         });

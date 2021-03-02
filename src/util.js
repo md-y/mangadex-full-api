@@ -9,7 +9,7 @@ module.exports = {
      */
     getHTTPS: function(url) {
         return new Promise((resolve, reject) => {
-            if (!url) reject("No URL.");
+            if (!url) reject(new Error("No URL."));
 
             if (index.agent.domainOverride) url = url.replace("mangadex.org", index.agent.domainOverride);
 
@@ -43,14 +43,14 @@ module.exports = {
                 let payload = "";
                 let contentType = res.headers["content-type"];
 
-                if (res.statusCode >= 500) reject(`MangaDex is currently unavailable or in DDOS mitigation mode. (Status code ${res.statusCode})`);
-                else if (res.statusCode == 403) reject("You are not authenticated. Please log in. (Status code 403)");
+                if (res.statusCode >= 500) reject(new Error(`MangaDex is currently unavailable or in DDOS mitigation mode. (Status code ${res.statusCode})`));
+                else if (res.statusCode == 403) reject(new Error("You are not authenticated. Please log in. (Status code 403)"));
                 else if (res.statusCode == 404) {
-                    if (contentType.indexOf("json") == -1) reject("Page not found or the mangadex.org domain is unavailable. (Status code 404)");
+                    if (contentType.indexOf("json") == -1) reject(new Error("Page not found or the mangadex.org domain is unavailable. (Status code 404)"));
                     else {
                         let endpointIndex = res.url.indexOf("/v2/");
-                        if (endpointIndex == -1) reject("JSON Object unavailable or the mangadex.org domain is unavailable. (Status code 404)");
-                        else reject(`API Object (${res.url.slice(endpointIndex)}) not found or the mangadex.org domain is unavailable. (Status code 404)`);
+                        if (endpointIndex == -1) reject(new Error("JSON Object unavailable or the mangadex.org domain is unavailable. (Status code 404)"));
+                        else reject(new Error(`API Object (${res.url.slice(endpointIndex)}) not found or the mangadex.org domain is unavailable. (Status code 404)`));
                     }
                 }
 
@@ -71,7 +71,7 @@ module.exports = {
      */
     getJSON: function(url) {
         return new Promise((resolve, reject) => {
-            if (!url) reject("No URL.");
+            if (!url) reject(new Error("No URL."));
             module.exports.getHTTPS(url).then(payload => {
                 try {
                     let obj = JSON.parse(payload);
@@ -91,7 +91,7 @@ module.exports = {
      */
     getMatches: function(url, regex) {
         return new Promise((resolve, reject) => {
-            if (!url || !regex) reject("Invalid Arguments.");
+            if (!url || !regex) reject(new Error("Invalid Arguments."));
             module.exports.getHTTPS(url).then(body => {
                 let payload = {};
                 let m;
@@ -117,12 +117,12 @@ module.exports = {
     quickSearch: function(query, regex) {
         let url = "https://mangadex.org/quick_search/";
         return new Promise((resolve, reject) => {
-            if (!query || !regex) reject("Invalid Arguments.");
+            if (!query || !regex) reject(new Error("Invalid Arguments."));
             module.exports.getMatches(url + encodeURIComponent(query), {
                 "results": regex,
                 "error": /<!-- login_container -->/gmi // Only appears when not logged in.
             }).then(matches => {
-                if (matches.error != undefined) reject("MangaDex is in DDOS mitigation mode. No search available. Not using agent?");
+                if (matches.error != undefined) reject(new Error("MangaDex is in DDOS mitigation mode. No search available. Not using agent?"));
 
                 if (!matches.results) matches.results = [];
                 if (!(matches.results instanceof Array)) matches.results = [matches.results];

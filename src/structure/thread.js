@@ -52,7 +52,7 @@ class Thread extends APIObject {
         if (!pages) pages = 1;
 
         return new Promise((resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject(new Error("No id specified or found."));
             let obj = {id: id, pages: 0}; // Pages integer to keep track of fufilled requests
             let pageObjects = new Array(pages); // Array of matches objects
 

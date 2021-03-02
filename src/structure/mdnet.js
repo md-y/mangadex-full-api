@@ -13,7 +13,7 @@ class MDNet {
      * @returns {MDNetClient}
      */
     static getClient(id) {
-        if (!id) reject("Invalid id parameter.");
+        if (!id) reject(new Error("Invalid id parameter."));
 
         return new Promise(async (resolve, reject) => {
             const queries = {
@@ -61,8 +61,8 @@ class MDNet {
             const query = API + "series?match[]=mdclient_available";
 
             Util.getJSON(query).then((res) => {
-                if (res.status != "success") reject("API sent failed response for client list.");
-                if (!res.data || res.data.length == 0) reject("API sent no client data.");
+                if (res.status != "success") reject(new Error("API sent failed response for client list."));
+                if (!res.data || res.data.length == 0) reject(new Error("API sent no client data."));
 
                 let clients = [];
                 let clientIDs = res.data.map(e => parseFloat(e.client_id));

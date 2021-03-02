@@ -136,15 +136,18 @@ class Group extends APIObject {
         if (!id) id = this.id;
 
         return new Promise(async (resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject(new Error("No id specified or found."));
 
             // API v2
-            let res = await Util.getJSON(web + id.toString());
-            if (!res) reject("Invalid API response");
-            if (res.status !== "OK") reject("API responsed with an error: " + res.message);
+            try {
+                let res = await Util.getJSON(web + id.toString());
+                if (res.status !== "OK") reject(new Error("API responsed with an error: " + res.message));
 
-            this._parse(res.data);
-            resolve(this);
+                this._parse(res.data);
+                resolve(this);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -155,7 +158,7 @@ class Group extends APIObject {
     fillByQuery(query) {
         return new Promise((resolve, reject) => {
             Group.search(query).then((res)=>{
-                if (res.length == 0) reject("No Group Found"); 
+                if (res.length == 0) reject(new Error("No Group Found")); 
                 else this.fill(parseInt(res[0])).then(resolve).catch(reject);
             }).catch(reject);
         });

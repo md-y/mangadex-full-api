@@ -54,7 +54,7 @@ class MDList extends APIObject {
         if (!(category in Object.values(viewingCategory))) category = 0;
 
         return new Promise(async (resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject(new Error("No id specified or found."));
             const web = `https://mangadex.org/list/${id}/${category}/${order}/`;
 
             let matchObject = {
@@ -63,12 +63,18 @@ class MDList extends APIObject {
             };
 
             // Initial Call
-            let initalMatches = await Util.getMatches(web + "1", {
-                ...matchObject,
-                "page": /\d+ to (\d+) of \d+ titles/gmi,
-                "total": /\d+ to \d+ of (\d+) titles/gmi,
-                "banner": /<img[^>]*alt=["']Banner["'][^>]*src=["']([^"']+)["'][^>]*>/gmi
-            });
+            let initalMatches;
+            try {
+                initalMatches = await Util.getMatches(web + "1", {
+                    ...matchObject,
+                    "page": /\d+ to (\d+) of \d+ titles/gmi,
+                    "total": /\d+ to \d+ of (\d+) titles/gmi,
+                    "banner": /<img[^>]*alt=["']Banner["'][^>]*src=["']([^"']+)["'][^>]*>/gmi
+                });
+            } catch (err) {
+                reject(err);
+                return;
+            }
 
             let banner = initalMatches.banner;
             if (initalMatches.banner instanceof Array) banner = banner[0];
@@ -78,7 +84,10 @@ class MDList extends APIObject {
             let pages = 1;
             if (initalMatches.page && initalMatches.total) pages = Math.ceil(total / parseFloat(initalMatches.page));
 
-            if (!initalMatches.titles || !initalMatches.manga) reject("Could not find manga details.");
+            if (!initalMatches.titles || !initalMatches.manga) {
+                reject(new Error("Could not find manga details."));
+                return;
+            }
             let totalTitles = initalMatches.titles;
             let totalManga = initalMatches.manga;
 
@@ -87,7 +96,13 @@ class MDList extends APIObject {
             
             // Skip first page (already called above)
             for (let page = 2; page <= pages; page++) {
-                let matches = await Util.getMatches(web + page.toString(), matchObject);
+                let matches;
+                try {
+                    matches = await Util.getMatches(web + page.toString(), matchObject);
+                } catch (err) {
+                    reject(err);
+                    return;
+                }
                 if (!matches.titles || !matches.manga) continue;
 
                 // Remove Tutorial

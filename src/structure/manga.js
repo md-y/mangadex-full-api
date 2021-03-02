@@ -161,29 +161,30 @@ class Manga extends APIObject {
 
         if (!id) id = this.id;
         return new Promise(async (resolve, reject) => {
-            if (!id) reject("No id specified or found.");
+            if (!id) reject(new Error("No id specified or found."));
 
             // API v2
-            let newRes = await Util.getJSON(api + id.toString());
-            if (!newRes) reject("Invalid API response");
-            if (newRes.status !== "OK") reject("API responsed with an error: " + newRes.message);
+            try {
+                let newRes = await Util.getJSON(api + id.toString());
+                if (newRes.status !== "OK") reject(new Error("API responsed with an error: " + newRes.message));
 
-            let obj = newRes.data;
+                let obj = newRes.data;
 
-            // Chapter API
-            let chaptersRes = await Util.getJSON(api + id.toString() + "/chapters");
-            if (!chaptersRes) reject("Invalid API response for manga chapters");
-            if (chaptersRes.status !== "OK") reject("API responsed with an error for manga chapters: " + newRes.message);
-            obj.chapters = chaptersRes.data.chapters;
+                // Chapter API
+                let chaptersRes = await Util.getJSON(api + id.toString() + "/chapters");
+                if (chaptersRes.status !== "OK") reject(new Error("API responsed with an error for manga chapters: " + newRes.message));
+                obj.chapters = chaptersRes.data.chapters;
 
-            // Cover API
-            let coverRes = await Util.getJSON(api + id.toString() + "/covers");
-            if (!coverRes) reject("Invalid API response for manga covers");
-            if (coverRes.status !== "OK") reject("API responsed with an error for manga covers: " + newRes.message);
-            obj.covers = coverRes.data;
+                // Cover API
+                let coverRes = await Util.getJSON(api + id.toString() + "/covers");
+                if (coverRes.status !== "OK") reject(new Error("API responsed with an error for manga covers: " + newRes.message));
+                obj.covers = coverRes.data;
 
-            this._parse(obj);
-            resolve(this);
+                this._parse(obj);
+                resolve(this);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -194,7 +195,7 @@ class Manga extends APIObject {
     fillByQuery(query) {
         return new Promise((resolve, reject) => {
             Manga.search(query).then((res)=>{
-                if (res.length == 0) reject("No Manga Found"); 
+                if (res.length == 0) reject(new Error("No Manga Found")); 
                 else this.fill(parseInt(res[0])).then(resolve).catch(reject);
             }).catch(reject);
         });
@@ -207,7 +208,7 @@ class Manga extends APIObject {
     fillByFullQuery(searchObj) {
         return new Promise((resolve, reject) => {
             Manga.fullSearch(searchObj).then((res) => {
-                if (res.length == 0) reject("No Manga Found");
+                if (res.length == 0) reject(new Error("No Manga Found"));
                 else this.fill(res[0].id).then(resolve).catch(reject);
             });
         });
