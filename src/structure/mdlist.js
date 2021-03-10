@@ -3,6 +3,7 @@ const Util = require("../util");
 const Manga = require("./manga");
 const listOrder = require("../enum/listing-order");
 const viewingCategory = require("../enum/viewing-categories");
+const Index = require("../index");
 
 /**
  * Represents a MangaDex MDList
@@ -38,6 +39,12 @@ class MDList extends APIObject {
          */
         if (this.id) this.url = "https://mangadex.org/list/" + this.id;
         else this.url = undefined;
+
+        /**
+         * Owner of this MDList
+         * @type {User}
+         */
+        this.owner = new Index.User(this.id);
     }
 
     /**

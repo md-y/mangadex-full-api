@@ -1,6 +1,6 @@
 const APIObject = require("./apiobject");
 const Util = require("../util");
-const User = require("./user");
+const Index = require("../index");
 
 /**
  * Represents a MangaDex translation group
@@ -68,7 +68,7 @@ class Group extends APIObject {
          */
         this.leader = undefined;
         if (data.leader) {
-            let user = new User(data.leader.id);
+            let user = new Index.User(data.leader.id);
             user.username = data.leader.name;
             this.leader = user;
         }
@@ -80,7 +80,7 @@ class Group extends APIObject {
         this.members = [];
         if (data.members) {
             for (let i of data.members) {
-                let user = new User(i.id);
+                let user = new Index.User(i.id);
                 user.username = i.name;
                 this.members.push(user);
             }

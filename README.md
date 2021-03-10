@@ -324,6 +324,7 @@ group.fill().then(()=>{
 |premium|```Boolean```| Is this user a donor/premium user?
 |mdAtHome|```Boolean```| Is this user a MangaDex @ Home Contributor?
 |url|```String```| URL to this user's profile page
+|list|```MDList```| MDList of this user.
 
 ### ```static Promise search(query)```
 |Arguments|Type|Information|Optional
@@ -428,6 +429,7 @@ home.fill().then(()=>{
 |manga|```Array<Manga>```| All manga in this MDList
 |banner|```String```| URL to the MDList header banner
 |url|```String```| URL to the MDList's homepage
+|owner|```User```| Owner of this MDList
 
 ### ```Promise fill(id, [order], [category])```
 |Arguments|Type|Information|Optional
@@ -445,7 +447,7 @@ Calls and fills object with info from MangaDex return. Promise returns the objec
 |Order|```Number\|String```| Order of the returned list (see ```enum/listing-order.js```) | Yes
 |Category|```Number```| Category of the returned list (eg Dropped and Re-Reading) (see ```enum/viewing-categories.js```) | Yes
 
-Uses a user object to execute fill() on their MDList.
+Uses a user object to execute fill() on their MDList. Generally, it is better to use ```User.list```. 
 
 ```javascript
 

@@ -1,6 +1,6 @@
 const APIObject = require("./apiobject");
 const Util = require("../util");
-const MDList = require("./mdlist");
+const Index = require("../index");
 
 /**
  * Represents a MangaDex user
@@ -86,6 +86,12 @@ class User extends APIObject {
          */
         if (this.id) this.url = "https://mangadex.org/user/" + this.id.toString();
         else this.url = undefined;
+
+        /**
+         * MDList of this user
+         * @type {MDList}
+         */
+        this.list = new Index.MDList(this.id);
     }
 
     fill(id) {
