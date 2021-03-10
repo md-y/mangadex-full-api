@@ -1,15 +1,14 @@
-export var agentInstance: Agent;
-import Agent = require("./structure/agent");
-export declare const Manga: typeof import("./structure/manga");
-export declare const Chapter: typeof import("./structure/chapter");
-export declare const Group: typeof import("./structure/group");
-export declare const User: typeof import("./structure/user");
-export declare const Thread: typeof import("./structure/thread");
-export declare const Post: typeof import("./structure/post");
-export declare const Home: typeof import("./structure/home");
-export declare const MDList: typeof import("./structure/mdlist");
-export declare const MDNet: typeof import("./structure/mdnet");
-export declare const Util: {
+export { agentInstance as agent };
+export var Manga: typeof import("./structure/manga");
+export var Chapter: typeof import("./structure/chapter");
+export var Group: typeof import("./structure/group");
+export var User: typeof import("./structure/user");
+export var Thread: typeof import("./structure/thread");
+export var Post: typeof import("./structure/post");
+export var Home: typeof import("./structure/home");
+export var MDList: typeof import("./structure/mdlist");
+export var MDNet: typeof import("./structure/mdnet");
+export var Util: {
     getHTTPS: (url: string | URL) => Promise<any>;
     getJSON: (url: string | URL) => Promise<any>;
     getMatches: (url: string | URL, regex: RegExp) => Promise<any>;
@@ -19,7 +18,7 @@ export declare const Util: {
     getKeyByValue: (obj: any, value: string) => string;
     parseEnumArray: (en: any, arr: any[]) => any[];
 };
-export declare const language: {
+export var language: {
     SA: string;
     BD: string;
     BG: string;
@@ -59,7 +58,7 @@ export declare const language: {
     UA: string;
     VN: string;
 };
-export declare const genre: {
+export var genre: {
     1: string;
     2: string;
     3: string;
@@ -141,7 +140,7 @@ export declare const genre: {
     84: string;
     85: string;
 };
-export declare const link: {
+export var link: {
     bw: {
         name: string;
         prefix: string;
@@ -195,31 +194,31 @@ export declare const link: {
         prefix: string;
     };
 };
-export declare const settings: {
+export var settings: {
     hentai: {
         hidden: number;
         shown: number;
         exclusive: number;
     };
 };
-export declare const chapterType: {
+export var chapterType: {
     internal: number;
     delayed: number;
     external: number;
 };
-export declare const demographic: {
+export var demographic: {
     1: string;
     2: string;
     3: string;
     4: string;
 };
-export declare const pubStatus: {
+export var pubStatus: {
     1: string;
     2: string;
     3: string;
     4: string;
 };
-export declare const listingOrder: {
+export var listingOrder: {
     "Last Updated (Asc)": number;
     "Last Updated (Des)": number;
     "Title (Asc)": number;
@@ -233,7 +232,7 @@ export declare const listingOrder: {
     "Follows (Asc)": number;
     "Follows (Des)": number;
 };
-export declare const viewingCategories: {
+export var viewingCategories: {
     ALL: number;
     READING: number;
     COMPLETED: number;
@@ -242,4 +241,5 @@ export declare const viewingCategories: {
     DROPPED: number;
     RE_READING: number;
 };
-export { agentInstance as agent };
+declare var agentInstance: Agent;
+import Agent = require("./structure/agent");

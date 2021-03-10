@@ -16,6 +16,11 @@ declare class MDList extends APIObject {
     manga: Array<Manga>;
     url: string;
     /**
+     * Owner of this MDList
+     * @type {User}
+     */
+    owner: any;
+    /**
      * Requests a MDList from a user account.
      * @param {User} user MangaDex User Object
      * @param {Number|String} order The list order (enum/listing-order)

@@ -50,12 +50,12 @@ declare class Group extends APIObject {
      * Contains ID only, use fill() for full data.
      * @type {User}
      */
-    leader: User;
+    leader: any;
     /**
      * Array of members
      * @type {Array<User>}
      */
-    members: Array<User>;
+    members: Array<any>;
     /**
      * Foundation Date
      * @type {String}
@@ -90,4 +90,3 @@ declare class Group extends APIObject {
     fillByQuery(query: string): any;
 }
 import APIObject = require("./apiobject");
-import User = require("./user");

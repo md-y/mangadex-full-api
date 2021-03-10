@@ -66,6 +66,11 @@ declare class User extends APIObject {
     mdAtHome: boolean;
     url: string;
     /**
+     * MDList of this user
+     * @type {MDList}
+     */
+    list: any;
+    /**
      * Executes User.search() then executes fill() with the most relevent user.
      * @param {String} query Quicksearch query like a name or description
      */
