@@ -1,10 +1,10 @@
 'use strict';
 
 const Util = require('../util.js');
-const Links = require('./links.js');
-const LocalizedString = require('./localizedstring.js');
-const Relationship = require('./relationship.js');
-const Tag = require('./tag.js');
+const Links = require('../internal/links.js');
+const LocalizedString = require('../internal/localizedstring.js');
+const Relationship = require('../internal/relationship.js');
+const Tag = require('../internal/tag.js');
 
 /**
  * Represents a Mangadex manga object

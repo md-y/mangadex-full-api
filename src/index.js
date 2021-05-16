@@ -2,7 +2,7 @@
 
 // Internal
 const Util = require('./util.js');
-const LocalizedString = require('./structure/localizedstring.js');
+const LocalizedString = require('./internal/localizedstring.js');
 
 // Export
 const Manga = require('./structure/manga.js');
@@ -15,12 +15,6 @@ const Group = require('./structure/group.js');
 exports.Group = Group;
 const User = require('./structure/user.js');
 exports.User = User;
-
-// Shortcuts
-/** @type {Function} */
-exports.getManga = Manga.get;
-/** @type {Function} */
-exports.searchManga = Manga.search;
 
 /**
  * Converts old (pre v5, numeric ids) Mangadex ids to v5 ids.
@@ -56,7 +50,7 @@ function setGlobalLocale(newLocale) {
 exports.setGlobalLocale = setGlobalLocale;
 
 // Register class types to bypass circular references
-const Relationship = require('./structure/relationship.js');
+const Relationship = require('./internal/relationship.js');
 Relationship.registerType('author', Author);
 Relationship.registerType('artist', Author);
 Relationship.registerType('manga', Manga);

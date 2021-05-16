@@ -1,7 +1,7 @@
 'use strict'
 
 const Util = require('../util.js');
-const Relationship = require('./relationship.js');
+const Relationship = require('../internal/relationship.js');
 
 /**
  * Represents an user

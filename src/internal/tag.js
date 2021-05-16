@@ -1,7 +1,7 @@
 'use strict'
 
 const Util = require('../util.js');
-const LocalizedString = require('./localizedstring.js');
+const LocalizedString = require('../internal/localizedstring.js');
 
 class Tag {
     static cachedTags = {};
