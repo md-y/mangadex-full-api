@@ -3,7 +3,7 @@
   "version": "4.4.0",
   "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
   "main": "./src/index.js",
-  "types": "./@types/index.d.ts",
+  "types": "./types/index.d.ts",
   "scripts": {
     "test": "node ./bin/fulltest.js",
     "gen-types": "tsc"
@@ -20,18 +20,8 @@
     "api",
     "manga",
     "anime",
-    "full",
-    "chapter",
-    "page",
-    "group",
-    "user",
     "manwha",
-    "manhua",
-    "thread",
-    "forum",
-    "post",
-    "login",
-    "messaging"
+    "manhua"
   ],
   "author": "m;dy",
   "license": "MIT",

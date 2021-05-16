@@ -6,6 +6,7 @@
     "allowJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "@types"
+    "outDir": "types",
+    "lib": [ "ES2018" ]
   }
 }
