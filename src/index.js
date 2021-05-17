@@ -49,6 +49,19 @@ function setGlobalLocale(newLocale) {
 };
 exports.setGlobalLocale = setGlobalLocale;
 
+/**
+ * Required for autherization
+ * https://api.mangadex.org/docs.html#operation/post-auth-login
+ * @param {String} username 
+ * @param {String} password 
+ * @param {String} [cacheLocation] File location to store the persistent token. Default: None
+ * @returns {Promise}
+ */
+function login(username, password, cacheLocation) {
+    return Util.AuthUtil.login(username, password, cacheLocation);
+}
+exports.login = login;
+
 // Register class types to bypass circular references
 const Relationship = require('./internal/relationship.js');
 Relationship.registerType('author', Author);

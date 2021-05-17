@@ -1,6 +1,8 @@
 'use strict';
 
 const HTTPS = require('https');
+const Fs = require('fs');
+const Path = require('path');
 
 /**
  * @typedef {(Object|Object[])} APIResponse
@@ -18,11 +20,15 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
         if (endpoint === undefined || typeof(endpoint) !== 'string') reject(new Error('Invalid argument(s)'));
         if (endpoint[0] !== "/") endpoint = `/${endpoint}`;
 
+        let headerObj = {};
+        if (method !== 'GET') headerObj['content-type'] = 'application/json';
+        if (AuthUtil.sessionToken) headerObj['authorization'] = `bearer ${AuthUtil.sessionToken}`;
+
         const req = HTTPS.request({
             hostname: 'api.mangadex.org',
             path: endpoint,
             method: method,
-            headers: method !== 'GET' ? { 'content-type': 'application/json' } : {}
+            headers: headerObj
         }, (res) => {
             let responsePayload = '';
 
@@ -138,3 +144,92 @@ function getResponseMessage(res) {
     return res;
 }
 exports.getResponseMessage = getResponseMessage;
+
+class AuthUtil {
+    /** @type {String} */
+    static sessionToken;
+    /** @type {String} */
+    static refreshToken;
+
+    /**
+     * @param {String} username 
+     * @param {String} password 
+     * @param {String} [cacheLocation]
+     * @returns {Promise}
+     */
+    static login(username, password, cacheLocation = null) {
+        return new Promise(async (resolve, reject) => {
+            if (username === undefined || password === undefined) reject(new Error('Invalid argument(s)'));
+
+            // Read refresh token from file
+            if (cacheLocation) {
+                try {
+                    if (!Path.basename(cacheLocation).includes('.')) cacheLocation = Path.join(cacheLocation, '.md_token');
+                    if (Fs.existsSync(cacheLocation)) {
+                        let tokenArray = Fs.readFileSync(cacheLocation).toString().split(';');
+                        if (tokenArray.length < 2) Fs.unlinkSync(cacheLocation); // Delete corrupted file
+                        else {
+                            AuthUtil.refreshToken = tokenArray[0];
+                            AuthUtil.sessionToken = tokenArray[1];
+                        }
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            }
+
+            // Attempt to use that refresh token to login, but continue to login if it fails
+            if (AuthUtil.refreshToken) {
+                try {
+                    await AuthUtil.validateTokens();
+                    return resolve();
+                } catch (error) {
+                    AuthUtil.refreshToken = null;
+                }
+            }
+
+            // Login
+            try {
+                let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
+                if (getResponseStatus(res) !== 'ok') reject(`Failed to login: ${getResponseMessage(res)}`);
+                AuthUtil.sessionToken = res.token.session;
+                AuthUtil.refreshToken = res.token.refresh;
+                if (cacheLocation) Fs.writeFileSync(cacheLocation, `${AuthUtil.refreshToken};${AuthUtil.sessionToken}`);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    /**
+     * @param {String} [token] Refresh token
+     * @returns {Promise<String>} Session Token
+     */
+    static validateTokens(token) {
+        return new Promise(async (resolve, reject) => {
+            if (token) AuthUtil.refreshToken = token;
+            else if (!AuthUtil.refreshToken) reject(new Error(`No refresh token. Logged in?`));
+            if (AuthUtil.sessionToken) {
+                try {
+                    let res = await apiRequest('/auth/check');
+                    if (getResponseStatus(res) === 'ok' && res.isAuthenticated) return resolve(AuthUtil.sessionToken);
+                } catch (error) {
+                    // If it fails the check, refresh it in the next try-catch block
+                    AuthUtil.sessionToken = null;
+                }
+            }
+
+            try {
+                let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
+                if (getResponseStatus(res) !== 'ok') reject(new Error(`Failed to refresh token: ${getResponseMessage(res)}`));
+                AuthUtil.sessionToken = res.token.session;
+                AuthUtil.refreshToken = res.token.refresh;
+                resolve(AuthUtil.sessionToken);
+            } catch (err) {
+                reject(err);
+            }
+        })
+    }
+}
+exports.AuthUtil = AuthUtil;
