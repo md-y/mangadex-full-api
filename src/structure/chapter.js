@@ -81,13 +81,13 @@ class Chapter {
          * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
          * @type {String}
          */
-        this.pages = context.data.attributes.data;
+        this.pageNames = context.data.attributes.data;
 
         /**
          * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
          * @type {String}
          */
-        this.saverPages = context.data.attributes.dataSaver;
+        this.saverPageNames = context.data.attributes.dataSaver;
 
         /**
          * Relationships to scanlation groups that are attributed to this chapter
@@ -184,6 +184,26 @@ class Chapter {
                 reject(error);
             }
         });
+    }
+
+    /**
+     * Retrieves URLs for actual images from Mangadex @ Home.
+     * This only gives URLs, so it does not report the status of the server to Mangadex @ Home.
+     * Therefore applications that download image data pleaese report failures as stated here:
+     * https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
+     * @param {Boolean} [saver] Use data saver images?
+     * @returns {Promise<String[]>}
+     */
+    getReadablePages(saver = false) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let res = await Util.apiRequest(`/at-home/server/${this.id}`);
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to retrieve Mangadex@Home server: ${Util.getResponseMessage(res)}`));
+                resolve((saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`));
+            } catch (error) {
+                reject(error);
+            }
+        })
     }
 }
 
