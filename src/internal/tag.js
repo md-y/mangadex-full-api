@@ -1,37 +1,37 @@
 'use strict'
 
-const Util = require('../util.js');
 const LocalizedString = require('../internal/localizedstring.js');
 
+/**
+ * Represents a manga tag
+ */
 class Tag {
-    static cachedTags = {};
-    static cached = false;
+    constructor(data) {
+        if (data === undefined || !('id' in data)) throw new Error('Attempted to create a tag with invalid data.');
 
-    constructor(id) {
         /**
          * Mangadex id of this tag
          * @type {String}
          */
-        this.id = id;
-        if (!(id in Tag.cachedTags)) return;
+        this.id = data.id;
 
         /**
          * Name with different localization options
          * @type {LocalizedString}
          */
-        this.localizedName = new LocalizedString(Tag.cachedTags[id].name);
+        this.localizedName = new LocalizedString(data.attributes.name);
 
         /**
          * Description with different localization options
          * @type {LocalizedString}
          */
-        this.localizedDescription = new LocalizedString(Tag.cachedTags[id].description);
+        this.localizedDescription = new LocalizedString(data.attributes.description);
 
         /**
          * What type of tag group this tag belongs to
          * @type {String}
          */
-        this.group = Tag.cachedTags[id].group;
+        this.group = data.attributes.group;
     }
 
     /**
@@ -50,27 +50,6 @@ class Tag {
     get description() {
         if (this.localizedDescription !== undefined) return this.localizedDescription.localString;
         return undefined;
-    }
-
-    /**
-     * Fills the tag cache. Required before any tag objects can be made.
-     */
-    static async fillCache() {
-        let res = await Util.apiRequest('/manga/tag');
-        if (Util.getResponseStatus(res) === 'ok') {
-            for (let i of res) Tag.cachedTags[i.data.id] = i.data.attributes;
-            Tag.cached = true;
-        } else throw new Error(`Failed to fill tag cache: ${Util.getResponseMessage(res)}`);
-    }
-
-    /**
-     * Returns an array of all tags from a Mangadex relationship array
-     * @param {Object[]} data
-     * @returns {Array<Tag>}
-     */
-    static getFromRelationships(data) {
-        if (!(data instanceof Array)) return [];
-        return data.filter(elem => elem.type === 'tag').map(elem => new Tag(elem.id));
     }
 }
 

@@ -139,7 +139,7 @@ class Manga {
          * Array of tags for this manga
          * @type {Tag[]}
          */
-        this.tags = Tag.getFromRelationships(context.relationships);
+        this.tags = (context.data.attributes.tags || []).map(elem => new Tag(elem));
     }
 
     /**
@@ -215,7 +215,6 @@ class Manga {
                 if (Util.getResponseStatus(res) !== 'ok') 
                     reject(new Error(`Manga search returned error:\n${Util.getResponseMessage(res)}`));
                 if (!(res instanceof Array)) reject(new Error(`Manga search returned non-search result:\n${res}`)); 
-                if (!Tag.cached) await Tag.fillCache(); // More efficient to cache all then call for every tag through Relationships
                 resolve(res.map(manga => new Manga(manga)));
             } catch (error) {
                 reject(error);
@@ -245,7 +244,6 @@ class Manga {
             try {
                 let res = await Util.apiRequest(`/manga/${this.id}`);
                 if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill manga:\n${Util.getResponseMessage(res)}`));
-                if (!Tag.cached) await Tag.fillCache(); // More efficient to cache all then call for every tag through Relationships
                 resolve(new Manga(res));
             } catch (error) {
                 reject(error);
