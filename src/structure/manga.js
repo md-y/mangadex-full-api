@@ -5,6 +5,7 @@ const Links = require('../internal/links.js');
 const LocalizedString = require('../internal/localizedstring.js');
 const Relationship = require('../internal/relationship.js');
 const Tag = require('../internal/tag.js');
+const Chapter = require('./chapter.js');
 
 /**
  * Represents a Mangadex manga object
@@ -233,6 +234,60 @@ class Manga {
     }
 
     /**
+     * @typedef {Object} FeedParameterObject
+     * @property {Number} FeedParameterObject.limit;
+     * @property {Number} FeedParameterObject.offset;
+     * @property {String[]} FeedParameterObject.translatedLanguage
+     * @property {String} FeedParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} FeedParameterObject.order
+     * @param {String} id
+     * @param {FeedParameterObject} [params]
+     * @param {Number} [limit]
+     * @param {Number} [offset]
+     * @returns {Promise<Chapter[]>}
+     */
+    static getFeed(id, params = {}, limit = 100, offset = 0) {
+        let m = new Manga(id);
+        return m.getFeed(params, limit, offset);
+    }
+
+    /**
+     * Returns one random manga
+     * @returns {Promise<Manga>}
+     */
+    static async getRandom() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let res = await Util.apiRequest('/manga/random');
+                if (Util.getResponseStatus(res) === 'ok') resolve(new Manga(res));
+                else reject(new Error(`Failed to get random manga: ${Util.getResponseMessage(res)}`));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Returns all manga followed by the logged in user
+     * @returns {Promise<Manga[]>}
+     */
+    static async getFollowedManga() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await Util.AuthUtil.validateTokens();
+                let res = await Util.apiRequest('/user/follows/manga');
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get followed manga:\n${Util.getResponseMessage(res)}`)); 
+                if (!(res.results instanceof Array)) reject(new Error(`Followed manga returned non-list result:\n${res}`));
+                resolve(res.results.map(elem => new Manga(elem)));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
      * Retrieves all data for this manga from the API using its id.
      * Sets the data in place and returns a new manga object as well.
      * Use if there is an incomplete in this object
@@ -247,6 +302,28 @@ class Manga {
                 resolve(new Manga(res));
             } catch (error) {
                 reject(error);
+            }
+        });
+    }
+
+    /**
+     * Returns a feed of the most recent chapters of this manga
+     * @param {FeedParameterObject} [params]
+     * @param {Number} [limit]
+     * @param {Number} [offset]
+     * @returns {Promise<Chapter>}
+     */
+    getFeed(params = {}, limit = 100, offset = 0) {
+        return new Promise(async (resolve, reject) => {
+            if (!('limit' in params)) params.limit = limit;
+            if (!('offset' in params)) params.offset = offset;
+            try {
+                let res = await Util.apiParameterRequest(`/manga/${this.id}/feed`, params);
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get manga feed:\n${Util.getResponseMessage(res)}`)); 
+                if (!(res instanceof Array)) reject(new Error(`Manga feed returned non-list result:\n${res}`));
+                resolve(res.map(elem => new Chapter(elem)));
+            } catch (err) {
+                reject(err);
             }
         });
     }
