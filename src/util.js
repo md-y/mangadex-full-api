@@ -23,6 +23,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
         let headerObj = {};
         if (method !== 'GET') headerObj['content-type'] = 'application/json';
         if (AuthUtil.sessionToken) headerObj['authorization'] = `bearer ${AuthUtil.sessionToken}`;
+        // console.log(endpoint, 'authorization' in headerObj);
 
         const req = HTTPS.request({
             hostname: 'api.mangadex.org',
@@ -73,9 +74,10 @@ exports.apiRequest = apiRequest;
 
 /**
  * Performs a custom request that converts an object of parameters to an endpoint URL with parameters.
+ * If the response contains a results array, that is returned instead
  * @param {String} baseEndpoint Endpoint with no parameters
  * @param {Object} parameterObject Object of search parameters based on API specifications
- * @returns {Promise<APIResponse>}
+ * @returns {Promise<APIResponse|APIResponse[]>}
  */
 function apiParameterRequest(baseEndpoint, parameterObject) {
     return new Promise(async (resolve, reject) => {
@@ -89,7 +91,8 @@ function apiParameterRequest(baseEndpoint, parameterObject) {
             let res = await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
             if (getResponseStatus(res) !== 'ok' || res.results === undefined || !(res.results instanceof Array)) 
                 reject(new Error(`Failed to perform search:\n${getResponseMessage(res)}`));
-            resolve(res.results);
+            if ('results' in res) resolve(res.results);
+            else resolve(res);
         } catch (error) {
             reject(error);
         }
@@ -104,7 +107,7 @@ exports.apiParameterRequest = apiParameterRequest;
  * @returns {'ok'|'captcha'|'error'|'no-data'|'multiple'}
  */
 function getResponseStatus(res) {
-    if (res === undefined || typeof(res) !== 'object' || Object.keys(res).length === 0) return 'no-data';
+    if (!res || typeof(res) !== 'object' || Object.keys(res).length === 0) return 'no-data';
     if (res instanceof Array) {
         let arrayStatus = res.map(e => getResponseStatus(e));
         if (arrayStatus.some(e => e !== arrayStatus[0])) return 'multiple';
@@ -145,11 +148,26 @@ function getResponseMessage(res) {
 }
 exports.getResponseMessage = getResponseMessage;
 
+/**
+ * Any function that requires authentication should call 'validateTokens().'
+ * How authentication works:
+ * If there is no cache or its invalid, simply request tokens through logging in ('login()').
+ * If there is a cache, check if the tokens are up to date ('validateTokens()').
+ * If the session token is out of date, refresh it ('validateTokens()').
+ * If the refresh token is out of date, log in again ('login()').
+ * At most there are three calls to the API, two of which are rate limited (/auth/refresh and /auth/login).
+ */
 class AuthUtil {
     /** @type {String} */
     static sessionToken;
     /** @type {String} */
     static refreshToken;
+    /** @type {String} */
+    static cacheLocation;
+    /** @type {String} */
+    static authUser;
+    /** @type {Boolean} */
+    static canAuth = false;
 
     /**
      * @param {String} username 
@@ -157,44 +175,33 @@ class AuthUtil {
      * @param {String} [cacheLocation]
      * @returns {Promise}
      */
-    static login(username, password, cacheLocation = null) {
+    static login(username, password, cacheLocation) {
         return new Promise(async (resolve, reject) => {
             if (username === undefined || password === undefined) reject(new Error('Invalid argument(s)'));
-
+            AuthUtil.canAuth = true;
             // Read refresh token from file
             if (cacheLocation) {
                 try {
                     if (!Path.basename(cacheLocation).includes('.')) cacheLocation = Path.join(cacheLocation, '.md_token');
-                    if (Fs.existsSync(cacheLocation)) {
-                        let tokenArray = Fs.readFileSync(cacheLocation).toString().split(';');
-                        if (tokenArray.length < 2) Fs.unlinkSync(cacheLocation); // Delete corrupted file
-                        else {
-                            AuthUtil.refreshToken = tokenArray[0];
-                            AuthUtil.sessionToken = tokenArray[1];
-                        }
+                    if (AuthUtil.readFromCache(cacheLocation) && AuthUtil.authUser === username) {
+                        await AuthUtil.validateTokens();
+                        return resolve();
                     }
                 } catch (error) {
-                    reject(error);
-                }
-            }
-
-            // Attempt to use that refresh token to login, but continue to login if it fails
-            if (AuthUtil.refreshToken) {
-                try {
-                    await AuthUtil.validateTokens();
-                    return resolve();
-                } catch (error) {
+                    // Continue and retry at login
                     AuthUtil.refreshToken = null;
+                    AuthUtil.sessionToken = null;
                 }
             }
 
             // Login
+            AuthUtil.authUser = username;
             try {
                 let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
                 if (getResponseStatus(res) !== 'ok') reject(`Failed to login: ${getResponseMessage(res)}`);
                 AuthUtil.sessionToken = res.token.session;
                 AuthUtil.refreshToken = res.token.refresh;
-                if (cacheLocation) Fs.writeFileSync(cacheLocation, `${AuthUtil.refreshToken};${AuthUtil.sessionToken}`);
+                if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
                 resolve();
             } catch (error) {
                 reject(error);
@@ -209,7 +216,8 @@ class AuthUtil {
     static validateTokens(token) {
         return new Promise(async (resolve, reject) => {
             if (token) AuthUtil.refreshToken = token;
-            else if (!AuthUtil.refreshToken) reject(new Error(`No refresh token. Logged in?`));
+            if (!AuthUtil.canAuth || !AuthUtil.refreshToken) reject(new Error(`Not logged in.`));
+            // Check if session token is out of date:
             if (AuthUtil.sessionToken) {
                 try {
                     let res = await apiRequest('/auth/check');
@@ -220,16 +228,59 @@ class AuthUtil {
                 }
             }
 
+            // Refresh token/Check if refresh token is out of date
             try {
                 let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
-                if (getResponseStatus(res) !== 'ok') reject(new Error(`Failed to refresh token: ${getResponseMessage(res)}`));
+                if (getResponseStatus(res) !== 'ok') reject(new Error(`Failed to refresh token: ${getResponseMessage(res)}. Log in again?`));
                 AuthUtil.sessionToken = res.token.session;
                 AuthUtil.refreshToken = res.token.refresh;
+                AuthUtil.writeToCache();
                 resolve(AuthUtil.sessionToken);
             } catch (err) {
                 reject(err);
             }
         })
+    }
+
+    /**
+     * Writes the current state of authentication to a file
+     * @param {String} [cacheLocation] 
+     * @returns {Boolean} True of OK, False if not
+     */
+    static writeToCache(cacheLocation) {
+        if (cacheLocation) AuthUtil.cacheLocation = cacheLocation;
+        if (AuthUtil.cacheLocation) {
+            try {
+                Fs.writeFileSync(AuthUtil.cacheLocation, `${AuthUtil.authUser}\n${AuthUtil.refreshToken}\n${AuthUtil.sessionToken}`);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Reads the state of authentication from a file
+     * @param {String} cacheLocation 
+     * @returns {Boolean} True of OK, False if not
+     */
+    static readFromCache(cacheLocation) {
+        if (cacheLocation) AuthUtil.cacheLocation = cacheLocation;
+        if (AuthUtil.cacheLocation) {
+            try {
+                if (!Fs.existsSync(AuthUtil.cacheLocation)) return false;
+                let tokenArray = Fs.readFileSync(AuthUtil.cacheLocation).toString().split('\n');
+                if (tokenArray.length < 3) return false;
+                AuthUtil.authUser = tokenArray[0];
+                AuthUtil.refreshToken = tokenArray[1];
+                AuthUtil.sessionToken = tokenArray[2];
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
     }
 }
 exports.AuthUtil = AuthUtil;
