@@ -7,6 +7,7 @@ const Relationship = require('../internal/relationship.js');
 const Tag = require('../internal/tag.js');
 const Chapter = require('./chapter.js');
 const Cover = require('./cover.js');
+const List = require('./list.js');
 
 /**
  * Represents a Mangadex manga object
@@ -336,7 +337,7 @@ class Manga {
      * @param {FeedParameterObject} [params]
      * @param {Number} [limit]
      * @param {Number} [offset]
-     * @returns {Promise<Chapter>}
+     * @returns {Promise<Chapter[]>}
      */
     getFeed(params = {}, limit = 100, offset = 0) {
         return new Promise(async (resolve, reject) => {
@@ -351,6 +352,16 @@ class Manga {
                 reject(err);
             }
         });
+    }
+
+    /**
+     * Adds this manga to a list
+     * @param {List|String} list
+     * @returns {Promise}
+     */
+    addToList(list) {
+        if (typeof(list) !== 'string') list = list.id;
+        return List.addManga(list, this.id);
     }
 }
 

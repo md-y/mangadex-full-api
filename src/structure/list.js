@@ -1,6 +1,6 @@
 'use strict';
 
-const { Manga } = require('../index.js');
+const Manga = require('./manga.js');
 const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
 const Chapter = require('./chapter.js');
@@ -38,22 +38,22 @@ class List {
         this.name = context.data.attributes.name;
 
         /**
+         * Version of this custom list
+         * @type {String}
+         */
+         this.version = context.data.attributes.version;
+
+        /**
          * String form of this list's visibility
          * @type {'public'|'private'}
          */
         this.visibility = context.data.attributes.visibility;
         if (this.visibility !== 'public' && this.visibility !== 'private') this.visibility = null;
 
-        /**
-         * Is this list public?
-         * @type {Boolean}
-         */
-        this.public = this.visibility === 'public';
-
         if (context.relationships === undefined) context.relationships = [];
         /**
          * Relationships to all of the manga in this custom list
-         * @type {Relationship}
+         * @type {Relationship[]}
          */
         this.manga = Relationship.convertType('manga', context.relationships);
 
@@ -69,7 +69,16 @@ class List {
          * Name of this list's owner. Resolve this owner relationship object for other user info
          * @type {String}
          */
-         this.ownerName = context.data.attributes.owner.attributes.username;
+        this.ownerName = context.data.attributes.owner.attributes.username;
+    }
+
+    /**
+     * Is this list public?
+     * @type {Boolean}
+     */
+    get public() {
+        if (this.visibility !== 'private' && this.visibility !== 'public') return null;
+        return this.visibility === 'public';
     }
 
     /**
@@ -118,6 +127,48 @@ class List {
     }
 
     /**
+     * Adds a manga to a custom list. Must be logged in
+     * @param {String} listId
+     * @param {Manga|String} manga
+     * @returns {Promise}
+     */
+     static addManga(listId, manga) {
+        return new Promise(async (resolve, reject) => {
+            if (!listId || !manga) reject(new Error('Invalid arguments'));
+            if (typeof(manga) !== 'string') manga = manga.id;
+            try {
+                await Util.AuthUtil.validateTokens();
+                let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'POST');
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to add manga to a list: ${Util.getResponseMessage(res)}`));
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Removes a manga from a custom list. Must be logged in
+     * @param {String} listId
+     * @param {Manga|String} manga
+     * @returns {Promise}
+     */
+    static removeManga(listId, manga) {
+        return new Promise(async (resolve, reject) => {
+            if (!listId || !manga) reject(new Error('Invalid arguments'));
+            if (typeof(manga) !== 'string') manga = manga.id;
+            try {
+                await Util.AuthUtil.validateTokens();
+                let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'DELETE');
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to delete manga from list: ${Util.getResponseMessage(res)}`));
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
      * Returns a list of the most recent chapters from the manga in a list
      * @param {String} id Mangadex id of the list
      * @param {Number} [limit] Amount of chapters to return (Max 500)
@@ -161,6 +212,106 @@ class List {
                 let res = await Util.apiRequest(`/list/${this.id}`, 'DELETE');
                 if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to delete list: ${Util.getResponseMessage(res)}`));
                 resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Renames a custom list. Must be logged in
+     * @type {String}
+     * @returns {Promise<List>}
+     */
+    rename(newName) {
+        return new Promise(async (resolve, reject) => {
+            if (!newName || typeof(newName) !== 'string') reject(new Error('Invalid argument.'));
+            try {
+                await Util.AuthUtil.validateTokens();
+                let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { name: newName, version: this.version });
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to rename list: ${Util.getResponseMessage(res)}`));
+                this.name = newName;
+                resolve(this);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Changes the visibility a custom list. Must be logged in
+     * @param {'public'|'private'} [newVis] Leave blank to toggle
+     * @returns {Promise<List>}
+     */
+    changeVisibility(newVis) {
+        return new Promise(async (resolve, reject) => {
+            if (!newVis && this.public) newVis = 'private';
+            else if (!newVis && this.public !== null) newVis = 'public';
+            else if (newVis !== 'private' && newVis !== 'public') reject(new Error('Invalid argument.'));
+            try {
+                await Util.AuthUtil.validateTokens();
+                let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { visibility: newVis, version: this.version });
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to change list visibility: ${Util.getResponseMessage(res)}`));
+                this.visibility = newVis;
+                resolve(this);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Changes the manga in a custom list. Must be logged in
+     * @param {Manga[]|String[]} newList
+     * @returns {Promise<List>}
+     */
+    updateMangaList(newList) {
+        return new Promise(async (resolve, reject) => {
+            if (!(newList instanceof Array)) reject(new Error('Invalid argument'));
+            let idList = newList.map(elem => typeof(elem) === 'string' ? elem : elem.id);
+            try {
+                await Util.AuthUtil.validateTokens();
+                let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { manga: idList, version: this.version });
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to change the manga of a list: ${Util.getResponseMessage(res)}`));
+                this.manga = Relationship.convertType('manga', res.relationships);
+                resolve(this);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Adds a manga to this list
+     * @param {Manga|String} manga
+     * @returns {Promise<List>}
+     */
+    addManga(manga) {
+        return new Promise(async (resolve, reject) => {
+            if (typeof(manga) !== 'string') manga = manga.id;
+            let idList = this.manga.map(elem => elem.id);
+            try {
+                // Uses updateMangaList to maintain server-side order
+                if (!idList.includes(manga)) await this.updateMangaList(idList.concat(manga));
+                resolve(this);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Removes a manga from this list
+     * @param {Manga|String} manga
+     * @returns {Promise<List>}
+     */
+    removeManga(manga) {
+        return new Promise(async (resolve, reject) => {
+            if (typeof(manga) !== 'string') manga = manga.id;
+            try {
+                await List.removeManga(this.id, manga);
+                this.manga = this.manga.filter(elem => elem.id !== manga);
+                resolve(this);
             } catch (error) {
                 reject(error);
             }
