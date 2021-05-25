@@ -6,6 +6,7 @@ const LocalizedString = require('../internal/localizedstring.js');
 const Relationship = require('../internal/relationship.js');
 const Tag = require('../internal/tag.js');
 const Chapter = require('./chapter.js');
+const Cover = require('./cover.js');
 
 /**
  * Represents a Mangadex manga object
@@ -135,6 +136,13 @@ class Manga {
          * @type {Relationship[]}
          */
         this.chapters = Relationship.convertType('chapter', context.relationships);
+
+        /**
+         * Relationships to this manga's main cover. Use 'getCovers' to retrive other covers
+         * @type {Relationship}
+         */
+        this.mainCover = Relationship.convertType('cover_art', context.relationships).pop();
+        if (!this.mainCover) this.mainCover = null;
 
         /**
          * Array of tags for this manga
@@ -285,6 +293,23 @@ class Manga {
                 reject(error);
             }
         });
+    }
+
+    /**
+     * Returns all covers for a manga
+     * @param {String} id Manga id
+     * @returns {Promise<Cover[]>}
+     */
+    static getCovers(id) {
+        return Cover.getMangaCovers(id);
+    }
+
+    /**
+     * Returns all covers for this manga
+     * @returns {Promise<Cover[]>}
+     */
+    getCovers() {
+        return Manga.getCovers(this.id);
     }
 
     /**

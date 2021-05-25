@@ -17,6 +17,8 @@ const User = require('./structure/user.js');
 exports.User = User;
 const List = require('./structure/list.js');
 exports.List = List;
+const Cover = require('./structure/cover.js');
+exports.Cover = Cover;
 
 /**
  * Converts old (pre v5, numeric ids) Mangadex ids to v5 ids.
@@ -73,3 +75,4 @@ Relationship.registerType('chapter', Chapter);
 Relationship.registerType('scanlation_group', Group);
 Relationship.registerType('user', User);
 Relationship.registerType('custom_list', List);
+Relationship.registerType('cover_art', Cover);
