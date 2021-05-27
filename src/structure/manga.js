@@ -8,6 +8,7 @@ const Tag = require('../internal/tag.js');
 const Chapter = require('./chapter.js');
 const Cover = require('./cover.js');
 const List = require('./list.js');
+const APIRequestError = require('../internal/requesterror.js');
 
 /**
  * Represents a manga object
@@ -256,8 +257,7 @@ class Manga {
         return new Promise(async (resolve, reject) => {
             try {
                 let res = await Util.apiRequest('/manga/random');
-                if (Util.getResponseStatus(res) === 'ok') resolve(new Manga(res));
-                else reject(new Error(`Failed to get random manga: ${Util.getResponseMessage(res)}`));
+                resolve(new Manga(res));
             } catch (error) {
                 reject(error);
             }
@@ -273,8 +273,7 @@ class Manga {
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest('/user/follows/manga');
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get followed manga:\n${Util.getResponseMessage(res)}`));
-                if (!(res.results instanceof Array)) reject(new Error(`Followed manga returned non-list result:\n${res}`));
+                if (!(res.results instanceof Array)) reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
                 resolve(res.results.map(elem => new Manga(elem)));
             } catch (error) {
                 reject(error);
@@ -310,7 +309,6 @@ class Manga {
             if (!this.id) reject(new Error('Attempted to fill manga with no id.'));
             try {
                 let res = await Util.apiRequest(`/manga/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill manga:\n${Util.getResponseMessage(res)}`));
                 resolve(new Manga(res));
             } catch (error) {
                 reject(error);
@@ -327,7 +325,6 @@ class Manga {
         return new Promise(async (resolve, reject) => {
             try {
                 let res = await Util.apiSearchRequest(`/manga/${this.id}/feed`, parameterObject, 500, 100);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get manga feed:\n${Util.getResponseMessage(res)}`));
                 resolve(res.map(elem => new Chapter(elem)));
             } catch (err) {
                 reject(err);

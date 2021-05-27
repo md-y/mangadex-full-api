@@ -114,7 +114,6 @@ class Author {
             if (!this.id) reject(new Error('Attempted to fill author with no id.'));
             try {
                 let res = await Util.apiRequest(`/author/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill author:\n${Util.getResponseMessage(res)}`));
                 resolve(new Author(res));
             } catch (error) {
                 reject(error);

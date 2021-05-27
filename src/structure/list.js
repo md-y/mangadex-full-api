@@ -100,7 +100,7 @@ class List {
      */
     static async create(name, manga, publicVis = true) {
         return new Promise(async (resolve, reject) => {
-            if (!name || !manga || !manga.every(e => e instanceof Manga || typeof e === 'string')) reject(new Error('Invalid Arguments'));
+            if (!name || !manga || !manga.every(e => e instanceof Manga || typeof e === 'string')) reject(new Error('Invalid Argument(s)'));
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest('/list', 'POST', {
@@ -108,8 +108,7 @@ class List {
                     manga: manga.map(elem => elem.id),
                     visibility: publicVis ? 'public' : 'private'
                 });
-                if (Util.getResponseStatus(res) === 'ok') resolve(new List(res));
-                else reject(new Error(`Failed to create list ${Util.getResponseMessage(res)}`));
+                resolve(new List(res));
             } catch (error) {
                 reject(error);
             }
@@ -134,12 +133,11 @@ class List {
      */
     static addManga(listId, manga) {
         return new Promise(async (resolve, reject) => {
-            if (!listId || !manga) reject(new Error('Invalid arguments'));
+            if (!listId || !manga) reject(new Error('Invalid Argument(s)'));
             if (typeof manga !== 'string') manga = manga.id;
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'POST');
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to add manga to a list: ${Util.getResponseMessage(res)}`));
                 resolve();
             } catch (error) {
                 reject(error);
@@ -155,12 +153,11 @@ class List {
      */
     static removeManga(listId, manga) {
         return new Promise(async (resolve, reject) => {
-            if (!listId || !manga) reject(new Error('Invalid arguments'));
+            if (!listId || !manga) reject(new Error('Invalid Argument(s)'));
             if (typeof manga !== 'string') manga = manga.id;
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'DELETE');
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to delete manga from list: ${Util.getResponseMessage(res)}`));
                 resolve();
             } catch (error) {
                 reject(error);
@@ -202,7 +199,6 @@ class List {
             try {
                 if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
                 let res = await Util.apiSearchRequest(`/list/${this.id}/feed`, parameterObject, 500, 100);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`List feed returned an error: ${Util.getResponseMessage(res)}`));
                 resolve(res.map(elem => new Chapter(elem)));
             } catch (error) {
                 reject(error);
@@ -219,7 +215,6 @@ class List {
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/list/${this.id}`, 'DELETE');
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to delete list: ${Util.getResponseMessage(res)}`));
                 resolve();
             } catch (error) {
                 reject(error);
@@ -234,11 +229,10 @@ class List {
      */
     rename(newName) {
         return new Promise(async (resolve, reject) => {
-            if (!newName || typeof newName !== 'string') reject(new Error('Invalid argument.'));
+            if (!newName || typeof newName !== 'string') reject(new Error('Invalid Argument(s)'));
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { name: newName, version: this.version });
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to rename list: ${Util.getResponseMessage(res)}`));
                 this.name = newName;
                 resolve(this);
             } catch (error) {
@@ -256,11 +250,10 @@ class List {
         return new Promise(async (resolve, reject) => {
             if (!newVis && this.public) newVis = 'private';
             else if (!newVis && this.public !== null) newVis = 'public';
-            else if (newVis !== 'private' && newVis !== 'public') reject(new Error('Invalid argument.'));
+            else if (newVis !== 'private' && newVis !== 'public') reject(new Error('Invalid Argument(s)'));
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { visibility: newVis, version: this.version });
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to change list visibility: ${Util.getResponseMessage(res)}`));
                 this.visibility = newVis;
                 resolve(this);
             } catch (error) {
@@ -276,12 +269,11 @@ class List {
      */
     updateMangaList(newList) {
         return new Promise(async (resolve, reject) => {
-            if (!(newList instanceof Array)) reject(new Error('Invalid argument'));
+            if (!(newList instanceof Array)) reject(new Error('Invalid Argument(s)'));
             let idList = newList.map(elem => typeof elem === 'string' ? elem : elem.id);
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { manga: idList, version: this.version });
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to change the manga of a list: ${Util.getResponseMessage(res)}`));
                 this.manga = Relationship.convertType('manga', res.relationships);
                 resolve(this);
             } catch (error) {
@@ -339,7 +331,6 @@ class List {
             if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
             try {
                 let res = await Util.apiRequest(`/list/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill custom list:\n${Util.getResponseMessage(res)}`));
                 resolve(new List(res));
             } catch (error) {
                 reject(error);

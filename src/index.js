@@ -3,6 +3,7 @@
 // Internal
 const Util = require('./util.js');
 const LocalizedString = require('./internal/localizedstring.js');
+const APIRequestError = require('./internal/requesterror.js');
 
 // Export
 const Manga = require('./structure/manga.js');
@@ -32,8 +33,8 @@ function convertLegacyId(type, ids) {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await Util.apiRequest('/legacy/mapping', 'POST', { type: type, ids: ids });
-            if (Util.getResponseStatus(res) === 'ok') resolve(res.map(e => e.data.attributes.newId));
-            else reject(new Error(`Failed to convert legacy id: ${Util.getResponseMessage(res)}`));
+            if (res instanceof Array) resolve(res.map(e => e.data.attributes.newId));
+            else reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
         } catch (error) {
             reject(error);
         }

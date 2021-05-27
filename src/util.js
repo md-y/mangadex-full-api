@@ -3,6 +3,7 @@
 const HTTPS = require('https');
 const Fs = require('fs');
 const Path = require('path');
+const APIRequestError = require('./internal/requesterror.js');
 
 /**
  * @typedef {(Object|Object[])} APIResponse
@@ -17,7 +18,7 @@ const Path = require('path');
  */
 function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
     return new Promise((resolve, reject) => {
-        if (endpoint === undefined || typeof endpoint !== 'string') reject(new Error('Invalid argument(s)'));
+        if (endpoint === undefined || typeof endpoint !== 'string') reject(new Error('Invalid Argument(s)'));
         if (endpoint[0] !== '/') endpoint = `/${endpoint}`;
 
         let headerObj = {};
@@ -40,22 +41,25 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
             res.on('end', () => {
                 if (res.headers['content-type'] !== undefined && res.headers['content-type'].includes('json')) {
                     try {
-                        resolve(JSON.parse(responsePayload));
+                        let parsedObj = JSON.parse(responsePayload);
+                        if (parsedObj === null) reject(new APIRequestError('API Returned null', APIRequestError.INVALID_RESPONSE));
+                        if (res.statusCode < 400 || res.result === 'ok') resolve(parsedObj);
+                        reject(new APIRequestError(parsedObj));
                     } catch (error) {
-                        reject(new Error(
-                            `Server returned invalid data: Failed to parse HTTPS ${method} ` +
+                        reject(new APIRequestError(
+                            `Failed to parse HTTPS ${method} ` +
                             `Response (${endpoint}) as JSON despite Content-Type ` +
                             `Header: ${res.headers['content-type']}\n${error}`
-                        ));
+                        ), APIRequestError.INVALID_RESPONSE);
                     }
                 } else resolve(responsePayload);
             });
 
             res.on('error', (error) => {
-                reject(new Error(`HTTPS ${method} Response (${endpoint}) returned an error:\n${error}`));
+                reject(new APIRequestError(`HTTPS ${method} Response (${endpoint}) returned an error:\n${error}`));
             });
         }).on('error', (error) => {
-            reject(new Error(`HTTPS ${method} Request (${endpoint}) returned an error:\n${error}`));
+            reject(new APIRequestError(`HTTPS ${method} Request (${endpoint}) returned an error:\n${error}`));
         });
 
         if (method !== 'GET') {
@@ -63,7 +67,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                 try {
                     req.write(JSON.stringify(requestPayload));
                 } catch (err) {
-                    reject(new Error('Invalid request payload.'));
+                    reject(new Error('Invalid payload object.'));
                 }
             } else req.write(requestPayload);
         }
@@ -100,9 +104,8 @@ function apiParameterRequest(baseEndpoint, parameterObject) {
         }
         try {
             let res = await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
-            if (getResponseStatus(res) !== 'ok' || res.results === undefined || !(res.results instanceof Array))
-                reject(new Error(`Failed to perform search:\n${getResponseMessage(res)}`));
-            resolve(res);
+            if (res.results instanceof Array) resolve(res);
+            else reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
         } catch (error) {
             reject(error);
         }
@@ -127,9 +130,8 @@ function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, default
         if (limit <= 0) resolve([]);
         try {
             let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
-            if (getResponseStatus(res) !== 'ok') reject(new Error(`Search returned error:\n${getResponseMessage(res)}`));
             let finalArray = res.results;
-            if (!(finalArray instanceof Array)) reject(new Error(`Search returned non-search result:\n${res}`));
+            if (!(finalArray instanceof Array)) reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
             if (limit > maxLimit && finalArray.length === maxLimit) {
                 parameterObject.limit = limit - maxLimit;
                 parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
@@ -143,54 +145,6 @@ function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, default
     });
 }
 exports.apiSearchRequest = apiSearchRequest;
-
-/**
- * Finds the status of a response from the API. Either 'ok', 'captcha', 'error', 'no-data', or 'multiple'.
- * The 'multiple' status is when the response is an array with different status for different elements.
- * @param {APIResponse} res Response from API to parse.
- * @returns {'ok'|'captcha'|'error'|'no-data'|'multiple'}
- */
-function getResponseStatus(res) {
-    if (!res || typeof res !== 'object' || Object.keys(res).length === 0) return 'no-data';
-    if (res instanceof Array) {
-        let arrayStatus = res.map(e => getResponseStatus(e));
-        if (arrayStatus.some(e => e !== arrayStatus[0])) return 'multiple';
-        return arrayStatus[0];
-    } else {
-        if ('results' in res) return getResponseStatus(res.results);
-        if ('errors' in res && res.errors instanceof Array) {
-            if (res.errors.some(elem => elem.title.toLowerCase().indexOf('captcha') >= 0)) return 'captcha';
-            return 'error';
-        }
-        if ('result' in res) {
-            let result = res.result.toLowerCase();
-            if (result === 'ok' || result === 'string') return 'ok';
-            else if (result.indexOf('captcha') >= 0) return 'captcha';
-            return 'error';
-        }
-    }
-    return 'ok';
-};
-exports.getResponseStatus = getResponseStatus;
-
-/**
- * Finds the specific response message from an API response. 
- * For finding the general status of a response, use 'getResponseStatus()'; 
- * this is mostly for getting error messages for debugging purposes.
- * @param {APIResponse} res Response from API to parse.
- * @returns {String}
- */
-function getResponseMessage(res) {
-    if (res === undefined || res === null) return 'Unknown Message (No Data)';
-    if (typeof res !== 'object') return res;
-    if ('errors' in res) {
-        if (res.errors.length == 1) return `API Error: (${res.errors[0].status}/${res.errors[0].title}) ${res.errors[0].detail}`;
-        return res.errors.map(e, i => `API Error ${i}: (${e.status}/${e.title}) ${e.detail}`).join('\n');
-    }
-    if ('result' in res) return res.result;
-    return res;
-}
-exports.getResponseMessage = getResponseMessage;
 
 /**
  * Any function that requires authentication should call 'validateTokens().'
@@ -221,7 +175,7 @@ class AuthUtil {
      */
     static login(username, password, cacheLocation) {
         return new Promise(async (resolve, reject) => {
-            if (username === undefined || password === undefined) reject(new Error('Invalid argument(s)'));
+            if (username === undefined || password === undefined) reject(new Error('Invalid Argument(s)'));
             AuthUtil.canAuth = true;
             // Read refresh token from file
             if (cacheLocation) {
@@ -242,7 +196,6 @@ class AuthUtil {
             AuthUtil.authUser = username;
             try {
                 let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
-                if (getResponseStatus(res) !== 'ok') reject(`Failed to login: ${getResponseMessage(res)}`);
                 AuthUtil.sessionToken = res.token.session;
                 AuthUtil.refreshToken = res.token.refresh;
                 if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
@@ -265,7 +218,7 @@ class AuthUtil {
             if (AuthUtil.sessionToken) {
                 try {
                     let res = await apiRequest('/auth/check');
-                    if (getResponseStatus(res) === 'ok' && res.isAuthenticated) return resolve(AuthUtil.sessionToken);
+                    if (res.isAuthenticated) return resolve(AuthUtil.sessionToken);
                 } catch (error) {
                     // If it fails the check, refresh it in the next try-catch block
                     AuthUtil.sessionToken = null;
@@ -275,7 +228,6 @@ class AuthUtil {
             // Refresh token/Check if refresh token is out of date
             try {
                 let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
-                if (getResponseStatus(res) !== 'ok') reject(new Error(`Failed to refresh token: ${getResponseMessage(res)}. Log in again?`));
                 AuthUtil.sessionToken = res.token.session;
                 AuthUtil.refreshToken = res.token.refresh;
                 AuthUtil.writeToCache();

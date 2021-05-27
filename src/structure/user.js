@@ -62,7 +62,6 @@ class User {
             if (!this.id) reject(new Error('Attempted to fill user with no id.'));
             try {
                 let res = await Util.apiRequest(`/user/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill user:\n${Util.getResponseMessage(res)}`));
                 resolve(new User(res));
             } catch (error) {
                 reject(error);

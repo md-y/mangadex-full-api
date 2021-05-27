@@ -167,7 +167,6 @@ class Chapter {
             if (!this.id) reject(new Error('Attempted to fill chapter with no id.'));
             try {
                 let res = await Util.apiRequest(`/chapter/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill chapter:\n${Util.getResponseMessage(res)}`));
                 resolve(new Chapter(res));
             } catch (error) {
                 reject(error);
@@ -187,7 +186,6 @@ class Chapter {
         return new Promise(async (resolve, reject) => {
             try {
                 let res = await Util.apiRequest(`/at-home/server/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to retrieve Mangadex@Home server: ${Util.getResponseMessage(res)}`));
                 resolve((saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`));
             } catch (error) {
                 reject(error);

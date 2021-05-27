@@ -148,7 +148,6 @@ class Cover {
             if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
             try {
                 let res = await Util.apiRequest(`/cover/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill cover:\n${Util.getResponseMessage(res)}`));
                 resolve(new Cover(res));
             } catch (error) {
                 reject(error);

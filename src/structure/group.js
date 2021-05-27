@@ -126,7 +126,6 @@ class Group {
             if (!this.id) reject(new Error('Attempted to fill group with no id.'));
             try {
                 let res = await Util.apiRequest(`/group/${this.id}`);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to fill group:\n${Util.getResponseMessage(res)}`));
                 resolve(new Group(res));
             } catch (error) {
                 reject(error);
