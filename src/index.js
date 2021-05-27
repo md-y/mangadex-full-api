@@ -31,7 +31,7 @@ exports.Cover = Cover;
 function convertLegacyId(type, ids) {
     return new Promise(async (resolve, reject) => {
         try {
-            let res = await Util.apiRequest('/legacy/mapping', 'POST', { type: type, ids: ids }); 
+            let res = await Util.apiRequest('/legacy/mapping', 'POST', { type: type, ids: ids });
             if (Util.getResponseStatus(res) === 'ok') resolve(res.map(e => e.data.attributes.newId));
             else reject(new Error(`Failed to convert legacy id: ${Util.getResponseMessage(res)}`));
         } catch (error) {
@@ -44,21 +44,20 @@ exports.convertLegacyId = convertLegacyId;
 /**
  * Sets the global locaization for LocalizedStrings.
  * Uses 2-letter Mangadex region codes.
- * @type {Function}
  * @param {String} newLocale
  */
 function setGlobalLocale(newLocale) {
-    if (typeof(newLocale) !== 'string' || newLocale.length !== 2) throw new Error('Invalid Locale Code.');
+    if (typeof newLocale !== 'string' || newLocale.length !== 2) throw new Error('Invalid Locale Code.');
     LocalizedString.locale = newLocale;
 };
 exports.setGlobalLocale = setGlobalLocale;
 
 /**
- * Required for autherization
+ * Required for authorization
  * https://api.mangadex.org/docs.html#operation/post-auth-login
  * @param {String} username 
  * @param {String} password 
- * @param {String} [cacheLocation] File location to store the persistent token. Default: None
+ * @param {String} [cacheLocation] File location to store the persistent token (Warning: saved in plaintext)
  * @returns {Promise}
  */
 function login(username, password, cacheLocation) {

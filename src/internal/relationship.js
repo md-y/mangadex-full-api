@@ -1,8 +1,11 @@
-'use strict'
+'use strict';
 
+/**
+ * Represents a relationship from one Mangadex object to another such as a manga, author, etc via its id.
+ */
 class Relationship {
     static types = {};
-    
+
     constructor(data) {
         /**
          * Id of the object this is a relationship to
@@ -18,10 +21,9 @@ class Relationship {
     }
 
     /**
-     * Returns the proper and complete object representation (Manga, Author, etc) of this relationship.
-     * For example, it calls Manga.get() for manga relationships
-     * @param {Object} data 
-     * @returns {Promise<Manga|Author|Chapter>}
+     * This function must be called to return the proper and complete object representation of this relationship.
+     * Essentially, it calls and returns Manga.get(), Author.get(), Cover.get(), etc.
+     * @returns {Promise<Manga|Author|Chapter|User|Group|List|Cover>}
      */
     resolve() {
         // Promise resolve is res to avoid confusion with this function's name
@@ -34,6 +36,7 @@ class Relationship {
 
     /**
      * Returns an array of Relationship objects from a Mangadex Relationships Array
+     * @private
      * @param {String} type 
      * @param {Object[]} dataArray 
      * @returns {Relationship[]}
@@ -46,6 +49,7 @@ class Relationship {
     /**
      * Provides a constructor for a relationship type at run-time.
      * Should only be called in index.js
+     * @private
      * @param {String} name 
      * @param {Object} classObject 
      */

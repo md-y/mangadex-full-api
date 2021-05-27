@@ -10,7 +10,7 @@ const Cover = require('./cover.js');
 const List = require('./list.js');
 
 /**
- * Represents a Mangadex manga object
+ * Represents a manga object
  * https://api.mangadex.org/docs.html#tag/Manga
  */
 class Manga {
@@ -19,13 +19,13 @@ class Manga {
      * @param {Object|String} context Either an API response or Mangadex id 
      */
     constructor(context) {
-        if (typeof(context) === 'string') {
+        if (typeof context === 'string') {
             this.id = context;
             return;
         } else if (!context) return;
 
         if (context.data === undefined) context.data = {};
-        
+
         /**
          * Mangadex id for this object
          * @type {String}
@@ -39,13 +39,13 @@ class Manga {
          * @type {LocalizedString}
          */
         this.localizedTitle = new LocalizedString(context.data.attributes.title);
-        
+
         /**
          * Alt titles with different localization options
          * @type {LocalizedString[]}
          */
         this.localizedAltTitles = (context.data.attributes.altTitles || []).map(i => new LocalizedString(i));
-        
+
         /**
          * Description with different localization options
          * @type {LocalizedString}
@@ -89,7 +89,7 @@ class Manga {
          * @type {'shounen'|'shoujo'|'josei'|'seinen'}
          */
         this.publicationDemographic = context.data.attributes.publicationDemographic;
-        
+
         /**
          * Publication/Scanlation status of this manga
          * @type {'ongoing'|'completed'|'hiatus'|'abandoned'}
@@ -165,7 +165,7 @@ class Manga {
      * Alt titles array based on global locale
      * @type {String[]}
      */
-     get altTitles() {
+    get altTitles() {
         if (this.localizedAltTitles !== undefined) return this.localizedAltTitles.map(e => e.localString);
         return undefined;
     }
@@ -174,14 +174,13 @@ class Manga {
      * Description string based on global locale
      * @type {String}
      */
-     get description() {
+    get description() {
         if (this.localizedDescription !== undefined) return this.localizedDescription.localString;
         return undefined;
     }
 
     /**
-     * Peforms a search and returns an array of manga.
-     * https://api.mangadex.org/docs.html#operation/get-search-manga
+     * @private
      * @typedef {Object} MangaParameterObject
      * @property {String} MangaParameterObject.title
      * @property {Number} MangaParameterObject.year
@@ -201,30 +200,35 @@ class Manga {
      * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} MangaParameterObject.contentRating
      * @property {Number} MangaParameterObject.limit
      * @property {Number} MangaParameterObject.offset
+     */
+
+    /**
+     * Peforms a search and returns an array of manga.
+     * https://api.mangadex.org/docs.html#operation/get-search-manga
      * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
      * @param {Number} [limit=10] The maximum amount (100) of results to return. (Default: 10)
      * @param {Number} [offset=0] The amount of results to skip before recording them. (Default: 0)
      * @returns {Promise<Manga[]>}
      */
     static search(searchParameters = {}, limit = 10, offset = 0) {
-        return new Promise(async(resolve, reject) => {
-            if (typeof(searchParameters) === 'string') searchParameters = { title: searchParameters };
+        return new Promise(async (resolve, reject) => {
+            if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
             let cleanParameters = { limit: limit, offset: offset };
             for (let i in searchParameters) {
                 if (searchParameters[i] instanceof Array) cleanParameters[i] = searchParameters[i].map(elem => {
-                    if (typeof(elem) === 'string') return elem;
+                    if (typeof elem === 'string') return elem;
                     if ('id' in elem) return elem.id;
                     return elem.toString();
                 });
-                else if (typeof(searchParameters[i]) !== 'string') cleanParameters[i] = searchParameters[i].toString();
+                else if (typeof searchParameters[i] !== 'string') cleanParameters[i] = searchParameters[i].toString();
                 else cleanParameters[i] = searchParameters[i];
             }
 
             try {
                 let res = await Util.apiParameterRequest('/manga', cleanParameters);
-                if (Util.getResponseStatus(res) !== 'ok') 
+                if (Util.getResponseStatus(res) !== 'ok')
                     reject(new Error(`Manga search returned error:\n${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`Manga search returned non-search result:\n${res}`)); 
+                if (!(res instanceof Array)) reject(new Error(`Manga search returned non-search result:\n${res}`));
                 resolve(res.map(manga => new Manga(manga)));
             } catch (error) {
                 reject(error);
@@ -243,6 +247,7 @@ class Manga {
     }
 
     /**
+     * @private
      * @typedef {Object} FeedParameterObject
      * @property {Number} FeedParameterObject.limit;
      * @property {Number} FeedParameterObject.offset;
@@ -251,6 +256,9 @@ class Manga {
      * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {Object} FeedParameterObject.order
+     */
+
+    /**
      * @param {String} id
      * @param {FeedParameterObject} [params]
      * @param {Number} [limit]
@@ -287,7 +295,7 @@ class Manga {
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest('/user/follows/manga');
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get followed manga:\n${Util.getResponseMessage(res)}`)); 
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get followed manga:\n${Util.getResponseMessage(res)}`));
                 if (!(res.results instanceof Array)) reject(new Error(`Followed manga returned non-list result:\n${res}`));
                 resolve(res.results.map(elem => new Manga(elem)));
             } catch (error) {
@@ -345,7 +353,7 @@ class Manga {
             if (!('offset' in params)) params.offset = offset;
             try {
                 let res = await Util.apiParameterRequest(`/manga/${this.id}/feed`, params);
-                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get manga feed:\n${Util.getResponseMessage(res)}`)); 
+                if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`Failed to get manga feed:\n${Util.getResponseMessage(res)}`));
                 if (!(res instanceof Array)) reject(new Error(`Manga feed returned non-list result:\n${res}`));
                 resolve(res.map(elem => new Chapter(elem)));
             } catch (err) {
@@ -360,7 +368,7 @@ class Manga {
      * @returns {Promise}
      */
     addToList(list) {
-        if (typeof(list) !== 'string') list = list.id;
+        if (typeof list !== 'string') list = list.id;
         return List.addManga(list, this.id);
     }
 }

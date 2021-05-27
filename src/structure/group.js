@@ -1,10 +1,10 @@
-'use strict'
+'use strict';
 
 const Util = require('../util.js');
 const Relationship = require('../internal/relationship.js');
 
 /**
- * Represents a group
+ * Represents a scanlation group
  * https://api.mangadex.org/docs.html#tag/Group
  */
 class Group {
@@ -12,14 +12,14 @@ class Group {
      * There is no reason to directly create a group object. Use static methods, ie 'get()'.
      * @param {Object|String} context Either an API response or Mangadex id 
      */
-    constructor (context) {
-        if (typeof(context) === 'string') {
+    constructor(context) {
+        if (typeof context === 'string') {
             this.id = context;
             return;
         } else if (!context) return;
 
         if (context.data === undefined) context.data = {};
-        
+
         /**
          * Mangadex id for this object
          * @type {String}
@@ -62,8 +62,8 @@ class Group {
          * Relationship to this group's leader
          * @type {Relationship}
          */
-        this.leader = new Relationship({type: 'user', id: context.data.attributes.leader.id});
-        
+        this.leader = new Relationship({ type: 'user', id: context.data.attributes.leader.id });
+
         /**
          * Username of the group's member. Resolve the members' relationships to retrieve other data
          * @type {User[]}
@@ -74,42 +74,46 @@ class Group {
          * Relationships to each group's members
          * @type {Relationship[]}
          */
-        this.members = (context.data.attributes.members || []).map(elem => new Relationship({type: 'user', id: elem.id}));
+        this.members = (context.data.attributes.members || []).map(elem => new Relationship({ type: 'user', id: elem.id }));
     }
 
     /**
-     * Peforms a search and returns an array of a group.
-     * https://api.mangadex.org/docs.html#operation/get-search-group
+     * @private
      * @typedef {Object} GroupParameterObject
      * @property {String} GroupParameterObject.name
      * @property {String[]} GroupParameterObject.ids Max of 100 per request
      * @property {Number} GroupParameterObject.limit
      * @property {Number} GroupParameterObject.offset
      * @property {Object} GroupParameterObject.order
+     */
+
+    /**
+     * Peforms a search and returns an array of groups.
+     * https://api.mangadex.org/docs.html#operation/get-search-group
      * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
      * @param {Number} [limit=10] The maximum amount (100) of results to return. (Default: 10)
      * @param {Number} [offset=0] The amount of results to skip before recording them. (Default: 0)
      * @returns {Promise<Group[]>}
      */
     static search(searchParameters = {}, limit = 10, offset = 0) {
-        return new Promise(async(resolve, reject) => {
-            if (typeof(searchParameters) === 'string') searchParameters = { name: searchParameters };
+        return new Promise(async (resolve, reject) => {
+            if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
             let cleanParameters = { limit: limit, offset: offset };
             for (let i in searchParameters) {
                 if (searchParameters[i] instanceof Array) cleanParameters[i] = searchParameters[i].map(elem => {
-                    if (typeof(elem) === 'string') return elem;
+                    if (typeof elem === 'string') return elem;
                     if ('id' in elem) return elem.id;
                     return elem.toString();
                 });
-                else if (typeof(searchParameters[i]) !== 'string') cleanParameters[i] = searchParameters[i].toString();
+                else if (typeof searchParameters[i] !== 'string') cleanParameters[i] = searchParameters[i].toString();
                 else cleanParameters[i] = searchParameters[i];
             }
 
             try {
                 let res = await Util.apiParameterRequest('/group', cleanParameters);
-                if (Util.getResponseStatus(res) !== 'ok') 
+                if (Util.getResponseStatus(res) !== 'ok')
                     reject(new Error(`Group search returned error:\n${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`Group search returned non-search result:\n${res}`)); 
+                if (!(res instanceof Array)) reject(new Error(`Group search returned non-search result:\n${res}`));
                 resolve(res.map(group => new Group(group)));
             } catch (error) {
                 reject(error);
@@ -122,7 +126,7 @@ class Group {
      * @param {String} id Mangadex id
      * @returns {Promise<Group>}
      */
-     static get(id) {
+    static get(id) {
         let a = new Group(id);
         return a.fill();
     }

@@ -1,10 +1,10 @@
-'use strict'
+'use strict';
 
 const Util = require('../util.js');
 const Relationship = require('../internal/relationship.js');
 
 /**
- * Represents a Mangadex chapter object
+ * Represents a chapter with readable pages
  * https://api.mangadex.org/docs.html#tag/Chapter
  */
 class Chapter {
@@ -13,7 +13,7 @@ class Chapter {
      * @param {Object|String} context Either an API response or Mangadex id 
      */
     constructor(context) {
-        if (typeof (context) === 'string') {
+        if (typeof context === 'string') {
             this.id = context;
             return;
         } else if (!context) return;
@@ -109,8 +109,7 @@ class Chapter {
     }
 
     /**
-     * Peforms a search and returns an array of manga.
-     * https://api.mangadex.org/docs.html#operation/get-chapter
+     * @private
      * @typedef {Object} ChapterParameterObject
      * @property {String} ChapterParameterObject.title
      * @property {String} ChapterParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
@@ -126,30 +125,35 @@ class Chapter {
      * @property {String|Manga} ChapterParameterObject.manga
      * @property {String} ChapterParameterObject.volume
      * @property {String} ChapterParameterObject.chapter
+     */
+
+    /**
+     * Peforms a search and returns an array of chapters.
+     * https://api.mangadex.org/docs.html#operation/get-chapter
      * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
      * @param {Number} [limit=10] The maximum amount (100) of results to return. (Default: 10)
      * @param {Number} [offset=0] The amount of results to skip before recording them. (Default: 0)
      * @returns {Promise<Chapter[]>}
      */
     static search(searchParameters = {}, limit = 10, offset = 0) {
-        return new Promise(async(resolve, reject) => {
-            if (typeof(searchParameters) === 'string') searchParameters = { title: searchParameters };
+        return new Promise(async (resolve, reject) => {
+            if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
             let cleanParameters = { limit: limit, offset: offset };
             for (let i in searchParameters) {
                 if (searchParameters[i] instanceof Array) cleanParameters[i] = searchParameters[i].map(elem => {
-                    if (typeof(elem) === 'string') return elem;
+                    if (typeof elem === 'string') return elem;
                     if ('id' in elem) return elem.id;
                     return elem.toString();
                 });
-                else if (typeof(searchParameters[i]) !== 'string') cleanParameters[i] = searchParameters[i].toString();
+                else if (typeof searchParameters[i] !== 'string') cleanParameters[i] = searchParameters[i].toString();
                 else cleanParameters[i] = searchParameters[i];
             }
 
             try {
                 let res = await Util.apiParameterRequest('/chapter', cleanParameters);
-                if (Util.getResponseStatus(res) !== 'ok') 
+                if (Util.getResponseStatus(res) !== 'ok')
                     reject(new Error(`Chapter search returned error:\n${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`Chapter search returned non-search result:\n${res}`)); 
+                if (!(res instanceof Array)) reject(new Error(`Chapter search returned non-search result:\n${res}`));
                 resolve(res.map(chapter => new Chapter(chapter)));
             } catch (error) {
                 reject(error);
@@ -162,7 +166,7 @@ class Chapter {
      * @param {String} id Mangadex id
      * @returns {Promise<Chapter>}
      */
-     static get(id) {
+    static get(id) {
         let c = new Chapter(id);
         return c.fill();
     }
@@ -203,7 +207,7 @@ class Chapter {
             } catch (error) {
                 reject(error);
             }
-        })
+        });
     }
 }
 

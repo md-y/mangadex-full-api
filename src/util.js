@@ -17,8 +17,8 @@ const Path = require('path');
  */
 function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
     return new Promise((resolve, reject) => {
-        if (endpoint === undefined || typeof(endpoint) !== 'string') reject(new Error('Invalid argument(s)'));
-        if (endpoint[0] !== "/") endpoint = `/${endpoint}`;
+        if (endpoint === undefined || typeof endpoint !== 'string') reject(new Error('Invalid argument(s)'));
+        if (endpoint[0] !== '/') endpoint = `/${endpoint}`;
 
         let headerObj = {};
         if (method !== 'GET') headerObj['content-type'] = 'application/json';
@@ -44,7 +44,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                     } catch (error) {
                         reject(new Error(
                             `Server returned invalid data: Failed to parse HTTPS ${method} ` +
-                            `Response (${endpoint}) as JSON despite Content-Type ` + 
+                            `Response (${endpoint}) as JSON despite Content-Type ` +
                             `Header: ${res.headers['content-type']}\n${error}`
                         ));
                     }
@@ -57,13 +57,13 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
         }).on('error', (error) => {
             reject(new Error(`HTTPS ${method} Request (${endpoint}) returned an error:\n${error}`));
         });
-        
+
         if (method !== 'GET') {
-            if (typeof(requestPayload) !== 'string') {
+            if (typeof requestPayload !== 'string') {
                 try {
                     req.write(JSON.stringify(requestPayload));
-                } catch(err) {
-                    reject(new Error("Invalid request payload."));
+                } catch (err) {
+                    reject(new Error('Invalid request payload.'));
                 }
             } else req.write(requestPayload);
         }
@@ -81,7 +81,7 @@ exports.apiRequest = apiRequest;
  */
 function apiParameterRequest(baseEndpoint, parameterObject) {
     return new Promise(async (resolve, reject) => {
-        if (typeof(baseEndpoint) !== 'string' || typeof(parameterObject) !== 'object') reject(new Error('Invalid Argument(s)'));
+        if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') reject(new Error('Invalid Argument(s)'));
         let endpoint = `${baseEndpoint}?`;
         for (let i in parameterObject) {
             if (parameterObject[i] instanceof Array) parameterObject[i].forEach(e => endpoint += `${i}[]=${e}&`);
@@ -89,7 +89,7 @@ function apiParameterRequest(baseEndpoint, parameterObject) {
         }
         try {
             let res = await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
-            if (getResponseStatus(res) !== 'ok' || res.results === undefined || !(res.results instanceof Array)) 
+            if (getResponseStatus(res) !== 'ok' || res.results === undefined || !(res.results instanceof Array))
                 reject(new Error(`Failed to perform search:\n${getResponseMessage(res)}`));
             if ('results' in res) resolve(res.results);
             else resolve(res);
@@ -107,7 +107,7 @@ exports.apiParameterRequest = apiParameterRequest;
  * @returns {'ok'|'captcha'|'error'|'no-data'|'multiple'}
  */
 function getResponseStatus(res) {
-    if (!res || typeof(res) !== 'object' || Object.keys(res).length === 0) return 'no-data';
+    if (!res || typeof res !== 'object' || Object.keys(res).length === 0) return 'no-data';
     if (res instanceof Array) {
         let arrayStatus = res.map(e => getResponseStatus(e));
         if (arrayStatus.some(e => e !== arrayStatus[0])) return 'multiple';
@@ -123,7 +123,7 @@ function getResponseStatus(res) {
             if (result === 'ok' || result === 'string') return 'ok';
             else if (result.indexOf('captcha') >= 0) return 'captcha';
             return 'error';
-        } 
+        }
     }
     return 'ok';
 };
@@ -138,7 +138,7 @@ exports.getResponseStatus = getResponseStatus;
  */
 function getResponseMessage(res) {
     if (res === undefined || res === null) return 'Unknown Message (No Data)';
-    if (typeof(res) !== 'object') return res;
+    if (typeof res !== 'object') return res;
     if ('errors' in res) {
         if (res.errors.length == 1) return `API Error: (${res.errors[0].status}/${res.errors[0].title}) ${res.errors[0].detail}`;
         return res.errors.map(e, i => `API Error ${i}: (${e.status}/${e.title}) ${e.detail}`).join('\n');
@@ -206,7 +206,7 @@ class AuthUtil {
             } catch (error) {
                 reject(error);
             }
-        })
+        });
     }
 
     /**
@@ -239,7 +239,7 @@ class AuthUtil {
             } catch (err) {
                 reject(err);
             }
-        })
+        });
     }
 
     /**

@@ -6,7 +6,7 @@ const Util = require('../util.js');
 const Chapter = require('./chapter.js');
 
 /**
- * Represents a Mangadex custom list object
+ * Represents a custom, user-created list of manga
  * https://api.mangadex.org/docs.html#tag/CustomList
  */
 class List {
@@ -15,13 +15,13 @@ class List {
      * @param {Object|String} context Either an API response or Mangadex id 
      */
     constructor(context) {
-        if (typeof(context) === 'string') {
+        if (typeof context === 'string') {
             this.id = context;
             return;
         } else if (!context) return;
 
         if (context.data === undefined) context.data = {};
-        
+
         /**
          * Mangadex id for this object
          * @type {String}
@@ -30,7 +30,7 @@ class List {
 
 
         if (context.data.attributes === undefined) context.data.attributes = {};
-        
+
         /**
          * Name of this custom list
          * @type {String}
@@ -41,7 +41,7 @@ class List {
          * Version of this custom list
          * @type {String}
          */
-         this.version = context.data.attributes.version;
+        this.version = context.data.attributes.version;
 
         /**
          * String form of this list's visibility
@@ -62,7 +62,7 @@ class List {
          * Relationship to this list's owner
          * @type {Relationship}
          */
-        this.owner = new Relationship({type: 'user', id: context.data.attributes.owner.id});
+        this.owner = new Relationship({ type: 'user', id: context.data.attributes.owner.id });
 
         if (context.data.attributes.owner.attributes === undefined) context.data.attributes.owner.attributes = {};
         /**
@@ -90,7 +90,7 @@ class List {
         let l = new List(id);
         return l.fill();
     }
-    
+
     /**
      * Create a new custom list. Must be logged in
      * @param {String} name
@@ -100,11 +100,11 @@ class List {
      */
     static async create(name, manga, publicVis = true) {
         return new Promise(async (resolve, reject) => {
-            if (!name || !manga || !manga.every(e => e instanceof Manga || typeof(e) === 'string')) reject(new Error('Invalid Arguments'));
+            if (!name || !manga || !manga.every(e => e instanceof Manga || typeof e === 'string')) reject(new Error('Invalid Arguments'));
             try {
                 await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest('/list', 'POST', { 
-                    name: name, 
+                let res = await Util.apiRequest('/list', 'POST', {
+                    name: name,
                     manga: manga.map(elem => elem.id),
                     visibility: publicVis ? 'public' : 'private'
                 });
@@ -132,10 +132,10 @@ class List {
      * @param {Manga|String} manga
      * @returns {Promise}
      */
-     static addManga(listId, manga) {
+    static addManga(listId, manga) {
         return new Promise(async (resolve, reject) => {
             if (!listId || !manga) reject(new Error('Invalid arguments'));
-            if (typeof(manga) !== 'string') manga = manga.id;
+            if (typeof manga !== 'string') manga = manga.id;
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'POST');
@@ -156,7 +156,7 @@ class List {
     static removeManga(listId, manga) {
         return new Promise(async (resolve, reject) => {
             if (!listId || !manga) reject(new Error('Invalid arguments'));
-            if (typeof(manga) !== 'string') manga = manga.id;
+            if (typeof manga !== 'string') manga = manga.id;
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'DELETE');
@@ -176,7 +176,7 @@ class List {
      * @returns {Promise<Chapter[]>}
      */
     static getFeed(id, limit = 100, offset = 0) {
-        let l = new List(id)
+        let l = new List(id);
         return l.getFeed(limit, offset);
     }
 
@@ -220,12 +220,12 @@ class List {
 
     /**
      * Renames a custom list. Must be logged in
-     * @type {String}
+     * @param {String} newName
      * @returns {Promise<List>}
      */
     rename(newName) {
         return new Promise(async (resolve, reject) => {
-            if (!newName || typeof(newName) !== 'string') reject(new Error('Invalid argument.'));
+            if (!newName || typeof newName !== 'string') reject(new Error('Invalid argument.'));
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { name: newName, version: this.version });
@@ -268,7 +268,7 @@ class List {
     updateMangaList(newList) {
         return new Promise(async (resolve, reject) => {
             if (!(newList instanceof Array)) reject(new Error('Invalid argument'));
-            let idList = newList.map(elem => typeof(elem) === 'string' ? elem : elem.id);
+            let idList = newList.map(elem => typeof elem === 'string' ? elem : elem.id);
             try {
                 await Util.AuthUtil.validateTokens();
                 let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { manga: idList, version: this.version });
@@ -288,7 +288,7 @@ class List {
      */
     addManga(manga) {
         return new Promise(async (resolve, reject) => {
-            if (typeof(manga) !== 'string') manga = manga.id;
+            if (typeof manga !== 'string') manga = manga.id;
             let idList = this.manga.map(elem => elem.id);
             try {
                 // Uses updateMangaList to maintain server-side order
@@ -307,7 +307,7 @@ class List {
      */
     removeManga(manga) {
         return new Promise(async (resolve, reject) => {
-            if (typeof(manga) !== 'string') manga = manga.id;
+            if (typeof manga !== 'string') manga = manga.id;
             try {
                 await List.removeManga(this.id, manga);
                 this.manga = this.manga.filter(elem => elem.id !== manga);

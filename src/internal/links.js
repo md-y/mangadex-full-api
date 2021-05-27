@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /**
  * Represents the links that represent manga on different websites

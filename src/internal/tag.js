@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const LocalizedString = require('../internal/localizedstring.js');
 

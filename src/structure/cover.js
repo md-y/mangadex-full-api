@@ -4,7 +4,7 @@ const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
 
 /**
- * Represents a Mangadex cover art object
+ * Represents the cover art of a manga volume
  * https://api.mangadex.org/docs.html#tag/Cover
  */
 class Cover {
@@ -13,13 +13,13 @@ class Cover {
      * @param {Object|String} context Either an API response or Mangadex id 
      */
     constructor(context) {
-        if (typeof(context) === 'string') {
+        if (typeof context === 'string') {
             this.id = context;
             return;
         } else if (!context) return;
 
         if (context.data === undefined) context.data = {};
-        
+
         /**
          * Mangadex id for this object
          * @type {String}
@@ -28,7 +28,7 @@ class Cover {
 
 
         if (context.data.attributes === undefined) context.data.attributes = {};
-        
+
         /**
          * Manga volume this is a cover for
          * @type {Number}
@@ -99,8 +99,7 @@ class Cover {
     }
 
     /**
-     * Peforms a search and returns an array of manga.
-     * https://api.mangadex.org/docs.html#operation/get-chapter
+     * @private
      * @typedef {Object} CoverParameterObject
      * @property {Number} CoverParameterObject.limit
      * @property {Number} CoverParameterObject.offset
@@ -108,29 +107,34 @@ class Cover {
      * @property {String[]|Cover[]} CoverParameterObject.ids Covers ids (limited to 100 per request)
      * @property {String[]|User[]} CoverParameterObject.uploaders User ids (limited to 100 per request)
      * @property {Object} CoverParameterObject.order
+     */
+
+    /**
+     * Peforms a search and returns an array of covers.
+     * https://api.mangadex.org/docs.html#operation/get-cover
      * @param {CoverParameterObject} [searchParameters]
      * @param {Number} [limit=10] The maximum amount (100) of results to return. (Default: 10)
      * @param {Number} [offset=0] The amount of results to skip before recording them. (Default: 0)
      * @returns {Promise<Chapter[]>}
      */
     static search(searchParameters = {}, limit = 10, offset = 0) {
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             let cleanParameters = { limit: limit, offset: offset };
             for (let i in searchParameters) {
                 if (searchParameters[i] instanceof Array) cleanParameters[i] = searchParameters[i].map(elem => {
-                    if (typeof(elem) === 'string') return elem;
+                    if (typeof elem === 'string') return elem;
                     if ('id' in elem) return elem.id;
                     return elem.toString();
                 });
-                else if (typeof(searchParameters[i]) !== 'string') cleanParameters[i] = searchParameters[i].toString();
+                else if (typeof searchParameters[i] !== 'string') cleanParameters[i] = searchParameters[i].toString();
                 else cleanParameters[i] = searchParameters[i];
             }
 
             try {
                 let res = await Util.apiParameterRequest('/cover', cleanParameters);
-                if (Util.getResponseStatus(res) !== 'ok') 
+                if (Util.getResponseStatus(res) !== 'ok')
                     reject(new Error(`Cover search returned error:\n${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`Cover search returned non-search result:\n${res}`)); 
+                if (!(res instanceof Array)) reject(new Error(`Cover search returned non-search result:\n${res}`));
                 resolve(res.map(cover => new Cover(cover)));
             } catch (error) {
                 reject(error);
@@ -144,8 +148,8 @@ class Cover {
      * @returns {Promise<Cover[]>}
      */
     static getMangaCovers(manga) {
-        if (typeof(manga) === 'object' && 'id' in manga) manga = manga.id;
-        return Cover.search({ manga: [ manga ] }, 100);
+        if (typeof manga === 'object' && 'id' in manga) manga = manga.id;
+        return Cover.search({ manga: [manga] }, 100);
     }
 
     /**

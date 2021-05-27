@@ -1,11 +1,14 @@
-'use strict'
+'use strict';
 
 /**
- * Represents a string, but in different languages
+ * Represents a string, but in different languages.
+ * Generates properties for each language available 
+ * (ie you can index with language codes through localizedString['en'] or localizedString.jp)
  */
 class LocalizedString {
     /**
      * Global locale setting
+     * @private
      * @type {String}
      */
     static locale = 'en';
@@ -26,14 +29,13 @@ class LocalizedString {
     }
 
     /**
-     * String from localized setting (LocalizedString.locale). 
-     * Default is English (en). 
+     * String from global locale setting (setGlobalLocale)
      * @returns {String}
      */
     get localString() {
         if (LocalizedString.locale in this) return this[LocalizedString.locale];
         for (let i of this.availableLocales) if (i in this) return this[i];
-        return undefined;
+        return null;
     }
 }
 

@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const Util = require('../util.js');
 const Relationship = require('../internal/relationship.js');
@@ -12,14 +12,14 @@ class User {
      * There is no reason to directly create a user object. Use static methods, ie 'get()'.
      * @param {Object|String} context Either an API response or Mangadex id 
      */
-    constructor (context) {
-        if (typeof(context) === 'string') {
+    constructor(context) {
+        if (typeof context === 'string') {
             this.id = context;
             return;
         } else if (!context) return;
 
         if (context.data === undefined) context.data = {};
-        
+
         /**
          * Mangadex id for this object
          * @type {String}
@@ -46,7 +46,7 @@ class User {
      * @param {String} id Mangadex id
      * @returns {Promise<User>}
      */
-     static get(id) {
+    static get(id) {
         let u = new User(id);
         return u.fill();
     }
