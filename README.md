@@ -10,14 +10,15 @@ An unofficial [MangaDex](https://www.mangadex.org) API built with the [official 
 # Examples
 
 ```javascript
+const MFA = require('mangadex-full-api');
 
-API.login('username', 'password123', './bin/.md_cache').then(() => {
-    API.Manga.search({
-        title: 'villainess',
-        status: [ 'ongoing', 'completed' ]
-    }, 100).then(results => {
-        console.log(`Search returned ${results.length} results:`);
-        results.forEach((elem, i) => console.log(`[${i}] ${elem.title}`));
+MFA.login('username', 'password123', './bin/.md_cache').then(() => {
+    MFA.Manga.search({
+        title: 'isekai',
+        limit: Infinity // API Max is 100 per request, but this function accepts more
+    }).then(results => {
+        console.log(`There are ${results.length} manga with 'isekai' in the title:`);
+        results.forEach((elem, i) => console.log(`[${i + 1}] ${elem.title}`));
     }).catch(console.error);
 }).catch(console.error);
 
@@ -108,7 +109,7 @@ Represents an author or artisthttps://api.mangadex.org/docs.html#tag/Author
         * [.manga](#Author+manga) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.fill()](#Author+fill) ⇒ [<code>Promise.&lt;Author&gt;</code>](#Author)
     * _static_
-        * [.search([searchParameters], [limit], [offset])](#Author.search) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
+        * [.search([searchParameters])](#Author.search) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
         * [.get(id)](#Author.get) ⇒ [<code>Promise.&lt;Author&gt;</code>](#Author)
 
 <a name="new_Author_new"></a>
@@ -171,16 +172,14 @@ Retrieves all data for this author from the API using its id.Sets the data in p
 **Kind**: instance method of [<code>Author</code>](#Author)  
 <a name="Author.search"></a>
 
-### Author.search([searchParameters], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
+### Author.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
 Peforms a search and returns an array of a authors/artists.https://api.mangadex.org/docs.html#operation/get-author
 
 **Kind**: static method of [<code>Author</code>](#Author)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [searchParameters] | <code>AuthorParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the name |
-| [limit] | <code>Number</code> | <code>10</code> | The maximum amount (100) of results to return. (Default: 10) |
-| [offset] | <code>Number</code> | <code>0</code> | The amount of results to skip before recording them. (Default: 0) |
+| Param | Type | Description |
+| --- | --- | --- |
+| [searchParameters] | <code>AuthorParameterObject</code> \| <code>String</code> | An object of offical search parameters, or a string representing the name |
 
 <a name="Author.get"></a>
 
@@ -220,7 +219,7 @@ Represents a chapter with readable pageshttps://api.mangadex.org/docs.html#tag/
         * [.fill()](#Chapter+fill) ⇒ [<code>Promise.&lt;Chapter&gt;</code>](#Chapter)
         * [.getReadablePages([saver])](#Chapter+getReadablePages) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>
     * _static_
-        * [.search([searchParameters], [limit], [offset])](#Chapter.search) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.search([searchParameters])](#Chapter.search) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.get(id)](#Chapter.get) ⇒ [<code>Promise.&lt;Chapter&gt;</code>](#Chapter)
 
 <a name="new_Chapter_new"></a>
@@ -336,16 +335,14 @@ Retrieves URLs for actual images from Mangadex @ Home.This only gives URLs, so 
 
 <a name="Chapter.search"></a>
 
-### Chapter.search([searchParameters], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
-Peforms a search and returns an array of manga.https://api.mangadex.org/docs.html#operation/get-chapter
+### Chapter.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+Peforms a search and returns an array of chapters.https://api.mangadex.org/docs.html#operation/get-chapter
 
 **Kind**: static method of [<code>Chapter</code>](#Chapter)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [searchParameters] | <code>ChapterParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the title |
-| [limit] | <code>Number</code> | <code>10</code> | The maximum amount (100) of results to return. (Default: 10) |
-| [offset] | <code>Number</code> | <code>0</code> | The amount of results to skip before recording them. (Default: 0) |
+| Param | Type | Description |
+| --- | --- | --- |
+| [searchParameters] | <code>ChapterParameterObject</code> \| <code>String</code> | An object of offical search parameters, or a string representing the title |
 
 <a name="Chapter.get"></a>
 
@@ -381,7 +378,7 @@ Represents the cover art of a manga volumehttps://api.mangadex.org/docs.html#ta
         * [.fill()](#Cover+fill) ⇒ [<code>Promise.&lt;Cover&gt;</code>](#Cover)
     * _static_
         * [.get(id)](#Cover.get) ⇒ [<code>Promise.&lt;Cover&gt;</code>](#Cover)
-        * [.search([searchParameters], [limit], [offset])](#Cover.search) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.search([searchParameters])](#Cover.search) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
         * [.getMangaCovers(manga)](#Cover.getMangaCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
 
 <a name="new_Cover_new"></a>
@@ -473,22 +470,14 @@ Retrieves and returns a cover by its id
 
 <a name="Cover.search"></a>
 
-### Cover.search([searchParameters], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
-Peforms a search and returns an array of manga.https://api.mangadex.org/docs.html#operation/get-chapter
+### Cover.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
+Peforms a search and returns an array of covers.https://api.mangadex.org/docs.html#operation/get-cover
 
 **Kind**: static method of [<code>Cover</code>](#Cover)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [searchParameters] | <code>CoverParameterObject</code> |  |  |
-| [limit] | <code>Number</code> | <code>10</code> | The maximum amount (100) of results to return. (Default: 10) |
-| [offset] | <code>Number</code> | <code>0</code> | The amount of results to skip before recording them. (Default: 0) |
-
-**Properties**
-
-| Name | Type |
+| Param | Type |
 | --- | --- |
-| CoverParameterObject.order | <code>Object</code> | 
+| [searchParameters] | <code>CoverParameterObject</code> | 
 
 <a name="Cover.getMangaCovers"></a>
 
@@ -522,7 +511,7 @@ Represents a scanlation grouphttps://api.mangadex.org/docs.html#tag/Group
         * [.members](#Group+members) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.fill()](#Group+fill) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
     * _static_
-        * [.search([searchParameters], [limit], [offset])](#Group.search) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
+        * [.search([searchParameters])](#Group.search) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
         * [.get(id)](#Group.get) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
 
 <a name="new_Group_new"></a>
@@ -597,16 +586,14 @@ Retrieves all data for this group from the API using its id.Sets the data in pl
 **Kind**: instance method of [<code>Group</code>](#Group)  
 <a name="Group.search"></a>
 
-### Group.search([searchParameters], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
-Peforms a search and returns an array of a group.https://api.mangadex.org/docs.html#operation/get-search-group
+### Group.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
+Peforms a search and returns an array of groups.https://api.mangadex.org/docs.html#operation/get-search-group
 
 **Kind**: static method of [<code>Group</code>](#Group)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [searchParameters] | <code>GroupParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the name |
-| [limit] | <code>Number</code> | <code>10</code> | The maximum amount (100) of results to return. (Default: 10) |
-| [offset] | <code>Number</code> | <code>0</code> | The amount of results to skip before recording them. (Default: 0) |
+| Param | Type | Description |
+| --- | --- | --- |
+| [searchParameters] | <code>GroupParameterObject</code> \| <code>String</code> | An object of offical search parameters, or a string representing the name |
 
 <a name="Group.get"></a>
 
@@ -637,7 +624,7 @@ Represents a custom, user-created list of mangahttps://api.mangadex.org/docs.ht
         * [.owner](#List+owner) : [<code>Relationship</code>](#Relationship)
         * [.ownerName](#List+ownerName) : <code>String</code>
         * [.public](#List+public) : <code>Boolean</code>
-        * [.getFeed([limit], [offset])](#List+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.getFeed([parameterObject])](#List+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.delete()](#List+delete) ⇒ <code>Promise</code>
         * [.rename(newName)](#List+rename) ⇒ [<code>Promise.&lt;List&gt;</code>](#List)
         * [.changeVisibility([newVis])](#List+changeVisibility) ⇒ [<code>Promise.&lt;List&gt;</code>](#List)
@@ -651,7 +638,7 @@ Represents a custom, user-created list of mangahttps://api.mangadex.org/docs.ht
         * [.delete(id)](#List.delete) ⇒ <code>Promise</code>
         * [.addManga(listId, manga)](#List.addManga) ⇒ <code>Promise</code>
         * [.removeManga(listId, manga)](#List.removeManga) ⇒ <code>Promise</code>
-        * [.getFeed(id, [limit], [offset])](#List.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.getFeed(id, parameterObject)](#List.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 
 <a name="new_List_new"></a>
 
@@ -713,15 +700,14 @@ Is this list public?
 **Kind**: instance property of [<code>List</code>](#List)  
 <a name="List+getFeed"></a>
 
-### list.getFeed([limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
-Returns a list of the most recent chapters from the manga in a list
+### list.getFeed([parameterObject]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+Returns a list of the most recent chapters from the manga in a listhttps://api.mangadex.org/docs.html#operation/get-list-id-feed
 
 **Kind**: instance method of [<code>List</code>](#List)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [limit] | <code>Number</code> | <code>100</code> | Amount of chapters to return (Max 500) |
-| [offset] | <code>Number</code> | <code>0</code> | How many chapters to skip before returning |
+| Param | Type | Description |
+| --- | --- | --- |
+| [parameterObject] | <code>FeedParameterObject</code> | Information on which chapters to be returned |
 
 <a name="List+delete"></a>
 
@@ -851,16 +837,15 @@ Removes a manga from a custom list. Must be logged in
 
 <a name="List.getFeed"></a>
 
-### List.getFeed(id, [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+### List.getFeed(id, parameterObject) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 Returns a list of the most recent chapters from the manga in a list
 
 **Kind**: static method of [<code>List</code>](#List)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| id | <code>String</code> |  | Mangadex id of the list |
-| [limit] | <code>Number</code> | <code>100</code> | Amount of chapters to return (Max 500) |
-| [offset] | <code>Number</code> | <code>0</code> | How many chapters to skip before returning |
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>String</code> | Mangadex id of the list |
+| parameterObject | <code>FeedParameterObject</code> | Information on which chapters to be returned |
 
 <a name="Manga"></a>
 
@@ -889,7 +874,6 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.updatedAt](#Manga+updatedAt) : <code>Date</code>
         * [.authors](#Manga+authors) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.artists](#Manga+artists) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
-        * [.chapters](#Manga+chapters) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.mainCover](#Manga+mainCover) : [<code>Relationship</code>](#Relationship)
         * [.tags](#Manga+tags) : [<code>Array.&lt;Tag&gt;</code>](#Tag)
         * [.title](#Manga+title) : <code>String</code>
@@ -897,12 +881,12 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.description](#Manga+description) : <code>String</code>
         * [.getCovers()](#Manga+getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
         * [.fill()](#Manga+fill) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
-        * [.getFeed([params], [limit], [offset])](#Manga+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.getFeed([parameterObject])](#Manga+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.addToList(list)](#Manga+addToList) ⇒ <code>Promise</code>
     * _static_
-        * [.search([searchParameters], [limit], [offset])](#Manga.search) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
+        * [.search([searchParameters])](#Manga.search) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
         * [.get(id)](#Manga.get) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
-        * [.getFeed(id, [params], [limit], [offset])](#Manga.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.getFeed(id, [parameterObject], [limit], [offset])](#Manga.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.getRandom()](#Manga.getRandom) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
         * [.getFollowedManga()](#Manga.getFollowedManga) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
         * [.getCovers(id)](#Manga.getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
@@ -1019,12 +1003,6 @@ Relationships to authors attributed to this manga
 Relationships to artists attributed to this manga
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
-<a name="Manga+chapters"></a>
-
-### manga.chapters : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
-Relationships to this manga's chapters
-
-**Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+mainCover"></a>
 
 ### manga.mainCover : [<code>Relationship</code>](#Relationship)
@@ -1069,16 +1047,14 @@ Retrieves all data for this manga from the API using its id.Sets the data in pl
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 <a name="Manga+getFeed"></a>
 
-### manga.getFeed([params], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+### manga.getFeed([parameterObject]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 Returns a feed of the most recent chapters of this manga
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 
-| Param | Type | Default |
-| --- | --- | --- |
-| [params] | <code>FeedParameterObject</code> |  | 
-| [limit] | <code>Number</code> | <code>100</code> | 
-| [offset] | <code>Number</code> | <code>0</code> | 
+| Param | Type |
+| --- | --- |
+| [parameterObject] | <code>FeedParameterObject</code> | 
 
 <a name="Manga+addToList"></a>
 
@@ -1093,16 +1069,14 @@ Adds this manga to a list
 
 <a name="Manga.search"></a>
 
-### Manga.search([searchParameters], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
+### Manga.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
 Peforms a search and returns an array of manga.https://api.mangadex.org/docs.html#operation/get-search-manga
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [searchParameters] | <code>MangaParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the title |
-| [limit] | <code>Number</code> | <code>10</code> | The maximum amount (100) of results to return. (Default: 10) |
-| [offset] | <code>Number</code> | <code>0</code> | The amount of results to skip before recording them. (Default: 0) |
+| Param | Type | Description |
+| --- | --- | --- |
+| [searchParameters] | <code>MangaParameterObject</code> \| <code>String</code> | An object of offical search parameters, or a string representing the title |
 
 <a name="Manga.get"></a>
 
@@ -1117,15 +1091,15 @@ Retrieves and returns a manga by its id
 
 <a name="Manga.getFeed"></a>
 
-### Manga.getFeed(id, [params], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+### Manga.getFeed(id, [parameterObject], [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
-| Param | Type | Default |
-| --- | --- | --- |
-| id | <code>String</code> |  | 
-| [params] | <code>FeedParameterObject</code> |  | 
-| [limit] | <code>Number</code> | <code>100</code> | 
-| [offset] | <code>Number</code> | <code>0</code> | 
+| Param | Type |
+| --- | --- |
+| id | <code>String</code> | 
+| [parameterObject] | <code>FeedParameterObject</code> | 
+| [limit] | <code>Number</code> | 
+| [offset] | <code>Number</code> | 
 
 <a name="Manga.getRandom"></a>
 

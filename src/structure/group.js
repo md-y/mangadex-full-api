@@ -82,7 +82,7 @@ class Group {
      * @typedef {Object} GroupParameterObject
      * @property {String} GroupParameterObject.name
      * @property {String[]} GroupParameterObject.ids Max of 100 per request
-     * @property {Number} GroupParameterObject.limit
+     * @property {Number} GroupParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} GroupParameterObject.offset
      * @property {Object} GroupParameterObject.order
      */
@@ -91,30 +91,14 @@ class Group {
      * Peforms a search and returns an array of groups.
      * https://api.mangadex.org/docs.html#operation/get-search-group
      * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
-     * @param {Number} [limit=10] The maximum amount (100) of results to return. (Default: 10)
-     * @param {Number} [offset=0] The amount of results to skip before recording them. (Default: 0)
      * @returns {Promise<Group[]>}
      */
-    static search(searchParameters = {}, limit = 10, offset = 0) {
+    static search(searchParameters = {}) {
         return new Promise(async (resolve, reject) => {
             if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
-            let cleanParameters = { limit: limit, offset: offset };
-            for (let i in searchParameters) {
-                if (searchParameters[i] instanceof Array) cleanParameters[i] = searchParameters[i].map(elem => {
-                    if (typeof elem === 'string') return elem;
-                    if ('id' in elem) return elem.id;
-                    return elem.toString();
-                });
-                else if (typeof searchParameters[i] !== 'string') cleanParameters[i] = searchParameters[i].toString();
-                else cleanParameters[i] = searchParameters[i];
-            }
-
             try {
-                let res = await Util.apiParameterRequest('/group', cleanParameters);
-                if (Util.getResponseStatus(res) !== 'ok')
-                    reject(new Error(`Group search returned error:\n${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`Group search returned non-search result:\n${res}`));
-                resolve(res.map(group => new Group(group)));
+                let res = await Util.apiSearchRequest('/group', searchParameters);
+                resolve(res.map(elem => new Group(elem)));
             } catch (error) {
                 reject(error);
             }

@@ -118,7 +118,7 @@ class Chapter {
      * @property {Object} ChapterParameterObject.order
      * @property {String[]} ChapterParameterObject.translatedLanguage
      * @property {String[]} ChapterParameterObject.ids Max of 100 per request
-     * @property {Number} ChapterParameterObject.limit
+     * @property {Number} ChapterParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} ChapterParameterObject.offset
      * @property {String[]|Group[]} ChapterParameterObject.groups
      * @property {String|User} ChapterParameterObject.uploader
@@ -131,35 +131,20 @@ class Chapter {
      * Peforms a search and returns an array of chapters.
      * https://api.mangadex.org/docs.html#operation/get-chapter
      * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
-     * @param {Number} [limit=10] The maximum amount (100) of results to return. (Default: 10)
-     * @param {Number} [offset=0] The amount of results to skip before recording them. (Default: 0)
      * @returns {Promise<Chapter[]>}
      */
-    static search(searchParameters = {}, limit = 10, offset = 0) {
+    static search(searchParameters = {}) {
         return new Promise(async (resolve, reject) => {
             if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
-            let cleanParameters = { limit: limit, offset: offset };
-            for (let i in searchParameters) {
-                if (searchParameters[i] instanceof Array) cleanParameters[i] = searchParameters[i].map(elem => {
-                    if (typeof elem === 'string') return elem;
-                    if ('id' in elem) return elem.id;
-                    return elem.toString();
-                });
-                else if (typeof searchParameters[i] !== 'string') cleanParameters[i] = searchParameters[i].toString();
-                else cleanParameters[i] = searchParameters[i];
-            }
-
             try {
-                let res = await Util.apiParameterRequest('/chapter', cleanParameters);
-                if (Util.getResponseStatus(res) !== 'ok')
-                    reject(new Error(`Chapter search returned error:\n${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`Chapter search returned non-search result:\n${res}`));
-                resolve(res.map(chapter => new Chapter(chapter)));
+                let res = await Util.apiSearchRequest('/chapter', searchParameters);
+                resolve(res.map(elem => new Chapter(elem)));
             } catch (error) {
                 reject(error);
             }
         });
     }
+
 
     /**
      * Retrieves and returns a chapter by its id

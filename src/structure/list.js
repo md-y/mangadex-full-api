@@ -169,31 +169,40 @@ class List {
     }
 
     /**
+     * @private
+     * @typedef {Object} FeedParameterObject
+     * @property {Number} FeedParameterObject.limit Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} FeedParameterObject.offset
+     * @property {String[]} FeedParameterObject.translatedLanguage
+     * @property {String} FeedParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} FeedParameterObject.order
+     */
+
+    /**
      * Returns a list of the most recent chapters from the manga in a list
      * @param {String} id Mangadex id of the list
-     * @param {Number} [limit] Amount of chapters to return (Max 500)
-     * @param {Number} [offset] How many chapters to skip before returning
+     * @param {FeedParameterObject} parameterObject Information on which chapters to be returned
      * @returns {Promise<Chapter[]>}
      */
-    static getFeed(id, limit = 100, offset = 0) {
+    static getFeed(id, parameterObject) {
         let l = new List(id);
-        return l.getFeed(limit, offset);
+        return l.getFeed(parameterObject);
     }
 
     /**
      * Returns a list of the most recent chapters from the manga in a list
-     * @param {Number} [limit] Amount of chapters to return (Max 500)
-     * @param {Number} [offset] How many chapters to skip before returning
+     * https://api.mangadex.org/docs.html#operation/get-list-id-feed
+     * @param {FeedParameterObject} [parameterObject] Information on which chapters to be returned
      * @returns {Promise<Chapter[]>}
      */
-    getFeed(limit = 100, offset = 0) {
+    getFeed(parameterObject = {}) {
         return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to get feed for a list with no id.'));
             try {
                 if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
-                let res = await Util.apiParameterRequest(`/list/${this.id}/feed`, { limit: limit, offset: offset });
+                let res = await Util.apiSearchRequest(`/list/${this.id}/feed`, parameterObject, 500, 100);
                 if (Util.getResponseStatus(res) !== 'ok') reject(new Error(`List feed returned an error: ${Util.getResponseMessage(res)}`));
-                if (!(res instanceof Array)) reject(new Error(`List feed returned non-feed result:\n${res}`));
                 resolve(res.map(elem => new Chapter(elem)));
             } catch (error) {
                 reject(error);

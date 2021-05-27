@@ -82,23 +82,67 @@ exports.apiRequest = apiRequest;
 function apiParameterRequest(baseEndpoint, parameterObject) {
     return new Promise(async (resolve, reject) => {
         if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') reject(new Error('Invalid Argument(s)'));
-        let endpoint = `${baseEndpoint}?`;
+        let cleanParameters = {};
         for (let i in parameterObject) {
-            if (parameterObject[i] instanceof Array) parameterObject[i].forEach(e => endpoint += `${i}[]=${e}&`);
-            else endpoint += `${i}=${parameterObject[i]}&`;
+            if (parameterObject[i] instanceof Array) cleanParameters[i] = parameterObject[i].map(elem => {
+                if (typeof elem === 'string') return elem;
+                if ('id' in elem) return elem.id;
+                return elem.toString();
+            });
+            else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
+            else cleanParameters[i] = parameterObject[i];
+        }
+
+        let endpoint = `${baseEndpoint}?`;
+        for (let i in cleanParameters) {
+            if (cleanParameters[i] instanceof Array) cleanParameters[i].forEach(e => endpoint += `${i}[]=${e}&`);
+            else endpoint += `${i}=${cleanParameters[i]}&`;
         }
         try {
             let res = await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
             if (getResponseStatus(res) !== 'ok' || res.results === undefined || !(res.results instanceof Array))
                 reject(new Error(`Failed to perform search:\n${getResponseMessage(res)}`));
-            if ('results' in res) resolve(res.results);
-            else resolve(res);
+            resolve(res);
         } catch (error) {
             reject(error);
         }
     });
 }
 exports.apiParameterRequest = apiParameterRequest;
+
+/**
+ * Same as apiParameterRequest, but optimized for search requests. 
+ * Allows for larger searches (more than the limit max, even to Infinity) through mutliple requests, and
+ * this function always returns an array instead of the normal JSON object.
+ * @param {String} baseEndpoint Endpoint with no parameters
+ * @param {Object} parameterObject Object of search parameters based on API specifications
+ * @param {Number} [maxLimit=100] What is the maximum number of results that can be returned from this endpoint at once?
+ * @param {Number} [defaultLimit=10] How many should be returned by default?
+ * @returns {Promise<APIResponse[]>}
+ */
+function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, defaultLimit = 10) {
+    return new Promise(async (resolve, reject) => {
+        if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') reject(new Error('Invalid Argument(s)'));
+        let limit = 'limit' in parameterObject ? parameterObject.limit : defaultLimit;
+        if (limit <= 0) resolve([]);
+        try {
+            let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
+            if (getResponseStatus(res) !== 'ok') reject(new Error(`Search returned error:\n${getResponseMessage(res)}`));
+            let finalArray = res.results;
+            if (!(finalArray instanceof Array)) reject(new Error(`Search returned non-search result:\n${res}`));
+            if (limit > maxLimit && finalArray.length === maxLimit) {
+                parameterObject.limit = limit - maxLimit;
+                parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
+                let newRes = await apiSearchRequest(baseEndpoint, parameterObject);
+                finalArray = finalArray.concat(newRes);
+            }
+            resolve(finalArray);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+exports.apiSearchRequest = apiSearchRequest;
 
 /**
  * Finds the status of a response from the API. Either 'ok', 'captcha', 'error', 'no-data', or 'multiple'.
