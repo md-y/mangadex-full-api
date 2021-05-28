@@ -119,6 +119,18 @@ class Cover {
     }
 
     /**
+     * Performs a search for one manga and returns that manga
+     * @param {CoverParameterObject} [searchParameters]
+     * @returns {Promise<Cover>}
+     */
+     static async getByQuery(searchParameters = {}) {
+        searchParameters.limit = 1;
+        let res = await Cover.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
+
+    /**
      * Get an array of manga's covers
      * @param {...String|Manga} manga
      * @returns {Promise<Cover[]>}

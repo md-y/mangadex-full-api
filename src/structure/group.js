@@ -108,6 +108,19 @@ class Group {
     }
 
     /**
+     * Performs a search for one group and returns that group
+     * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+     * @returns {Promise<Group>}
+     */
+     static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { name: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Group.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
+
+    /**
      * Returns all groups followed by the logged in user
      * @param {Number} [limit=100] Amount of groups to return (0 to Infinity)
      * @param {Number} [offset=0] How many groups to skip before returning

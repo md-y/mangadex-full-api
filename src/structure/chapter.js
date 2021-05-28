@@ -149,6 +149,19 @@ class Chapter {
     }
 
     /**
+     * Performs a search for one chapter and returns that chapter
+     * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Chapter>}
+     */
+    static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Chapter.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
+
+    /**
      * Marks a chapter as either read or unread
      * @param {String} id
      * @param {Boolean} [read=true] True to mark as read, false to mark unread

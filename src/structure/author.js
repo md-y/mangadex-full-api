@@ -94,6 +94,19 @@ class Author {
     static async get(id) {
         return new Author(await Util.apiRequest(`/author/${id}`));
     }
+
+    /**
+     * Performs a search for one author and returns that author
+     * @param {AuthorParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+     * @returns {Promise<Author>}
+     */
+    static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { name: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Author.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
 }
 
 exports = module.exports = Author;

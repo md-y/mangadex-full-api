@@ -218,6 +218,19 @@ class Manga {
     }
 
     /**
+     * Performs a search for one manga and returns that manga
+     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Manga>}
+     */
+    static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Manga.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
+
+    /**
      * @private
      * @typedef {Object} FeedParameterObject
      * @property {Number} FeedParameterObject.limit Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
