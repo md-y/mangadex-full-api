@@ -1,186 +1,270 @@
-const https = require("https");
-const index = require("./index");
+'use strict';
 
-module.exports = {
-    /**
-     * Sends a HTTPS GET request. 
-     * @param {String|URL} url 
-     * @returns {Promise} Returns promise with resolve(response, http.IncomingMessage)
-     */
-    getHTTPS: function(url) {
-        return new Promise((resolve, reject) => {
-            if (!url) reject(new Error("No URL."));
+const HTTPS = require('https');
+const Fs = require('fs');
+const Path = require('path');
+const APIRequestError = require('./internal/requesterror.js');
 
-            if (index.agent.domainOverride) url = url.replace("mangadex.org", index.agent.domainOverride);
+/**
+ * @typedef {(Object|Object[])} APIResponse
+ */
 
-            let options = {
-                headers: {
-                    "User-Agent": "mangadex-full-api",
-                    "Cookie": "",
-                    "Access-Control-Allow-Origin": "*"
-                }
-            };
-            
-            if (index.agent.sessionId) options.headers.Cookie += "mangadex_session=" + index.agent.sessionId + "; ";
-            if (index.agent.persistentId) options.headers.Cookie += "mangadex_rememberme_token=" + index.agent.persistentId + "; ";
-            options.headers.Cookie += "mangadex_h_toggle=" + index.agent.hentaiSetting + "; ";
-            options.headers.Cookie += "mangadex_title_mode=2"; // If there's no agent, this will have 100 manga per MDList page
+/**
+ * Sends a HTTPS request to a specified endpoint
+ * @param {String} endpoint API endpoint (ex: /ping)
+ * @param {'GET'|'POST'|'PUT'|'DELETE'} [method='GET'] GET, POST, PUT, or DELETE. (Default: GET)
+ * @param {Object} [requestPayload] Payload used for POST and DELETE requests
+ * @returns {Promise<APIResponse>}
+ */
+function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
+    return new Promise((resolve, reject) => {
+        if (endpoint === undefined || typeof endpoint !== 'string') reject(new Error('Invalid Argument(s)'));
+        if (endpoint[0] !== '/') endpoint = `/${endpoint}`;
 
-            https.get(new URL(url), options, (res) => {
-                // Update current session token if new one is given.
-                if ("set-cookie" in res.headers) {
-                    for (let i of res.headers["set-cookie"]) {
-                        let m = (/mangadex_session=([^;]+);.+expires=([^;]+)/gmi).exec(i);
-                        if (m && m.length >= 3) {
-                            index.agent.sessionId = m[1];
-                            index.agent.sessionExpiration = new Date(m[2]);
-                            break;
-                        }
+        let headerObj = {};
+        if (method !== 'GET') headerObj['content-type'] = 'application/json';
+        if (AuthUtil.sessionToken) headerObj['authorization'] = `bearer ${AuthUtil.sessionToken}`;
+        // console.log(endpoint, 'authorization' in headerObj);
+
+        const req = HTTPS.request({
+            hostname: 'api.mangadex.org',
+            path: endpoint,
+            method: method,
+            headers: headerObj
+        }, (res) => {
+            let responsePayload = '';
+
+            res.on('data', (data) => {
+                responsePayload += data;
+            });
+
+            res.on('end', () => {
+                if (res.headers['content-type'] !== undefined && res.headers['content-type'].includes('json')) {
+                    try {
+                        let parsedObj = JSON.parse(responsePayload);
+                        if (parsedObj === null) reject(new APIRequestError(`HTTPS ${method} Response (${endpoint}) returned null`, APIRequestError.INVALID_RESPONSE));
+                        if (res.statusCode < 400 || res.result === 'ok') resolve(parsedObj);
+                        else reject(new APIRequestError(parsedObj));
+                    } catch (error) {
+                        reject(new APIRequestError(
+                            `Failed to parse HTTPS ${method} ` +
+                            `Response (${endpoint}) as JSON despite Content-Type ` +
+                            `Header: ${res.headers['content-type']}\n${error}`
+                        ), APIRequestError.INVALID_RESPONSE);
                     }
-                }
+                } else resolve(responsePayload);
+            });
 
-                res.url = url;
-                let payload = "";
-                let contentType = res.headers["content-type"];
-
-                if (res.statusCode >= 500) reject(new Error(`MangaDex is currently unavailable or in DDOS mitigation mode. (Status code ${res.statusCode})`));
-                else if (res.statusCode == 403) reject(new Error("You are not authenticated. Please log in. (Status code 403)"));
-                else if (res.statusCode == 404) {
-                    if (contentType.indexOf("json") == -1) reject(new Error("Page not found or the mangadex.org domain is unavailable. (Status code 404)"));
-                    else {
-                        let endpointIndex = res.url.indexOf("/v2/");
-                        if (endpointIndex == -1) reject(new Error("JSON Object unavailable or the mangadex.org domain is unavailable. (Status code 404)"));
-                        else reject(new Error(`API Object (${res.url.slice(endpointIndex)}) not found or the mangadex.org domain is unavailable. (Status code 404)`));
-                    }
-                }
-
-                res.on('data', (data) => {
-                    payload += data;
-                });
-
-                res.on('end', () => {
-                    resolve(payload);
-                });
-            }).on('error', reject);
+            res.on('error', (error) => {
+                reject(new APIRequestError(`HTTPS ${method} Response (${endpoint}) returned an error:\n${error}`));
+            });
+        }).on('error', (error) => {
+            reject(new APIRequestError(`HTTPS ${method} Request (${endpoint}) returned an error:\n${error}`));
         });
-    },
-    /**
-     * Sends a HTTPS GET request and parses JSON response
-     * @param {String|URL} url 
-     * @returns {Promise} Returns promise with resolve(response, http.IncomingMessage)
-     */
-    getJSON: function(url) {
-        return new Promise((resolve, reject) => {
-            if (!url) reject(new Error("No URL."));
-            module.exports.getHTTPS(url).then(payload => {
+
+        if (method !== 'GET') {
+            if (typeof requestPayload !== 'string') {
                 try {
-                    let obj = JSON.parse(payload);
-                    resolve(obj);
+                    req.write(JSON.stringify(requestPayload));
                 } catch (err) {
-                    reject(err);
+                    reject(new Error('Invalid payload object.'));
                 }
-            }).catch(reject);
-        });
-    },
-    /**
-     * Sends a HTTPS GET request, iterates through regex, and returns any capture goups in an object 
-     * with the same keys as regex. Multiple groups or matches return as an array
-     * @param {String|URL} url 
-     * @param {RegExp} regex 
-     * @returns {Promise} Returns promise with resolve(response, http.IncomingMessage)
-     */
-    getMatches: function(url, regex) {
-        return new Promise((resolve, reject) => {
-            if (!url || !regex) reject(new Error("Invalid Arguments."));
-            module.exports.getHTTPS(url).then(body => {
-                let payload = {};
-                let m;
-                for (let i in regex) { // For each regular expression...
-                    while ((m = regex[i].exec(body)) != null) { // Look for matches...
-                        if (!payload[i]) payload[i] = []; // Create an empty array if needed
-                        if (m.length > 1) for (let a of m.slice(1)) payload[i].push(a); // If the regex includes groups
-                        else payload[i].push(m[0]); // If the regex does not
-                    }
-                    if (payload[i] && payload[i].length == 1) payload[i] = payload[i][0]; // Convert to string if the only element
-                }
-                resolve(payload);
-            }).catch(reject);
-        });
-    },
-    /**
-     * Performs modified getMatch() call that returns an array of IDs
-     * @param {String|URL} url Base quicksearch URL
-     * @param {String} query Query like a name
-     * @param {RegExp} regex 
-     * @returns {Promise} Returns promise with resolve(response, http.IncomingMessage)
-     */
-    quickSearch: function(query, regex) {
-        let url = "https://mangadex.org/quick_search/";
-        return new Promise((resolve, reject) => {
-            if (!query || !regex) reject(new Error("Invalid Arguments."));
-            module.exports.getMatches(url + encodeURIComponent(query), {
-                "results": regex,
-                "error": /<!-- login_container -->/gmi // Only appears when not logged in.
-            }).then(matches => {
-                if (matches.error != undefined) reject(new Error("MangaDex is in DDOS mitigation mode. No search available. Not using agent?"));
-
-                if (!matches.results) matches.results = [];
-                if (!(matches.results instanceof Array)) matches.results = [matches.results];
-                matches.results.forEach((e, i, a)=> { a[i] = parseInt(e); });
-                resolve(matches.results);
-            }).catch(reject);
-        });
-    },
-    /**
-     * Returns a random string following the mfa[0-1000] pattern
-     */
-    generateMultipartBoundary: function() {
-        return "mfa" + Math.floor(Math.random() * 1000).toString();
-    },
-    /**
-     * Returns multipart payload for POST requests
-     * @param {String} boundary Any String
-     * @param {Object} obj Name-Content Key-Value Pairs
-     */
-    generateMultipartPayload: function(boundary = "mfa", obj = {}) {
-        payload = "";
-        for (let i in obj) {
-            payload +=  `--${boundary}\n` +
-                        `Content-Disposition: form-data; name="${i}"\n` +
-                        `\n` +
-                        `${obj[i]}\n`;
+            } else req.write(requestPayload);
         }
-        payload += `--${boundary}--`;
-        return payload;
-    },
-    /**
-     * Gets a key by value.
-     * @param {Object}
-     * @param {String} value 
-     * @returns {String}
-     */
-    getKeyByValue: function(obj, value) {
-        // Direct search
-        let keyResult = Object.keys(obj).find(key => obj[key] === value);
-        if (keyResult) return keyResult;
-
-        // Includes value
-        if (typeof value === "string") keyResult = Object.keys(obj).find(key => obj[key].toLowerCase().includes(value));
-        return keyResult;
-    },
-    /**
-     * Convert a key and value array to a key array
-     * @param {Object} en Enum object with integer keys
-     * @param {Array} arr Element array 
-     */
-    parseEnumArray: function(en, arr) {
-        let newArray = [];
-        for (let i in arr) {
-            if (isNaN(arr[i])) {
-                let elem = this.getKeyByValue(en, arr[i]);
-                if (elem) newArray.push(elem);
-            } else newArray.push(arr[i]);
-        }
-        return newArray;
-    }
+        req.end();
+    });
 };
+exports.apiRequest = apiRequest;
+
+/**
+ * Performs a custom request that converts an object of parameters to an endpoint URL with parameters.
+ * If the response contains a results array, that is returned instead
+ * @param {String} baseEndpoint Endpoint with no parameters
+ * @param {Object} parameterObject Object of search parameters based on API specifications
+ * @returns {Promise<APIResponse|APIResponse[]>}
+ */
+async function apiParameterRequest(baseEndpoint, parameterObject) {
+    if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
+    let cleanParameters = {};
+    for (let i in parameterObject) {
+        if (parameterObject[i] instanceof Array) cleanParameters[i] = parameterObject[i].map(elem => {
+            if (typeof elem === 'string') return elem;
+            if ('id' in elem) return elem.id;
+            return elem.toString();
+        });
+        else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
+        else cleanParameters[i] = parameterObject[i];
+    }
+
+    let endpoint = `${baseEndpoint}?`;
+    for (let i in cleanParameters) {
+        if (cleanParameters[i] instanceof Array) cleanParameters[i].forEach(e => endpoint += `${i}[]=${e}&`);
+        else endpoint += `${i}=${cleanParameters[i]}&`;
+    }
+    return await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
+}
+exports.apiParameterRequest = apiParameterRequest;
+
+/**
+ * Same as apiParameterRequest, but optimized for search requests. 
+ * Allows for larger searches (more than the limit max, even to Infinity) through mutliple requests, and
+ * this function always returns an array instead of the normal JSON object.
+ * @param {String} baseEndpoint Endpoint with no parameters
+ * @param {Object} parameterObject Object of search parameters based on API specifications
+ * @param {Number} [maxLimit=100] What is the maximum number of results that can be returned from this endpoint at once?
+ * @param {Number} [defaultLimit=10] How many should be returned by default?
+ * @returns {Promise<APIResponse[]>}
+ */
+async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, defaultLimit = 10) {
+    if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
+    let limit = 'limit' in parameterObject ? parameterObject.limit : defaultLimit;
+    if (limit <= 0) return [];
+    let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
+    let finalArray = res.results;
+    if (!(finalArray instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+    if (limit > maxLimit && finalArray.length === maxLimit) {
+        parameterObject.limit = limit - maxLimit;
+        parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
+        let newRes = await apiSearchRequest(baseEndpoint, parameterObject);
+        finalArray = finalArray.concat(newRes);
+    }
+    return finalArray;
+}
+exports.apiSearchRequest = apiSearchRequest;
+
+/**
+ * @param {String} endpoint
+ * @param {Object} classObject
+ * @param {Object} parameterObject
+ * @param {Number} [maxLimit=100] What is the maximum number of results that can be returned from this endpoint at once?
+ * @param {Number} [defaultLimit=10] How many should be returned by default?
+ * @returns {Promise<APIResponse[]>}
+ */
+async function apiCastedRequest(endpoint, classObject, parameterObject = {}, maxLimit = 100, defaultLimit = 10) {
+    let res = await apiSearchRequest(endpoint, parameterObject, maxLimit, defaultLimit);
+    return res.map(elem => new classObject(elem));
+}
+exports.apiCastedRequest = apiCastedRequest;
+
+/**
+ * Any function that requires authentication should call 'validateTokens().'
+ * How authentication works:
+ * If there is no cache or its invalid, simply request tokens through logging in ('login()').
+ * If there is a cache, check if the tokens are up to date ('validateTokens()').
+ * If the session token is out of date, refresh it ('validateTokens()').
+ * If the refresh token is out of date, log in again ('login()').
+ * At most there are three calls to the API, two of which are rate limited (/auth/refresh and /auth/login).
+ */
+class AuthUtil {
+    /** @type {String} */
+    static sessionToken;
+    /** @type {String} */
+    static refreshToken;
+    /** @type {String} */
+    static cacheLocation;
+    /** @type {String} */
+    static authUser;
+    /** @type {Boolean} */
+    static canAuth = false;
+
+    /**
+     * @param {String} username 
+     * @param {String} password 
+     * @param {String} [cacheLocation]
+     * @returns {Promise<void>}
+     */
+    static async login(username, password, cacheLocation) {
+        if (username === undefined || password === undefined) throw new Error('Invalid Argument(s)');
+        AuthUtil.canAuth = true;
+        // Read refresh token from file
+        if (cacheLocation) {
+            try {
+                if (!Path.basename(cacheLocation).includes('.')) cacheLocation = Path.join(cacheLocation, '.md_token');
+                if (AuthUtil.readFromCache(cacheLocation) && AuthUtil.authUser === username) {
+                    await AuthUtil.validateTokens();
+                    return;
+                }
+            } catch (error) {
+                // Continue and retry at login
+                AuthUtil.refreshToken = null;
+                AuthUtil.sessionToken = null;
+            }
+        }
+
+        // Login
+        AuthUtil.authUser = username;
+        let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
+        AuthUtil.sessionToken = res.token.session;
+        AuthUtil.refreshToken = res.token.refresh;
+        if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
+        return;
+    }
+
+    /**
+     * @param {String} [token] Refresh token
+     * @returns {Promise<String>} Session Token
+     */
+    static async validateTokens(token) {
+        if (token) AuthUtil.refreshToken = token;
+        if (!AuthUtil.canAuth || !AuthUtil.refreshToken) throw new APIRequestError('Not logged in.', APIRequestError.AUTHORIZATION);
+        // Check if session token is out of date:
+        if (AuthUtil.sessionToken) {
+            try {
+                let res = await apiRequest('/auth/check');
+                if (res.isAuthenticated) return AuthUtil.sessionToken;
+            } catch (error) {
+                // If it fails the check, refresh it in the next try-catch block
+                AuthUtil.sessionToken = null;
+            }
+        }
+
+        // Refresh token/Check if refresh token is out of date
+        let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
+        AuthUtil.sessionToken = res.token.session;
+        AuthUtil.refreshToken = res.token.refresh;
+        AuthUtil.writeToCache();
+        return AuthUtil.sessionToken;
+    }
+
+    /**
+     * Writes the current state of authentication to a file
+     * @param {String} [cacheLocation] 
+     * @returns {Boolean} True of OK, False if not
+     */
+    static writeToCache(cacheLocation) {
+        if (cacheLocation) AuthUtil.cacheLocation = cacheLocation;
+        if (AuthUtil.cacheLocation) {
+            try {
+                Fs.writeFileSync(AuthUtil.cacheLocation, `${AuthUtil.authUser}\n${AuthUtil.refreshToken}\n${AuthUtil.sessionToken}`);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Reads the state of authentication from a file
+     * @param {String} cacheLocation 
+     * @returns {Boolean} True of OK, False if not
+     */
+    static readFromCache(cacheLocation) {
+        if (cacheLocation) AuthUtil.cacheLocation = cacheLocation;
+        if (AuthUtil.cacheLocation) {
+            try {
+                if (!Fs.existsSync(AuthUtil.cacheLocation)) return false;
+                let tokenArray = Fs.readFileSync(AuthUtil.cacheLocation).toString().split('\n');
+                if (tokenArray.length < 3) return false;
+                AuthUtil.authUser = tokenArray[0];
+                AuthUtil.refreshToken = tokenArray[1];
+                AuthUtil.sessionToken = tokenArray[2];
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
+    }
+}
+exports.AuthUtil = AuthUtil;

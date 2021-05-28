@@ -1,163 +1,199 @@
-const Util = require("../util");
-const APIObject = require("./apiobject");
-const Group = require("./group");
-const chapterType = require("../enum/chapter-type");
+'use strict';
+
+const Util = require('../util.js');
+const Relationship = require('../internal/relationship.js');
 
 /**
- * Represents a Chapter with pages
+ * Represents a chapter with readable pages
+ * https://api.mangadex.org/docs.html#tag/Chapter
  */
-class Chapter extends APIObject {
-    _parse(data) {
-        /**
-         * MangaDex Chapter ID
-         * @type {Number}
-         */
-        this.id = data.id;
+class Chapter {
+    /**
+     * There is no reason to directly create a chapter object. Use static methods, ie 'get()'.
+     * @param {Object|String} context Either an API response or Mangadex id 
+     */
+    constructor(context) {
+        if (typeof context === 'string') {
+            this.id = context;
+            return;
+        } else if (!context) return;
+
+        if (context.data === undefined) context.data = {};
 
         /**
-         * Type of chapter (delayed, external, etc.)?
-         * @type {Number} See chapter-type.js
-         */
-        this.type = chapterType.internal;
-        if (data.status != "OK") this.type = chapterType[data.status];
-
-        /**
-         * URL to chapter homepage (AKA the first page)
+         * Mangadex id for this object
          * @type {String}
          */
-        if (this.id) this.url = "https://mangadex.org/chapter/" + this.id.toString();
-        else this.url = undefined;
+        this.id = context.data.id;
+
+
+        if (context.data.attributes === undefined) context.data.attributes = {};
 
         /**
-         * Applicable link to chapter. It's either the MD Link, Group delayed link, or
-         * external link.
+         * Number this chapter's volume
+         * @type {Number}
+         */
+        this.volume = context.data.attributes.volume !== null && !isNaN(context.data.attributes.volume) ? parseFloat(context.data.attributes.volume) : null;
+
+        /**
+         * Number of this chapter
+         * @type {Number}
+         */
+        this.chapter = context.data.attributes.chapter !== null && !isNaN(context.data.attributes.chapter) ? parseFloat(context.data.attributes.chapter) : null;
+
+        /**
+         * Title of this chapter
          * @type {String}
          */
-        this.link = this.url;
-        if (this.type == chapterType.delayed) this.link = data.groupWebsite;
-        else if (this.type == chapterType.external) this.link = data.pages;
+        this.title = context.data.attributes.title;
 
         /**
-         * Unix timestamp
-         * @type {Number}
-         */
-        this.timestamp = data.timestamp ? data.timestamp : undefined;
-
-        /**
-         * Volume # (0 if unknown)
-         * @type {Number}
-         */
-        this.volume = data.volume && data.volume !== "" ? parseFloat(data.volume): 0;
-
-        /**
-         * Chapter # (0 if unknown)
-         * @type {Number}
-         */
-        this.chapter = data.chapter && data.chapter !== "" ? parseFloat(data.chapter): 0;
-
-        /**
-         * Chapter Title ("" if no title)
+         * Translated language code (2 Letters)
          * @type {String}
          */
-        this.title = data.title ? data.title : "";
+        this.translatedLanguage = context.data.attributes.translatedLanguage;
 
         /**
-         * Chapter translated language code
+         * Hash id of this chapter
          * @type {String}
          */
-        this.language = data.language ? data.language.toUpperCase(): undefined;
+        this.hash = context.data.attributes.hash;
 
         /**
-         * Parent manga ID
-         * @type {Number}
+         * The date of this chapter's creation
+         * @type {Date}
          */
-        this.parentMangaID = data.mangaId;
+        this.createdAt = context.data.attributes.createdAt ? new Date(context.data.attributes.createdAt) : null;
 
         /**
-         * IDs of translation groups for this chapter
-         * @type {Array<Group>}
+         * The date this chapter was last updated
+         * @type {Date}
          */
-        this.groups = [];
-        if (data.groups) {
-            for (let i of data.groups) {
-                let group = new Group(i.id);
-                group.title = i.name;
-                this.groups.push(group);
-            }
-        }
+        this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
         /**
-         * Number of comments for this chapter, not manga
-         * @type {Number}
+         * The date this chapter was published
+         * @type {Date}
          */
-        this.commentCount = data.comments;
+        this.publishAt = context.data.attributes.publishAt ? new Date(context.data.attributes.publishAt) : null;
 
         /**
-         * Links to each pages.
-         * @type {Array<String>}
-         */
-        this.pages = [];
-        if (data.server && data.hash && data.pages) {
-            this.pages = [];
-            if (data.server == "/data/") data.server = "https://mangadex.org/data/"; // Home image server
-            for (let i of data.pages) this.pages.push(data.server + data.hash + "/" + i);
-        }
-
-        /**
-         * Data-saver server version of page URLs. 
-         * @type {Array<String>}
-         */
-        this.saverPages = [];
-        if (this.pages instanceof Array) {
-            for (let i of this.pages) this.saverPages.push(i.replace("/data/", "/data-saver/"));
-        }
-
-        /**
-         * Pages using the fallback server. 
-         * If there is no fallback, this is the same as the regular pages.
-         * Fallback servers are also more unstable, ironically. Be prepared for 404s and 500s.
-         * @type {Array<String>}
-         */
-        this.fallbackPages = this.pages;
-        if (this.pages instanceof Array && data.serverFallback && data.serverFallback !== data.server) {
-            this.fallbackPages = [];
-            if (data.serverFallback == "/data/") data.serverFallback = "https://mangadex.org/data/";
-            for (let i of data.pages) this.fallbackPages.push(data.serverFallback + data.hash + "/" + i);
-        }
-
-        /**
-         * Viewcount for this chapter
-         * @type {Number}
-         */
-        this.views = data.views;
-
-        /**
-         * URL to this chapter's language flag
+         * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
          * @type {String}
          */
-        if (this.language) this.flag = "https://mangadex.org/images/flags/" + this.language.toLowerCase() + ".png";
-        else this.flag = undefined;
+        this.pageNames = context.data.attributes.data;
+
+        /**
+         * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
+         * @type {String}
+         */
+        this.saverPageNames = context.data.attributes.dataSaver;
+
+        /**
+         * Relationships to scanlation groups that are attributed to this chapter
+         * @type {Relationship[]}
+         */
+        this.groups = Relationship.convertType('scanlation_group', context.relationships);
+
+        /**
+         * Relationships to the manga this chapter belongs to
+         * @type {Relationship}
+         */
+        this.manga = Relationship.convertType('manga', context.relationships)[0];
+
+        /**
+         * Relationships to the user who uploaded this chapter
+         * @type {Relationship}
+         */
+        this.uploader = Relationship.convertType('user', context.relationships)[0];
     }
 
-    fill(id) {
-        const api = "https://api.mangadex.org/v2/chapter/"; 
-        if (!id) id = this.id;
+    /**
+     * @private
+     * @typedef {Object} ChapterParameterObject
+     * @property {String} ChapterParameterObject.title
+     * @property {String} ChapterParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} ChapterParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} ChapterParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} ChapterParameterObject.order
+     * @property {String[]} ChapterParameterObject.translatedLanguage
+     * @property {String[]} ChapterParameterObject.ids Max of 100 per request
+     * @property {Number} ChapterParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} ChapterParameterObject.offset
+     * @property {String[]|Group[]} ChapterParameterObject.groups
+     * @property {String|User} ChapterParameterObject.uploader
+     * @property {String|Manga} ChapterParameterObject.manga
+     * @property {String} ChapterParameterObject.volume
+     * @property {String} ChapterParameterObject.chapter
+     */
 
-        return new Promise(async (resolve, reject) => {
-            if (!id) reject(new Error("No id specified or found."));
+    /**
+     * Peforms a search and returns an array of chapters.
+     * https://api.mangadex.org/docs.html#operation/get-chapter
+     * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Chapter[]>}
+     */
+    static search(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        return Util.apiCastedRequest('/chapter', Chapter, searchParameters);
+    }
 
-            // API v2
-            try {
-                let res = await Util.getJSON(api + id.toString());
-                if (res.status !== "OK") reject(new Error("API responsed with an error: " + res.message));
 
-                this._parse(res.data);
-                resolve(this);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    /**
+     * Retrieves and returns a chapter by its id
+     * @param {String} id Mangadex id
+     * @returns {Promise<Chapter>}
+     */
+    static async get(id) {
+        return new Chapter(await Util.apiRequest(`/chapter/${id}`));
+    }
+
+    /**
+     * Performs a search for one chapter and returns that chapter
+     * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Chapter>}
+     */
+    static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Chapter.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
+
+    /**
+     * Marks a chapter as either read or unread
+     * @param {String} id
+     * @param {Boolean} [read=true] True to mark as read, false to mark unread
+     * @returns {Promise<void>}
+     */
+    static async changeReadMarker(id, read = true) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/chapter/${id}/read`, read ? 'POST' : 'DELETE');
+    }
+
+    /**
+     * Retrieves URLs for actual images from Mangadex @ Home.
+     * This only gives URLs, so it does not report the status of the server to Mangadex @ Home.
+     * Therefore applications that download image data pleaese report failures as stated here:
+     * https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
+     * @param {Boolean} [saver=false] Use data saver images?
+     * @returns {Promise<String[]>}
+     */
+    async getReadablePages(saver = false) {
+        let res = await Util.apiRequest(`/at-home/server/${this.id}`);
+        return (saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`);
+    }
+
+    /**
+     * Marks this chapter as either read or unread
+     * @param {Boolean} [read=true] True to mark as read, false to mark unread
+     * @returns {Promise<Chapter>}
+     */
+    async changeReadMarker(read = true) {
+        await Chapter.changeReadMarker(this.id, read);
+        return this;
     }
 }
 
-module.exports = Chapter;
+exports = module.exports = Chapter;

@@ -1,334 +1,435 @@
-const Util = require("../util");
-const Chapter = require("./chapter");
-const genre = require("../enum/genre");
-const link = require("../enum/link");
-const APIObject = require("./apiobject");
+'use strict';
 
-// Full Search
-const langs = require("../enum/language");
-const sLangs = require("../enum/searchable-langs");
-const demographics = require("../enum/demographic");
-const pubstatus = require("../enum/pubstatus");
-const searchOrder = require("../enum/listing-order");
+const Util = require('../util.js');
+const Links = require('../internal/links.js');
+const LocalizedString = require('../internal/localizedstring.js');
+const Relationship = require('../internal/relationship.js');
+const Tag = require('../internal/tag.js');
+const Chapter = require('./chapter.js');
+const Cover = require('./cover.js');
+const List = require('./list.js');
+const APIRequestError = require('../internal/requesterror.js');
 
 /**
- * Represents a Manga with all information on a Manga's homepage
+ * Represents a manga object
+ * https://api.mangadex.org/docs.html#tag/Manga
  */
-class Manga extends APIObject {
-    _parse(data) {
-        /**
-         * MangaDex Manga ID
-         * @type {Number}
-         */
-        this.id = data.id;
+class Manga {
+    /**
+     * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
+     * @param {Object|String} context Either an API response or Mangadex id 
+     */
+    constructor(context) {
+        if (typeof context === 'string') {
+            this.id = context;
+            return;
+        } else if (!context) return;
+
+        if (context.data === undefined) context.data = {};
 
         /**
-         * Main title for a manga
+         * Mangadex id for this object
          * @type {String}
          */
-        this.title = data.title;
+        this.id = context.data.id;
 
+
+        if (context.data.attributes === undefined) context.data.attributes = {};
         /**
-         * Current cover.
-         * @type {String}
+         * Main title with different localization options
+         * @type {LocalizedString}
          */
-        this.cover = data.mainCover;
+        this.localizedTitle = new LocalizedString(context.data.attributes.title);
 
         /**
-         * Cover list of urls
-         * @type {Array<String>}
+         * Alt titles with different localization options
+         * @type {LocalizedString[]}
          */
-        this.covers = data.covers ? data.covers.map(e => e.url) : undefined;
+        this.localizedAltTitles = (context.data.attributes.altTitles || []).map(i => new LocalizedString(i));
 
         /**
-         * Original (published) manga language code
-         * @type {String}
+         * Description with different localization options
+         * @type {LocalizedString}
          */
-        this.language = data.publication.language? data.publication.language.toUpperCase() : undefined;
+        this.localizedDescription = new LocalizedString(context.data.attributes.description);
 
         /**
-         * Array of the manga's genres
-         * @type {Array<Number>}
-         */
-        this.genres = data.tags;
-
-        /**
-         * Artist(s) name(s)
-         * @type {Array<String>}
-         */
-        this.artists = data.artist;
-
-        /**
-         * Author(s) name(s)
-         * @type {Array<String>}
-         */
-        this.authors = data.author;
-
-        /**
-         * Hentai or not?
+         * Is this Manga locked?
          * @type {Boolean}
          */
-        this.hentai = data.isHentai !== undefined ? data.isHentai : undefined;
+        this.isLocked = context.data.attributes.isLocked;
 
         /**
-         * MangaDex description. 
-         * Formatted for HTML
+         * Link object representing links to other websites about this manga
+         * https://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
+         * @type {Links}
+         */
+        this.links = new Links(context.data.attributes.links);
+
+        /**
+         * 2-letter code for the original language of this manga
          * @type {String}
          */
-        this.description = data.description;
+        this.originalLanguage = context.data.attributes.originalLanguage;
 
         /**
-         * Links to manga information on other sites.
-         * Replaces raw values with enum/link when available, but still uses MangaDex keys.
-         * @type {Object}
-         */
-        this.links = data.links;
-        if (this.links) for (let i in this.links) if (link[i]) this.links[i] = link[i].prefix + this.links[i];
-
-        /**
-         * Basic information about each chapter in this manga. 
-         * Call fill() on each of these to request more info.
-         * @type {Array<Chapter>}
-         */
-        this.chapters = undefined;
-        if (data.chapters) {
-            this.chapters = [];
-            for (let i in data.chapters) {
-                // Simulate api/chapter return object
-                let chapterObject = data.chapters[i];
-                chapterObject.manga_id = this.id;
-                chapterObject.id = parseInt(i);
-
-                // Create chapter object
-                let c = new Chapter();
-                c._parse(chapterObject);
-                this.chapters.push(c);
-            }
-            this.chapters.reverse(); // Change Order
-        }
-
-        /**
-         * Viewcount
+         * Number this manga's last volume
          * @type {Number}
          */
-        this.views = data.views;
+        this.lastVolume = context.data.attributes.lastVolume !== null && !isNaN(context.data.attributes.lastVolume) ? parseFloat(context.data.attributes.lastVolume) : null;
 
         /**
-         * Bayesian Rating
-         * @type {Number}
-         */
-        this.rating = data.rating.bayesian;
-
-        /**
-         * Mean Rating
-         * @type {Number}
-         */
-        this.ratingMean = data.rating.mean;
-
-        /**
-         * Number of Users who have Rated
-         * @type {Number}
-         */
-        this.ratingUserCount = data.rating.users;
-
-        /**
-         * Alternate Titles
-         * @type {Array<String>}
-         */
-        this.altTitles = undefined;
-        if (data.altTitles) {
-            this.altTitles = [];
-            for (let i of data.altTitles) this.altTitles.push(i);
-        }
-
-        /**
-         * URL to manga homepage
+         * Name of this manga's last chapter
          * @type {String}
          */
-        if (this.id) this.url = "https://mangadex.org/title/" + this.id;
-        else this.url = undefined;
+        this.lastChapter = context.data.attributes.lastChapter;
 
         /**
-         * Link to this manga's flag.
-         * @type {String}
+         * Publication demographic of this manga
+         * https://api.mangadex.org/docs.html#section/Static-data/Manga-publication-demographic
+         * @type {'shounen'|'shoujo'|'josei'|'seinen'}
          */
-        if (this.language) this.flag = "https://mangadex.org/images/flags/" + this.language.toLowerCase() + ".png";
-        else this.flag = undefined;
-    }
+        this.publicationDemographic = context.data.attributes.publicationDemographic;
 
-    fill(id) {
-        const api = "https://api.mangadex.org/v2/manga/"; 
+        /**
+         * Publication/Scanlation status of this manga
+         * @type {'ongoing'|'completed'|'hiatus'|'cancelled'}
+         */
+        this.status = context.data.attributes.status;
 
-        if (!id) id = this.id;
-        return new Promise(async (resolve, reject) => {
-            if (!id) reject(new Error("No id specified or found."));
+        /**
+         * Year of this manga's publication
+         * @type {Number}
+         */
+        this.year = context.data.attributes.year !== null && !isNaN(context.data.attributes.year) ? parseFloat(context.data.attributes.year) : null;
 
-            // API v2
-            try {
-                let newRes = await Util.getJSON(api + id.toString());
-                if (newRes.status !== "OK") reject(new Error("API responsed with an error: " + newRes.message));
+        /**
+         * The content rating of this manga
+         * @type {'safe'|'suggestive'|'erotica'|'pornographic'}
+         */
+        this.contentRating = context.data.attributes.contentRating;
 
-                let obj = newRes.data;
+        /**
+         * The date of this manga's page creation
+         * @type {Date}
+         */
+        this.createdAt = context.data.attributes.createdAt ? new Date(context.data.attributes.createdAt) : null;
 
-                // Chapter API
-                let chaptersRes = await Util.getJSON(api + id.toString() + "/chapters");
-                if (chaptersRes.status !== "OK") reject(new Error("API responsed with an error for manga chapters: " + newRes.message));
-                obj.chapters = chaptersRes.data.chapters;
+        /**
+         * The date the manga was last updated
+         * @type {Date}
+         */
+        this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
-                // Cover API
-                let coverRes = await Util.getJSON(api + id.toString() + "/covers");
-                if (coverRes.status !== "OK") reject(new Error("API responsed with an error for manga covers: " + newRes.message));
-                obj.covers = coverRes.data;
+        /**
+         * Relationships to authors attributed to this manga
+         * @type {Relationship[]}
+         */
+        this.authors = Relationship.convertType('author', context.relationships);
 
-                this._parse(obj);
-                resolve(this);
-            } catch (err) {
-                reject(err);
-            }
-        });
-    }
+        /**
+         * Relationships to artists attributed to this manga
+         * @type {Relationship[]}
+         */
+        this.artists = Relationship.convertType('artist', context.relationships);
 
-    /**
-     * Executes Manga.search() then executes fill() with the most relevent manga.
-     * @param {String} query Quicksearch query like a name or description
-     */
-    fillByQuery(query) {
-        return new Promise((resolve, reject) => {
-            Manga.search(query).then((res)=>{
-                if (res.length == 0) reject(new Error("No Manga Found")); 
-                else this.fill(parseInt(res[0])).then(resolve).catch(reject);
-            }).catch(reject);
-        });
-    }
+        /**
+         * Relationships to this manga's main cover. Use 'getCovers' to retrive other covers
+         * @type {Relationship}
+         */
+        this.mainCover = Relationship.convertType('cover_art', context.relationships).pop();
+        if (!this.mainCover) this.mainCover = null;
 
-    /**
-     * Executes Manga.fullSearch() then executes fill() with the most relevent manga.
-     * @param {Object} searchObj 
-     */
-    fillByFullQuery(searchObj) {
-        return new Promise((resolve, reject) => {
-            Manga.fullSearch(searchObj).then((res) => {
-                if (res.length == 0) reject(new Error("No Manga Found"));
-                else this.fill(res[0].id).then(resolve).catch(reject);
-            });
-        });
+        /**
+         * Array of tags for this manga
+         * @type {Tag[]}
+         */
+        this.tags = (context.data.attributes.tags || []).map(elem => new Tag(elem));
     }
 
     /**
-     * Array of genre names instead of IDs. Uses /enum/genre
-     * @type {Array<String>}
+     * Main title string based on global locale
+     * @type {String}
      */
-    get genreNames() {
-        let payload = [];
-        for (let i of this.genres) payload.push(genre[i]);
-        return payload;
+    get title() {
+        if (this.localizedTitle !== undefined) return this.localizedTitle.localString;
+        return undefined;
     }
 
     /**
-     * MangaDex quicksearch
-     * @param {String} query Quicksearch query like a name or description
+     * Alt titles array based on global locale
+     * @type {String[]}
      */
-    static search(query) {
-        const regex = /<a[^>]*href=["']\/title\/(\d+)\/\S+["'][^>]*manga_title[^>]*>/gmi;
-        return Util.quickSearch(query, regex);
+    get altTitles() {
+        if (this.localizedAltTitles !== undefined) return this.localizedAltTitles.map(e => e.localString);
+        return undefined;
     }
-    
+
     /**
-     * MangaDex full search, not quicksearch
-     * @param {Object} searchObj An object containing search parameters.
-     * @example Search object example
-     *  fullSearch({
-     *      title: "Sangatsu no Lion",
-     *      author: "Umino Chica",
-     *      artist: "Umino Chica",
-     *      demographic: [1, 2, 3, "Josei"], // You can use strings too
-     *      pubstatus: [1, 2, 3, 4],
-     *      language: "JP", // Original Language
-     *      excludeAll: false, // True = AND mode; False = OR Mode
-     *      includeAll: true, // Same as above
-     *      includeTags: [4, 5, "Romance"],
-     *      excludeTags: [50],
-     *      order: "Rating (Des)" // Number or string; Des = starts with highest rated
-     *  });
+     * Description string based on global locale
+     * @type {String}
      */
-    static fullSearch(searchObj) {
-        return new Promise((resolve, reject) => {
-            let url = "https://mangadex.org/search?";
+    get description() {
+        if (this.localizedDescription !== undefined) return this.localizedDescription.localString;
+        return undefined;
+    }
 
-            if ("title" in searchObj) url += "title=" + encodeURIComponent(searchObj.title) + "&";
-            if ("author" in searchObj) url += "author=" + encodeURIComponent(searchObj.author) + "&"; 
-            if ("artist" in searchObj) url += "artist=" + encodeURIComponent(searchObj.artist) + "&"; 
+    /**
+     * @private
+     * @typedef {Object} MangaParameterObject
+     * @property {String} MangaParameterObject.title
+     * @property {Number} MangaParameterObject.year
+     * @property {'AND'|'OR'} MangaParameterObject.includedTagsMode
+     * @property {'AND'|'OR'} MangaParameterObject.excludedTagsMode
+     * @property {String} MangaParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} MangaParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} MangaParameterObject.order
+     * @property {String[]|Author[]} MangaParameterObject.authors Array of author ids
+     * @property {String[]|Author[]} MangaParameterObject.artists Array of artist ids
+     * @property {String[]|Tag[]} MangaParameterObject.includedTags
+     * @property {String[]|Tag[]} MangaParameterObject.excludedTags
+     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} MangaParameterObject.status
+     * @property {String[]} MangaParameterObject.originalLanguage
+     * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} MangaParameterObject.publicationDemographic
+     * @property {String[]} MangaParameterObject.ids Max of 100 per request
+     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} MangaParameterObject.contentRating
+     * @property {Number} MangaParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} MangaParameterObject.offset
+     */
 
-            if ("demographic" in searchObj) {
-                let demos = Util.parseEnumArray(demographics, searchObj.demographic);
-                url += "demos=" + demos.join(",") + "&";
-            }
+    /**
+     * Peforms a search and returns an array of manga.
+     * https://api.mangadex.org/docs.html#operation/get-search-manga
+     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Manga[]>}
+     */
+    static search(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        return Util.apiCastedRequest('/manga', Manga, searchParameters);
+    }
 
-            if ("pubstatus" in searchObj) {
-                let statuses = Util.parseEnumArray(pubstatus, searchObj.pubstatus);
-                url += "statuses=" + statuses.join(",") + "&";
-            }
+    /**
+     * Retrieves and returns a manga by its id
+     * @param {String} id Mangadex id
+     * @returns {Promise<Manga>}
+     */
+    static async get(id) {
+        return new Manga(await Util.apiRequest(`/manga/${id}`));
+    }
 
-            if ("language" in searchObj) {
-                let langId = 0;
-                if (typeof searchObj.language === 'string') {
-                    if (searchObj.language.length == 2 && searchObj.language in sLangs) langId = sLangs[searchObj.language];
-                    else {
-                        let langCode = Util.getKeyByValue(langs, searchObj.language);
-                        if (langCode in sLangs) langId = sLangs[langCode];
-                    }
-                } else if (typeof searchObj.language === "number") langId = searchObj.language;
-                url += "lang_id=" + langId + "&";
-            }
+    /**
+     * Performs a search for one manga and returns that manga
+     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Manga>}
+     */
+    static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Manga.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
 
-            // Default is to not exclude all, so ignore if false/undefined
-            if (searchObj.excludeAll) url += "tag_mode_exc=all&";
-            // Default is to include all, so ignore only if false
-            if (searchObj.includeAll === false) url += "tag_mode_inc=any&";
+    /**
+     * @private
+     * @typedef {Object} FeedParameterObject
+     * @property {Number} FeedParameterObject.limit Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} FeedParameterObject.offset
+     * @property {String[]} FeedParameterObject.translatedLanguage
+     * @property {String} FeedParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} FeedParameterObject.order
+     */
 
-            // Include and Exlude tags/genres
-            let tags = [];
-            if ("includeTags" in searchObj) {
-                tags = Util.parseEnumArray(genre, searchObj.includeTags);
-            }
-            if ("excludeTags" in searchObj) {
-                let exTags = Util.parseEnumArray(genre, searchObj.excludeTags);
-                for (let i of exTags) tags.push("-" + i.toString());
-            }
-            if (tags.length > 0) url += "tags=" + tags.join(",") + "&";
+    /**
+     * Returns a feed of the most recent chapters of this manga
+     * @param {String} id
+     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @returns {Promise<Chapter[]>}
+     */
+    static getFeed(id, parameterObject = {}) {
+        let m = new Manga(id);
+        return m.getFeed(parameterObject);
+    }
 
-            if ("order" in searchObj) {
-                let sOrder = 0;
-                if (typeof searchObj.order === "string" && searchObj.order in searchOrder) {
-                    sOrder = searchOrder[searchObj.order];
-                } else if (typeof searchObj.order === "number") sOrder = searchObj.order;
-                url += "s=" + sOrder; // Last append, so no '&'
-            }
-            
-            if (url.endsWith("&")) url = url.substr(0, url.length - 1);
+    /**
+     * Returns one random manga
+     * @returns {Promise<Manga>}
+     */
+    static async getRandom() {
+        return new Manga(await Util.apiRequest('/manga/random'));
+    }
 
-            Util.getMatches(url, {
-                "id": /<a[^>]*href=["']\/title\/(\d+)\/\S+["'][^>]*>[^<]+/gmi,
-                "title": /<a[^>]*href=["']\/title\/\d+\/\S+["'][^>]*>([^<]+)/gmi
-            }).then((matches) => {
-                if (!matches.id) resolve([]);
-                let title = null;
+    /**
+     * Returns all manga followed by the logged in user
+     * @param {Number} [limit=100] Amount of manga to return (0 to Infinity)
+     * @param {Number} [offset=0] How many manga to skip before returning
+     * @returns {Promise<Manga[]>}
+     */
+    static async getFollowedManga(limit = 100, offset = 0) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/follows/manga', Manga, { limit: limit, offset: offset });
+    }
 
-                if (!Array.isArray(matches.id)) {
-                    matches.id = [matches.id];
-                    title = matches.title;
-                }
+    /**
+     * Retrieves a tag object based on its id or name ('Oneshot', 'Thriller,' etc).
+     * The result of every available tag is cached, so subsequent tag requests will have no delay
+     * https://api.mangadex.org/docs.html#operation/get-manga-tag
+     * @param {String} indentity
+     * @returns {Promise<Tag>}
+     */
+    static getTag(indentity) {
+        return Tag.getTag(indentity);
+    }
 
-                let results = [];
-                for (let i in matches.id) {
-                    let m = new Manga(matches.id[i]);
-                    m.title = title ? title : matches.title[i];
-                    results.push(m);
-                }
-                resolve(results);
-            }).catch(reject);
-        });
+    /**
+     * Returns an array of every tag available on Mangadex right now.
+     * The result is cached, so subsequent tag requests will have no delay
+     * https://api.mangadex.org/docs.html#operation/get-manga-tag
+     * @returns {Promise<Tag[]>}
+     */
+    static getAllTags() {
+        return Tag.getAllTags();
+    }
+
+    /**
+     * Retrieves the logged in user's reading status for a manga.
+     * If there is no status, null is returned
+     * @param {String} id
+     * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
+     */
+    static getReadingStatus(id) {
+        let m = new Manga(id);
+        return m.getReadingStatus();
+    }
+
+    /**
+     * Sets the logged in user's reading status for this manga. 
+     * Call without arguments to clear the reading status
+     * @param {String} id
+     * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
+     * @returns {Promise<void>}
+     */
+    static setReadingStatus(id, status = null) {
+        let m = new Manga(id);
+        return m.setReadingStatus(status);
+    }
+
+    /**
+     * Gets the combined feed of every manga followed by the logged in user
+     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @returns {Promise<Chapter[]>}
+     */
+    static async getFollowedFeed(parameterObject) {
+        if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest(`/user/follows/manga/feed`, Chapter, parameterObject, 500, 100);
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow a manga
+     * @param {String} id 
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<void>}
+     */
+    static async changeFollowship(id, follow = true) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${id}/follow`, follow ? 'POST' : 'DELETE');
+    }
+
+    /**
+     * Retrieves the read chapters for multiple manga
+     * @param  {...String} ids
+     * @returns {Promise<Chapter[]>} 
+     */
+    static async getReadChapters(...ids) {
+        if (ids.length === 0) throw new Error('Invalid Argument(s)');
+        if (ids[0] instanceof Array) ids = ids[0];
+        await Util.AuthUtil.validateTokens();
+        let chapterIds = await Util.apiParameterRequest(`/manga/read`, { ids: ids });
+        if (!(chapterIds.data instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+        let finalArray = [];
+        while (chapterIds.data.length > 0) finalArray = finalArray.concat(await Chapter.search({ ids: chapterIds.data.splice(0, 100), limit: 100 }));
+        return finalArray;
+    }
+
+    /**
+     * Returns all covers for a manga
+     * @param {...String|Manga} id Manga id(s)
+     * @returns {Promise<Cover[]>}
+     */
+    static getCovers(...id) {
+        return Cover.getMangaCovers(...id);
+    }
+
+    /**
+     * Returns all covers for this manga
+     * @returns {Promise<Cover[]>}
+     */
+    getCovers() {
+        return Manga.getCovers(this.id);
+    }
+
+    /**
+     * Returns a feed of the most recent chapters of this manga
+     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @returns {Promise<Chapter[]>}
+     */
+    getFeed(parameterObject = {}) {
+        if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
+        return Util.apiCastedRequest(`/manga/${this.id}/feed`, Chapter, parameterObject, 500, 100);
+    }
+
+    /**
+     * Adds this manga to a list
+     * @param {List|String} list
+     * @returns {Promise<void>}
+     */
+    addToList(list) {
+        if (typeof list !== 'string') list = list.id;
+        return List.addManga(list, this.id);
+    }
+
+    /**
+     * Retrieves the logged in user's reading status for this manga.
+     * If there is no status, null is returned
+     * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
+     */
+    async getReadingStatus() {
+        await Util.AuthUtil.validateTokens();
+        let res = await Util.apiRequest(`/manga/${this.id}/status`);
+        return (typeof res.status === 'string' ? res.status : null);
+    }
+
+    /**
+     * Sets the logged in user's reading status for this manga. 
+     * Call without arguments to clear the reading status
+     * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
+     * @returns {Promise<void>}
+     */
+    async setReadingStatus(status = null) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${this.id}/status`, 'POST', { status: status });
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow this manga
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<Manga>}
+     */
+    async changeFollowship(follow = true) {
+        await Manga.changeFollowship(this.id, follow);
+        return this;
+    }
+
+    /**
+     * Returns an array of every chapter that has been marked as read for this manga
+     * @returns {Promise<Chapter[]>}
+     */
+    getReadChapters() {
+        return Manga.getReadChapters(this.id);
     }
 }
 
-module.exports = Manga;
+exports = module.exports = Manga;

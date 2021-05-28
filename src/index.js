@@ -1,32 +1,74 @@
-module.exports = {};
+'use strict';
 
-// Pre-export
-var Agent = require("./structure/agent");
-var agentInstance = new Agent();
-module.exports.agent = agentInstance;  // Create and use only one instance
+// Internal
+const Util = require('./util.js');
+const LocalizedString = require('./internal/localizedstring.js');
+const APIRequestError = require('./internal/requesterror.js');
 
+// Export
+const Manga = require('./structure/manga.js');
+exports.Manga = Manga;
+const Author = require('./structure/author.js');
+exports.Author = Author;
+const Chapter = require('./structure/chapter.js');
+exports.Chapter = Chapter;
+const Group = require('./structure/group.js');
+exports.Group = Group;
+const User = require('./structure/user.js');
+exports.User = User;
+const List = require('./structure/list.js');
+exports.List = List;
+const Cover = require('./structure/cover.js');
+exports.Cover = Cover;
 
-// Use individual assignments to allow circular references
-module.exports.Manga = require("./structure/manga");
-module.exports.Chapter = require("./structure/chapter");
-module.exports.Group = require("./structure/group");
-module.exports.User = require("./structure/user");
-module.exports.Thread = require("./structure/thread");
-module.exports.Post = require("./structure/post");
-module.exports.Home = require("./structure/home");
-module.exports.MDList = require("./structure/mdlist");
-module.exports.MDNet = require("./structure/mdnet");
-    
-module.exports.Util = require("./util");
+/**
+ * Converts old (pre v5, numeric ids) Mangadex ids to v5 ids.
+ * Any invalid legacy ids will be skipped by Mangadex when remapping, so
+ * call this function for each individual id if this is an issue.
+ * @param {'group'|'manga'|'chapter'|'tag'} type Type of id 
+ * @param {...Number|Number[]} ids Array of ids to convert
+ * @returns {Promise<String[]>}
+ */
+async function convertLegacyId(type, ...ids) {
+    if (ids.length === 0) throw new Error('Invalid Argument(s)');
+    if (ids[0] instanceof Array) ids = ids[0];
+    let res = await Util.apiRequest('/legacy/mapping', 'POST', { type: type, ids: ids });
+    if (!(res instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+    return res.map(e => e.data.attributes.newId);
+}
+exports.convertLegacyId = convertLegacyId;
 
-// Enums are organized to convert MD Ids to readable info
-// ie, keys are the Ids
-module.exports.language = require("./enum/language");
-module.exports.genre = require("./enum/genre");
-module.exports.link = require("./enum/link");
-module.exports.settings = require("./enum/settings");
-module.exports.chapterType = require("./enum/chapter-type");
-module.exports.demographic = require("./enum/demographic");
-module.exports.pubStatus = require("./enum/pubstatus");
-module.exports.listingOrder = require("./enum/listing-order");
-module.exports.viewingCategories = require("./enum/viewing-categories");
+/**
+ * Sets the global locaization for LocalizedStrings.
+ * Uses 2-letter Mangadex region codes.
+ * @param {String} newLocale
+ */
+function setGlobalLocale(newLocale) {
+    if (typeof newLocale !== 'string' || newLocale.length !== 2) throw new Error('Invalid Locale Code.');
+    LocalizedString.locale = newLocale;
+};
+exports.setGlobalLocale = setGlobalLocale;
+
+/**
+ * Required for authorization
+ * https://api.mangadex.org/docs.html#operation/post-auth-login
+ * @param {String} username 
+ * @param {String} password 
+ * @param {String} [cacheLocation] File location to store the persistent token (Warning: saved in plaintext)
+ * @returns {Promise<void>}
+ */
+function login(username, password, cacheLocation) {
+    return Util.AuthUtil.login(username, password, cacheLocation);
+}
+exports.login = login;
+
+// Register class types to bypass circular references
+const Relationship = require('./internal/relationship.js');
+Relationship.registerType('author', Author);
+Relationship.registerType('artist', Author);
+Relationship.registerType('manga', Manga);
+Relationship.registerType('chapter', Chapter);
+Relationship.registerType('scanlation_group', Group);
+Relationship.registerType('user', User);
+Relationship.registerType('custom_list', List);
+Relationship.registerType('cover_art', Cover);

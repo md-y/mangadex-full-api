@@ -1,140 +1,73 @@
-const APIObject = require("./apiobject");
-const Util = require("../util");
-const Index = require("../index");
+'use strict';
+
+const Util = require('../util.js');
+const Relationship = require('../internal/relationship.js');
 
 /**
- * Represents a MangaDex user
+ * Represents an user
+ * https://api.mangadex.org/docs.html#tag/User
  */
-class User extends APIObject {
-    _parse(data) {
-        /**
-         * MangaDex User ID
-         * @type {Number}
-         */
-        this.id = data.id;
+class User {
+    /**
+     * There is no reason to directly create a user object. Use static methods, ie 'get()'.
+     * @param {Object|String} context Either an API response or Mangadex id 
+     */
+    constructor(context) {
+        if (typeof context === 'string') {
+            this.id = context;
+            return;
+        } else if (!context) return;
+
+        if (context.data === undefined) context.data = {};
 
         /**
-         * Viewcount
+         * Mangadex id for this object
          * @type {String}
          */
-        this.views = data.views;
+        this.id = context.data.id;
+
+        if (context.data.attributes === undefined) context.data.attributes = {};
 
         /**
-         * Markdown-Formatted Biography
+         * Username of this user
          * @type {String}
          */
-        this.biography = data.biography;
+        this.username = context.data.attributes.username;
 
         /**
-         * Username 
-         * @type {String}
+         * Relationships to chapters attributed to this user
+         * @type {Relationship[]}
          */
-        this.username = data.username;
-
-        /**
-         * User Website URL
-         * @type {Object}
-         */
-        this.website  = data.website;
-
-        /**
-         * Avatar Image URL
-         * @type {String}
-         */
-        this.avatar = data.avatar !== null ? data.avatar : "https://mangadex.org/images/avatars/default1.jpg";
-
-        /**
-         * Level ID (Adminstrator, Moderator, etc)
-         * @type {Number}
-         */
-        this.levelId = data.levelId;
-
-        /**
-         * Last Seen Timestamp
-         * @type {Number}
-         */
-        this.timeLastSeen = data.lastSeen;
-
-        /**
-         * Joined Timestamp
-         * @type {Number}
-         */
-        this.timeJoined = data.joined;
-
-        /**
-         * Number of Chapters Uploaded
-         * @type {Number}
-         */
-        this.uploads = data.uploads;
-
-        /**
-         * Premium Account?
-         * @type {Boolean}
-         */
-        this.premium = data.premium;
-
-        /**
-         * Mangadex @ Home Contributor?
-         * @type {Boolean}
-         */
-        this.mdAtHome = data.mdAtHome;
-        if (this.mdAtHome !== undefined) this.mdAtHome = this.mdAtHome === 1;
-
-        /**
-         * URL to user homepage
-         * @type {String}
-         */
-        if (this.id) this.url = "https://mangadex.org/user/" + this.id.toString();
-        else this.url = undefined;
-
-        /**
-         * MDList of this user
-         * @type {MDList}
-         */
-        this.list = new Index.MDList(this.id);
-    }
-
-    fill(id) {
-        const api = "https://api.mangadex.org/v2/user/"; 
-        if (!id) id = this.id;
-
-        return new Promise(async (resolve, reject) => {
-            if (!id) reject(new Error("No id specified or found."));
-            
-            // API v2
-            try {
-                let res = await Util.getJSON(api + id.toString());
-                if (res.status !== "OK") reject(new Error("API responsed with an error: " + data.message));
-
-                this._parse(res.data);
-                resolve(this);
-            } catch (err) {
-                reject(err);
-            }
-        });
+        this.chapters = Relationship.convertType('chapter', context.relationships);
     }
 
     /**
-     * Executes User.search() then executes fill() with the most relevent user.
-     * @param {String} query Quicksearch query like a name or description
+     * Retrieves and returns a user by its id
+     * @param {String} id Mangadex id
+     * @returns {Promise<User>}
      */
-    fillByQuery(query) {
-        return new Promise((resolve, reject) => {
-            User.search(query).then((res)=>{
-                if (res.length == 0) reject(new Error("No User Found")); 
-                else this.fill(parseInt(res[0])).then(resolve).catch(reject);
-            }).catch(reject);
-        });
+    static async get(id) {
+        return new User(await Util.apiRequest(`/user/${id}`));
     }
 
     /**
-     * MangaDex user quicksearch
-     * @param {String} query Quicksearch query like a name or description
+     * Returns all users followed by the logged in user
+     * @param {Number} [limit=100] Amount of users to return (0 to Infinity)
+     * @param {Number} [offset=0] How many users to skip before returning
+     * @returns {Promise<User[]>}
      */
-    static search(query) {
-        const regex = /<td><a class=["']user[\w\W]{0,100}href=["']\/user\/(\d+)\/[^"'\/<>]+["']>/gmi;
-        return Util.quickSearch(query, regex);
+    static async getFollowedUsers(limit = 100, offset = 10) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/follows/user', User, { limit: limit, offset: offset });
+    }
+
+    /**
+     * Returns the logged in user as a user object
+     * @returns {Promise<User>}
+     */
+    static async getLoggedInUser() {
+        return new User(await Util.apiRequest('/user/me'));
     }
 }
 
-module.exports = User;
+exports = module.exports = User;

@@ -61,9 +61,4 @@ typings/
 .next
 
 # development
-bin/page.txt
-bin/debug.js
-bin/cache.txt
-
-.idea
-.todo
+dev

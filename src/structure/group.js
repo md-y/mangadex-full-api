@@ -1,177 +1,135 @@
-const APIObject = require("./apiobject");
-const Util = require("../util");
-const Index = require("../index");
+'use strict';
+
+const Util = require('../util.js');
+const Relationship = require('../internal/relationship.js');
 
 /**
- * Represents a MangaDex translation group
+ * Represents a scanlation group
+ * https://api.mangadex.org/docs.html#tag/Group
  */
-class Group extends APIObject {
-    _parse(data) {
-        /**
-         * MangaDex Group ID
-         * @type {Number}
-         */
-        this.id = data.id;
+class Group {
+    /**
+     * There is no reason to directly create a group object. Use static methods, ie 'get()'.
+     * @param {Object|String} context Either an API response or Mangadex id 
+     */
+    constructor(context) {
+        if (typeof context === 'string') {
+            this.id = context;
+            return;
+        } else if (!context) return;
+
+        if (context.data === undefined) context.data = {};
 
         /**
-         * Viewcount
+         * Mangadex id for this object
          * @type {String}
          */
-        this.views = data.views;
+        this.id = context.data.id;
+
+        if (context.data.attributes === undefined) context.data.attributes = {};
 
         /**
-         * Group language code
+         * Name of this group
          * @type {String}
          */
-        this.language = data.language ? data.language.toUpperCase(): undefined;
+        this.name = context.data.attributes.name;
 
         /**
-         * Group description
-         * @type {String}
+         * The date of this group's creation
+         * @type {Date}
          */
-        this.description = data.description;
+        this.createdAt = context.data.attributes.createdAt ? new Date(context.data.attributes.createdAt) : null;
 
         /**
-         * Followers
-         * @type {String}
+         * The date the group was last updated
+         * @type {Date}
          */
-        this.followers = data.follows;
+        this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
         /**
-         * Number of chapters uploaded
-         * @type {String}
+         * Relationships to chapters attributed to this group
+         * @type {Relationship[]}
          */
-        this.uploads = data.chapters;
+        this.chapters = Relationship.convertType('chapter', context.relationships);
 
         /**
-         * Official Group Name
-         * @type {String}
-         */
-        this.title = data.name;
-
-        /**
-         * Official Group Links
-         * Website, Discord, IRC, and Email
-         * @type {Object}
-         */
-        this.links = {};
-        if (data.website) this.links.website = data.website;
-        if (data.discord) this.links.discord = data.discord;
-        if (data.ircServer) this.links.ircServer = data.ircServer;
-        if (data.ircChannel) this.links.ircChannel = data.ircChannel;
-        if(data.email) this.links.email = data.email;
-
-        /**
-         * Leader User Object
-         * Contains ID only, use fill() for full data.
+         * Username of the group's leader. Resolve the leader relationship to retrieve other data
          * @type {User}
          */
-        this.leader = undefined;
-        if (data.leader) {
-            let user = new Index.User(data.leader.id);
-            user.username = data.leader.name;
-            this.leader = user;
-        }
+        this.leaderName = context.data.attributes.leader ? context.data.attributes.leader.attributes.username : null;
 
         /**
-         * Array of members
-         * @type {Array<User>}
+         * Relationship to this group's leader
+         * @type {Relationship}
          */
-        this.members = [];
-        if (data.members) {
-            for (let i of data.members) {
-                let user = new Index.User(i.id);
-                user.username = i.name;
-                this.members.push(user);
-            }
-        }
+        this.leader = new Relationship({ type: 'user', id: context.data.attributes.leader.id });
 
         /**
-         * Foundation Date
-         * @type {String}
+         * Username of the group's member. Resolve the members' relationships to retrieve other data
+         * @type {User[]}
          */
-        this.founded = data.founded;
+        this.memberNames = (context.data.attributes.members || []).map(elem => elem.attributes.username);
 
         /**
-         * Locked?
-         * @type {Boolean}
+         * Relationships to each group's members
+         * @type {Relationship[]}
          */
-        this.locked = data.isLocked !== undefined ? data.isLocked : undefined;
-
-        /**
-         * Inactive?
-         * @type {Boolean}
-         */
-        this.inactive = data.isInactive !== undefined ? data.isInactive : undefined;
-
-        /**
-         * Group Delay in Seconds
-         * @type {Number}
-         */
-        this.delay = data.delay;
-
-        /**
-         * Banner URL
-         * @type {String}
-         */
-        this.banner = data.banner ? data.banner : "https://mangadex.org/images/groups/default.png";
-
-        /**
-         * URL to group homepage
-         * @type {String}
-         */
-        if (this.id) this.url = "https://mangadex.org/group/" + this.id.toString();
-        else this.url = undefined;
-
-        /**
-         * URL to this group's language flag
-         * @type {String}
-         */
-        if (this.language) this.flag = "https://mangadex.org/images/flags/" + this.language.toLowerCase() + ".png";
-        else this.flag = undefined;
-    }
-
-    fill(id) {
-        const web = "https://api.mangadex.org/v2/group/"; 
-        if (!id) id = this.id;
-
-        return new Promise(async (resolve, reject) => {
-            if (!id) reject(new Error("No id specified or found."));
-
-            // API v2
-            try {
-                let res = await Util.getJSON(web + id.toString());
-                if (res.status !== "OK") reject(new Error("API responsed with an error: " + res.message));
-
-                this._parse(res.data);
-                resolve(this);
-            } catch (err) {
-                reject(err);
-            }
-        });
+        this.members = (context.data.attributes.members || []).map(elem => new Relationship({ type: 'user', id: elem.id }));
     }
 
     /**
-     * Executes Group.search() then executes fill() with the most relevent user.
-     * @param {String} query Quicksearch query like a name or description
+     * @private
+     * @typedef {Object} GroupParameterObject
+     * @property {String} GroupParameterObject.name
+     * @property {String[]} GroupParameterObject.ids Max of 100 per request
+     * @property {Number} GroupParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} GroupParameterObject.offset
+     * @property {Object} GroupParameterObject.order
      */
-    fillByQuery(query) {
-        return new Promise((resolve, reject) => {
-            Group.search(query).then((res)=>{
-                if (res.length == 0) reject(new Error("No Group Found")); 
-                else this.fill(parseInt(res[0])).then(resolve).catch(reject);
-            }).catch(reject);
-        });
+
+    /**
+     * Peforms a search and returns an array of groups.
+     * https://api.mangadex.org/docs.html#operation/get-search-group
+     * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+     * @returns {Promise<Group[]>}
+     */
+    static search(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
+        return Util.apiCastedRequest('/group', Group, searchParameters);
     }
 
     /**
-     * MangaDex group quicksearch
-     * @param {String} query Quicksearch query like a name or description
+     * Retrieves and returns a group by its id
+     * @param {String} id Mangadex id
+     * @returns {Promise<Group>}
      */
-    static search(query) {
-        const regex = /<td><a href=["']\/group\/(\d+)\/[^"'\/<>]+["']>/gmi;
-        return Util.quickSearch(query, regex);
+    static async get(id) {
+        return new Group(await Util.apiRequest(`/group/${id}`));
+    }
+
+    /**
+     * Performs a search for one group and returns that group
+     * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+     * @returns {Promise<Group>}
+     */
+     static async getByQuery(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { name: searchParameters, limit: 1 };
+        else searchParameters.limit = 1;
+        let res = await Group.search(searchParameters);
+        if (res.length === 0) throw new Error('Search returned no results.');
+        return res[0];
+    }
+
+    /**
+     * Returns all groups followed by the logged in user
+     * @param {Number} [limit=100] Amount of groups to return (0 to Infinity)
+     * @param {Number} [offset=0] How many groups to skip before returning
+     * @returns {Promise<Group[]>}
+     */
+    static async getFollowedGroups(limit = 100, offset = 10) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/follows/group', Group, { limit: limit, offset: offset });
     }
 }
 
-module.exports = Group;
+exports = module.exports = Group;

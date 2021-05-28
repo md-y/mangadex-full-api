@@ -1,15 +1,15 @@
 {
   "name": "mangadex-full-api",
-  "version": "4.4.0",
-  "description": "A MangaDex api based around the official API, but with access to more MangaDex features.",
+  "version": "5.0.0-rc1",
+  "description": "A MangaDex api based around the official API.",
   "main": "./src/index.js",
-  "types": "./@types/index.d.ts",
+  "types": "./types/index.d.ts",
   "scripts": {
-    "test": "node ./bin/fulltest.js",
+    "test": "mocha",
     "gen-types": "tsc"
   },
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=10.12.0"
   },
   "repository": {
     "type": "git",
@@ -20,18 +20,8 @@
     "api",
     "manga",
     "anime",
-    "full",
-    "chapter",
-    "page",
-    "group",
-    "user",
     "manwha",
-    "manhua",
-    "thread",
-    "forum",
-    "post",
-    "login",
-    "messaging"
+    "manhua"
   ],
   "author": "m;dy",
   "license": "MIT",
@@ -40,6 +30,7 @@
   },
   "homepage": "https://github.com/md-y/mangadex-full-api#readme",
   "devDependencies": {
+    "mocha": "^8.4.0",
     "typescript": "^4.1.3"
   }
 }
