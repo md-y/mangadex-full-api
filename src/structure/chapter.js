@@ -134,15 +134,8 @@ class Chapter {
      * @returns {Promise<Chapter[]>}
      */
     static search(searchParameters = {}) {
-        return new Promise(async (resolve, reject) => {
-            if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
-            try {
-                let res = await Util.apiSearchRequest('/chapter', searchParameters);
-                resolve(res.map(elem => new Chapter(elem)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        return Util.apiCastedRequest('/chapter', Chapter, searchParameters);
     }
 
 
@@ -151,27 +144,19 @@ class Chapter {
      * @param {String} id Mangadex id
      * @returns {Promise<Chapter>}
      */
-    static get(id) {
-        let c = new Chapter(id);
-        return c.fill();
+    static async get(id) {
+        return new Chapter(await Util.apiRequest(`/chapter/${id}`));
     }
 
     /**
-     * Retrieves all data for this chapter from the API using its id.
-     * Sets the data in place and returns a new chapter object as well.
-     * Use if there is an incomplete in this object
-     * @returns {Promise<Chapter>}
+     * Marks a chapter as either read or unread
+     * @param {String} id
+     * @param {Boolean} [read=true] True to mark as read, false to mark unread
+     * @returns {Promise<void>}
      */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill chapter with no id.'));
-            try {
-                let res = await Util.apiRequest(`/chapter/${this.id}`);
-                resolve(new Chapter(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async changeReadMarker(id, read = true) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/chapter/${id}/read`, read ? 'POST' : 'DELETE');
     }
 
     /**
@@ -179,18 +164,22 @@ class Chapter {
      * This only gives URLs, so it does not report the status of the server to Mangadex @ Home.
      * Therefore applications that download image data pleaese report failures as stated here:
      * https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
-     * @param {Boolean} [saver] Use data saver images?
+     * @param {Boolean} [saver=false] Use data saver images?
      * @returns {Promise<String[]>}
      */
-    getReadablePages(saver = false) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let res = await Util.apiRequest(`/at-home/server/${this.id}`);
-                resolve((saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async getReadablePages(saver = false) {
+        let res = await Util.apiRequest(`/at-home/server/${this.id}`);
+        return (saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`);
+    }
+
+    /**
+     * Marks this chapter as either read or unread
+     * @param {Boolean} [read=true] True to mark as read, false to mark unread
+     * @returns {Promise<Chapter>}
+     */
+    async changeReadMarker(read = true) {
+        await Chapter.changeReadMarker(this.id, read);
+        return this;
     }
 }
 

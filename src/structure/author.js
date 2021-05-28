@@ -82,15 +82,8 @@ class Author {
      * @returns {Promise<Author[]>}
      */
     static search(searchParameters = {}) {
-        return new Promise(async (resolve, reject) => {
-            if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
-            try {
-                let res = await Util.apiSearchRequest('/author', searchParameters);
-                resolve(res.map(elem => new Author(elem)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+        if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
+        return Util.apiCastedRequest('/author', Author, searchParameters);
     }
 
     /**
@@ -98,27 +91,8 @@ class Author {
      * @param {String} id Mangadex id
      * @returns {Promise<Author>}
      */
-    static get(id) {
-        let a = new Author(id);
-        return a.fill();
-    }
-
-    /**
-     * Retrieves all data for this author from the API using its id.
-     * Sets the data in place and returns a new author object as well.
-     * Use if there is an incomplete data due to this object simply being a reference.
-     * @returns {Promise<Author>}
-     */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill author with no id.'));
-            try {
-                let res = await Util.apiRequest(`/author/${this.id}`);
-                resolve(new Author(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async get(id) {
+        return new Author(await Util.apiRequest(`/author/${id}`));
     }
 }
 

@@ -93,9 +93,8 @@ class Cover {
      * @param {String} id Mangadex id
      * @returns {Promise<Cover>}
      */
-    static get(id) {
-        let c = new Cover(id);
-        return c.fill();
+    static async get(id) {
+        return new Cover(await Util.apiRequest(`/cover/${id}`));
     }
 
     /**
@@ -116,43 +115,18 @@ class Cover {
      * @returns {Promise<Cover[]>}
      */
     static search(searchParameters = {}) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let res = await Util.apiSearchRequest('/cover', searchParameters);
-                resolve(res.map(elem => new Cover(elem)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+        return Util.apiCastedRequest('/cover', Cover, searchParameters);
     }
 
     /**
-     * Get an array of a manga's covers
-     * @param {String} manga
+     * Get an array of manga's covers
+     * @param {...String|Manga} manga
      * @returns {Promise<Cover[]>}
      */
-    static getMangaCovers(manga) {
-        if (typeof manga === 'object' && 'id' in manga) manga = manga.id;
-        return Cover.search({ manga: [manga] }, 100);
-    }
-
-    /**
-     * Retrieves all data for this cover from the API using its id.
-     * Sets the data in place and returns a new cover object as well.
-     * Use if there is an incomplete in this object
-     * @returns {Promise<Cover>}
-     */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill cover with no id.'));
-            if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
-            try {
-                let res = await Util.apiRequest(`/cover/${this.id}`);
-                resolve(new Cover(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async getMangaCovers(...manga) {
+        if (manga[0] instanceof Array) manga = manga[0];
+        manga = manga.map(elem => typeof elem === 'string' ? elem : elem.id);
+        return await Cover.search({ manga: manga.splice(0, 100), limit: Infinity });
     }
 }
 

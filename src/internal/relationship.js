@@ -26,12 +26,9 @@ class Relationship {
      * @returns {Promise<Manga|Author|Chapter|User|Group|List|Cover>}
      */
     resolve() {
-        // Promise resolve is res to avoid confusion with this function's name
-        return new Promise((res, reject) => {
-            if (this.id === undefined || this.type === undefined) reject(new Error('Invalid Relationship object'));
-            if (!(this.type in Relationship.types)) reject(new Error(`Relationship type ${this.type} is not registered. Please fix index.js`));
-            res(Relationship.types[this.type].get(this.id));
-        });
+        if (this.id === undefined || this.type === undefined) throw new Error('Invalid Relationship object');
+        if (!(this.type in Relationship.types)) throw new Error(`Relationship type ${this.type} is not registered. Please fix index.js`);
+        return Relationship.types[this.type].get(this.id);
     }
 
     /**

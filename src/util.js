@@ -42,9 +42,9 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                 if (res.headers['content-type'] !== undefined && res.headers['content-type'].includes('json')) {
                     try {
                         let parsedObj = JSON.parse(responsePayload);
-                        if (parsedObj === null) reject(new APIRequestError('API Returned null', APIRequestError.INVALID_RESPONSE));
+                        if (parsedObj === null) reject(new APIRequestError(`HTTPS ${method} Response (${endpoint}) returned null`, APIRequestError.INVALID_RESPONSE));
                         if (res.statusCode < 400 || res.result === 'ok') resolve(parsedObj);
-                        reject(new APIRequestError(parsedObj));
+                        else reject(new APIRequestError(parsedObj));
                     } catch (error) {
                         reject(new APIRequestError(
                             `Failed to parse HTTPS ${method} ` +
@@ -83,33 +83,25 @@ exports.apiRequest = apiRequest;
  * @param {Object} parameterObject Object of search parameters based on API specifications
  * @returns {Promise<APIResponse|APIResponse[]>}
  */
-function apiParameterRequest(baseEndpoint, parameterObject) {
-    return new Promise(async (resolve, reject) => {
-        if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') reject(new Error('Invalid Argument(s)'));
-        let cleanParameters = {};
-        for (let i in parameterObject) {
-            if (parameterObject[i] instanceof Array) cleanParameters[i] = parameterObject[i].map(elem => {
-                if (typeof elem === 'string') return elem;
-                if ('id' in elem) return elem.id;
-                return elem.toString();
-            });
-            else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
-            else cleanParameters[i] = parameterObject[i];
-        }
+async function apiParameterRequest(baseEndpoint, parameterObject) {
+    if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
+    let cleanParameters = {};
+    for (let i in parameterObject) {
+        if (parameterObject[i] instanceof Array) cleanParameters[i] = parameterObject[i].map(elem => {
+            if (typeof elem === 'string') return elem;
+            if ('id' in elem) return elem.id;
+            return elem.toString();
+        });
+        else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
+        else cleanParameters[i] = parameterObject[i];
+    }
 
-        let endpoint = `${baseEndpoint}?`;
-        for (let i in cleanParameters) {
-            if (cleanParameters[i] instanceof Array) cleanParameters[i].forEach(e => endpoint += `${i}[]=${e}&`);
-            else endpoint += `${i}=${cleanParameters[i]}&`;
-        }
-        try {
-            let res = await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
-            if (res.results instanceof Array) resolve(res);
-            else reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
-        } catch (error) {
-            reject(error);
-        }
-    });
+    let endpoint = `${baseEndpoint}?`;
+    for (let i in cleanParameters) {
+        if (cleanParameters[i] instanceof Array) cleanParameters[i].forEach(e => endpoint += `${i}[]=${e}&`);
+        else endpoint += `${i}=${cleanParameters[i]}&`;
+    }
+    return await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
 }
 exports.apiParameterRequest = apiParameterRequest;
 
@@ -123,28 +115,36 @@ exports.apiParameterRequest = apiParameterRequest;
  * @param {Number} [defaultLimit=10] How many should be returned by default?
  * @returns {Promise<APIResponse[]>}
  */
-function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, defaultLimit = 10) {
-    return new Promise(async (resolve, reject) => {
-        if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') reject(new Error('Invalid Argument(s)'));
-        let limit = 'limit' in parameterObject ? parameterObject.limit : defaultLimit;
-        if (limit <= 0) resolve([]);
-        try {
-            let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
-            let finalArray = res.results;
-            if (!(finalArray instanceof Array)) reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
-            if (limit > maxLimit && finalArray.length === maxLimit) {
-                parameterObject.limit = limit - maxLimit;
-                parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
-                let newRes = await apiSearchRequest(baseEndpoint, parameterObject);
-                finalArray = finalArray.concat(newRes);
-            }
-            resolve(finalArray);
-        } catch (error) {
-            reject(error);
-        }
-    });
+async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, defaultLimit = 10) {
+    if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
+    let limit = 'limit' in parameterObject ? parameterObject.limit : defaultLimit;
+    if (limit <= 0) return [];
+    let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
+    let finalArray = res.results;
+    if (!(finalArray instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+    if (limit > maxLimit && finalArray.length === maxLimit) {
+        parameterObject.limit = limit - maxLimit;
+        parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
+        let newRes = await apiSearchRequest(baseEndpoint, parameterObject);
+        finalArray = finalArray.concat(newRes);
+    }
+    return finalArray;
 }
 exports.apiSearchRequest = apiSearchRequest;
+
+/**
+ * @param {String} endpoint
+ * @param {Object} classObject
+ * @param {Object} parameterObject
+ * @param {Number} [maxLimit=100] What is the maximum number of results that can be returned from this endpoint at once?
+ * @param {Number} [defaultLimit=10] How many should be returned by default?
+ * @returns {Promise<APIResponse[]>}
+ */
+async function apiCastedRequest(endpoint, classObject, parameterObject = {}, maxLimit = 100, defaultLimit = 10) {
+    let res = await apiSearchRequest(endpoint, parameterObject, maxLimit, defaultLimit);
+    return res.map(elem => new classObject(elem));
+}
+exports.apiCastedRequest = apiCastedRequest;
 
 /**
  * Any function that requires authentication should call 'validateTokens().'
@@ -171,71 +171,59 @@ class AuthUtil {
      * @param {String} username 
      * @param {String} password 
      * @param {String} [cacheLocation]
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
-    static login(username, password, cacheLocation) {
-        return new Promise(async (resolve, reject) => {
-            if (username === undefined || password === undefined) reject(new Error('Invalid Argument(s)'));
-            AuthUtil.canAuth = true;
-            // Read refresh token from file
-            if (cacheLocation) {
-                try {
-                    if (!Path.basename(cacheLocation).includes('.')) cacheLocation = Path.join(cacheLocation, '.md_token');
-                    if (AuthUtil.readFromCache(cacheLocation) && AuthUtil.authUser === username) {
-                        await AuthUtil.validateTokens();
-                        return resolve();
-                    }
-                } catch (error) {
-                    // Continue and retry at login
-                    AuthUtil.refreshToken = null;
-                    AuthUtil.sessionToken = null;
-                }
-            }
-
-            // Login
-            AuthUtil.authUser = username;
+    static async login(username, password, cacheLocation) {
+        if (username === undefined || password === undefined) throw new Error('Invalid Argument(s)');
+        AuthUtil.canAuth = true;
+        // Read refresh token from file
+        if (cacheLocation) {
             try {
-                let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
-                AuthUtil.sessionToken = res.token.session;
-                AuthUtil.refreshToken = res.token.refresh;
-                if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
-                resolve();
+                if (!Path.basename(cacheLocation).includes('.')) cacheLocation = Path.join(cacheLocation, '.md_token');
+                if (AuthUtil.readFromCache(cacheLocation) && AuthUtil.authUser === username) {
+                    await AuthUtil.validateTokens();
+                    return;
+                }
             } catch (error) {
-                reject(error);
+                // Continue and retry at login
+                AuthUtil.refreshToken = null;
+                AuthUtil.sessionToken = null;
             }
-        });
+        }
+
+        // Login
+        AuthUtil.authUser = username;
+        let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
+        AuthUtil.sessionToken = res.token.session;
+        AuthUtil.refreshToken = res.token.refresh;
+        if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
+        return;
     }
 
     /**
      * @param {String} [token] Refresh token
      * @returns {Promise<String>} Session Token
      */
-    static validateTokens(token) {
-        return new Promise(async (resolve, reject) => {
-            if (token) AuthUtil.refreshToken = token;
-            if (!AuthUtil.canAuth || !AuthUtil.refreshToken) reject(new Error(`Not logged in.`));
-            // Check if session token is out of date:
-            if (AuthUtil.sessionToken) {
-                try {
-                    let res = await apiRequest('/auth/check');
-                    if (res.isAuthenticated) return resolve(AuthUtil.sessionToken);
-                } catch (error) {
-                    // If it fails the check, refresh it in the next try-catch block
-                    AuthUtil.sessionToken = null;
-                }
-            }
-
-            // Refresh token/Check if refresh token is out of date
+    static async validateTokens(token) {
+        if (token) AuthUtil.refreshToken = token;
+        if (!AuthUtil.canAuth || !AuthUtil.refreshToken) throw new APIRequestError('Not logged in.', APIRequestError.AUTHORIZATION);
+        // Check if session token is out of date:
+        if (AuthUtil.sessionToken) {
             try {
-                let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
-                AuthUtil.sessionToken = res.token.session;
-                AuthUtil.refreshToken = res.token.refresh;
-                AuthUtil.writeToCache();
-                resolve(AuthUtil.sessionToken);
-            } catch (err) {
-                reject(err);
+                let res = await apiRequest('/auth/check');
+                if (res.isAuthenticated) return AuthUtil.sessionToken;
+            } catch (error) {
+                // If it fails the check, refresh it in the next try-catch block
+                AuthUtil.sessionToken = null;
             }
-        });
+        }
+
+        // Refresh token/Check if refresh token is out of date
+        let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
+        AuthUtil.sessionToken = res.token.session;
+        AuthUtil.refreshToken = res.token.refresh;
+        AuthUtil.writeToCache();
+        return AuthUtil.sessionToken;
     }
 
     /**

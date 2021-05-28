@@ -94,15 +94,8 @@ class Group {
      * @returns {Promise<Group[]>}
      */
     static search(searchParameters = {}) {
-        return new Promise(async (resolve, reject) => {
-            if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
-            try {
-                let res = await Util.apiSearchRequest('/group', searchParameters);
-                resolve(res.map(elem => new Group(elem)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+        if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
+        return Util.apiCastedRequest('/group', Group, searchParameters);
     }
 
     /**
@@ -110,27 +103,19 @@ class Group {
      * @param {String} id Mangadex id
      * @returns {Promise<Group>}
      */
-    static get(id) {
-        let a = new Group(id);
-        return a.fill();
+    static async get(id) {
+        return new Group(await Util.apiRequest(`/group/${id}`));
     }
 
     /**
-     * Retrieves all data for this group from the API using its id.
-     * Sets the data in place and returns a new group object as well.
-     * Use if there is an incomplete data due to this object simply being a reference.
-     * @returns {Promise<Group>}
+     * Returns all groups followed by the logged in user
+     * @param {Number} [limit=100] Amount of groups to return (0 to Infinity)
+     * @param {Number} [offset=0] How many groups to skip before returning
+     * @returns {Promise<Group[]>}
      */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill group with no id.'));
-            try {
-                let res = await Util.apiRequest(`/group/${this.id}`);
-                resolve(new Group(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async getFollowedGroups(limit = 100, offset = 10) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/follows/group', Group, { limit: limit, offset: offset });
     }
 }
 

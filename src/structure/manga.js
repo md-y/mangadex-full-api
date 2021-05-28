@@ -93,7 +93,7 @@ class Manga {
 
         /**
          * Publication/Scanlation status of this manga
-         * @type {'ongoing'|'completed'|'hiatus'|'abandoned'}
+         * @type {'ongoing'|'completed'|'hiatus'|'cancelled'}
          */
         this.status = context.data.attributes.status;
 
@@ -188,7 +188,7 @@ class Manga {
      * @property {String[]|Author[]} MangaParameterObject.artists Array of artist ids
      * @property {String[]|Tag[]} MangaParameterObject.includedTags
      * @property {String[]|Tag[]} MangaParameterObject.excludedTags
-     * @property {Array<'ongoing'|'completed'|'hiatus'|'abandoned'>} MangaParameterObject.status
+     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} MangaParameterObject.status
      * @property {String[]} MangaParameterObject.originalLanguage
      * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} MangaParameterObject.publicationDemographic
      * @property {String[]} MangaParameterObject.ids Max of 100 per request
@@ -204,15 +204,8 @@ class Manga {
      * @returns {Promise<Manga[]>}
      */
     static search(searchParameters = {}) {
-        return new Promise(async (resolve, reject) => {
-            if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
-            try {
-                let res = await Util.apiSearchRequest('/manga', searchParameters);
-                resolve(res.map(manga => new Manga(manga)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        return Util.apiCastedRequest('/manga', Manga, searchParameters);
     }
 
     /**
@@ -220,9 +213,8 @@ class Manga {
      * @param {String} id Mangadex id
      * @returns {Promise<Manga>}
      */
-    static get(id) {
-        let m = new Manga(id);
-        return m.fill();
+    static async get(id) {
+        return new Manga(await Util.apiRequest(`/manga/${id}`));
     }
 
     /**
@@ -238,10 +230,9 @@ class Manga {
      */
 
     /**
+     * Returns a feed of the most recent chapters of this manga
      * @param {String} id
-     * @param {FeedParameterObject} [parameterObject]
-     * @param {Number} [limit]
-     * @param {Number} [offset]
+     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
      * @returns {Promise<Chapter[]>}
      */
     static getFeed(id, parameterObject = {}) {
@@ -254,40 +245,109 @@ class Manga {
      * @returns {Promise<Manga>}
      */
     static async getRandom() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let res = await Util.apiRequest('/manga/random');
-                resolve(new Manga(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+        return new Manga(await Util.apiRequest('/manga/random'));
     }
 
     /**
      * Returns all manga followed by the logged in user
+     * @param {Number} [limit=100] Amount of manga to return (0 to Infinity)
+     * @param {Number} [offset=0] How many manga to skip before returning
      * @returns {Promise<Manga[]>}
      */
-    static async getFollowedManga() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest('/user/follows/manga');
-                if (!(res.results instanceof Array)) reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
-                resolve(res.results.map(elem => new Manga(elem)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async getFollowedManga(limit = 100, offset = 0) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/follows/manga', Manga, { limit: limit, offset: offset });
+    }
+
+    /**
+     * Retrieves a tag object based on its id or name ('Oneshot', 'Thriller,' etc).
+     * The result of every available tag is cached, so subsequent tag requests will have no delay
+     * https://api.mangadex.org/docs.html#operation/get-manga-tag
+     * @param {String} indentity
+     * @returns {Promise<Tag>}
+     */
+    static getTag(indentity) {
+        return Tag.getTag(indentity);
+    }
+
+    /**
+     * Returns an array of every tag available on Mangadex right now.
+     * The result is cached, so subsequent tag requests will have no delay
+     * https://api.mangadex.org/docs.html#operation/get-manga-tag
+     * @returns {Promise<Tag[]>}
+     */
+    static getAllTags() {
+        return Tag.getAllTags();
+    }
+
+    /**
+     * Retrieves the logged in user's reading status for a manga.
+     * If there is no status, null is returned
+     * @param {String} id
+     * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
+     */
+    static getReadingStatus(id) {
+        let m = new Manga(id);
+        return m.getReadingStatus();
+    }
+
+    /**
+     * Sets the logged in user's reading status for this manga. 
+     * Call without arguments to clear the reading status
+     * @param {String} id
+     * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
+     * @returns {Promise<void>}
+     */
+    static setReadingStatus(id, status = null) {
+        let m = new Manga(id);
+        return m.setReadingStatus(status);
+    }
+
+    /**
+     * Gets the combined feed of every manga followed by the logged in user
+     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @returns {Promise<Chapter[]>}
+     */
+    static async getFollowedFeed(parameterObject) {
+        if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest(`/user/follows/manga/feed`, Chapter, parameterObject, 500, 100);
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow a manga
+     * @param {String} id 
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<void>}
+     */
+    static async changeFollowship(id, follow = true) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${id}/follow`, follow ? 'POST' : 'DELETE');
+    }
+
+    /**
+     * Retrieves the read chapters for multiple manga
+     * @param  {...String} ids
+     * @returns {Promise<Chapter[]>} 
+     */
+    static async getReadChapters(...ids) {
+        if (ids.length === 0) throw new Error('Invalid Argument(s)');
+        if (ids[0] instanceof Array) ids = ids[0];
+        await Util.AuthUtil.validateTokens();
+        let chapterIds = await Util.apiParameterRequest(`/manga/read`, { ids: ids });
+        if (!(chapterIds.data instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+        let finalArray = [];
+        while (chapterIds.data.length > 0) finalArray = finalArray.concat(await Chapter.search({ ids: chapterIds.data.splice(0, 100), limit: 100 }));
+        return finalArray;
     }
 
     /**
      * Returns all covers for a manga
-     * @param {String} id Manga id
+     * @param {...String|Manga} id Manga id(s)
      * @returns {Promise<Cover[]>}
      */
-    static getCovers(id) {
-        return Cover.getMangaCovers(id);
+    static getCovers(...id) {
+        return Cover.getMangaCovers(...id);
     }
 
     /**
@@ -299,47 +359,63 @@ class Manga {
     }
 
     /**
-     * Retrieves all data for this manga from the API using its id.
-     * Sets the data in place and returns a new manga object as well.
-     * Use if there is an incomplete in this object
-     * @returns {Promise<Manga>}
-     */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill manga with no id.'));
-            try {
-                let res = await Util.apiRequest(`/manga/${this.id}`);
-                resolve(new Manga(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    /**
      * Returns a feed of the most recent chapters of this manga
-     * @param {FeedParameterObject} [parameterObject]
+     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
      * @returns {Promise<Chapter[]>}
      */
     getFeed(parameterObject = {}) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let res = await Util.apiSearchRequest(`/manga/${this.id}/feed`, parameterObject, 500, 100);
-                resolve(res.map(elem => new Chapter(elem)));
-            } catch (err) {
-                reject(err);
-            }
-        });
+        if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
+        return Util.apiCastedRequest(`/manga/${this.id}/feed`, Chapter, parameterObject, 500, 100);
     }
 
     /**
      * Adds this manga to a list
      * @param {List|String} list
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
     addToList(list) {
         if (typeof list !== 'string') list = list.id;
         return List.addManga(list, this.id);
+    }
+
+    /**
+     * Retrieves the logged in user's reading status for this manga.
+     * If there is no status, null is returned
+     * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
+     */
+    async getReadingStatus() {
+        await Util.AuthUtil.validateTokens();
+        let res = await Util.apiRequest(`/manga/${this.id}/status`);
+        return (typeof res.status === 'string' ? res.status : null);
+    }
+
+    /**
+     * Sets the logged in user's reading status for this manga. 
+     * Call without arguments to clear the reading status
+     * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
+     * @returns {Promise<void>}
+     */
+    async setReadingStatus(status = null) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${this.id}/status`, 'POST', { status: status });
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow this manga
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<Manga>}
+     */
+    async changeFollowship(follow = true) {
+        await Manga.changeFollowship(this.id, follow);
+        return this;
+    }
+
+    /**
+     * Returns an array of every chapter that has been marked as read for this manga
+     * @returns {Promise<Chapter[]>}
+     */
+    getReadChapters() {
+        return Manga.getReadChapters(this.id);
     }
 }
 

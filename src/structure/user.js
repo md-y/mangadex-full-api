@@ -46,27 +46,27 @@ class User {
      * @param {String} id Mangadex id
      * @returns {Promise<User>}
      */
-    static get(id) {
-        let u = new User(id);
-        return u.fill();
+    static async get(id) {
+        return new User(await Util.apiRequest(`/user/${id}`));
     }
 
     /**
-     * Retrieves all data for this user from the API using its id.
-     * Sets the data in place and returns a new user object as well.
-     * Use if there is an incomplete data due to this object simply being a reference.
+     * Returns all users followed by the logged in user
+     * @param {Number} [limit=100] Amount of users to return (0 to Infinity)
+     * @param {Number} [offset=0] How many users to skip before returning
+     * @returns {Promise<User[]>}
+     */
+    static async getFollowedUsers(limit = 100, offset = 10) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/follows/user', User, { limit: limit, offset: offset });
+    }
+
+    /**
+     * Returns the logged in user as a user object
      * @returns {Promise<User>}
      */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill user with no id.'));
-            try {
-                let res = await Util.apiRequest(`/user/${this.id}`);
-                resolve(new User(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async getLoggedInUser() {
+        return new User(await Util.apiRequest('/user/me'));
     }
 }
 

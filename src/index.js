@@ -26,19 +26,15 @@ exports.Cover = Cover;
  * Any invalid legacy ids will be skipped by Mangadex when remapping, so
  * call this function for each individual id if this is an issue.
  * @param {'group'|'manga'|'chapter'|'tag'} type Type of id 
- * @param {Number[]} ids Array of ids to convert
+ * @param {...Number|Number[]} ids Array of ids to convert
  * @returns {Promise<String[]>}
  */
-function convertLegacyId(type, ids) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let res = await Util.apiRequest('/legacy/mapping', 'POST', { type: type, ids: ids });
-            if (res instanceof Array) resolve(res.map(e => e.data.attributes.newId));
-            else reject(new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE));
-        } catch (error) {
-            reject(error);
-        }
-    });
+async function convertLegacyId(type, ...ids) {
+    if (ids.length === 0) throw new Error('Invalid Argument(s)');
+    if (ids[0] instanceof Array) ids = ids[0];
+    let res = await Util.apiRequest('/legacy/mapping', 'POST', { type: type, ids: ids });
+    if (!(res instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+    return res.map(e => e.data.attributes.newId);
 }
 exports.convertLegacyId = convertLegacyId;
 
@@ -59,7 +55,7 @@ exports.setGlobalLocale = setGlobalLocale;
  * @param {String} username 
  * @param {String} password 
  * @param {String} [cacheLocation] File location to store the persistent token (Warning: saved in plaintext)
- * @returns {Promise}
+ * @returns {Promise<void>}
  */
 function login(username, password, cacheLocation) {
     return Util.AuthUtil.login(username, password, cacheLocation);

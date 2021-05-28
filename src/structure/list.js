@@ -86,39 +86,33 @@ class List {
      * @param {String} id Mangadex id
      * @returns {Promise<List>}
      */
-    static get(id) {
-        let l = new List(id);
-        return l.fill();
+    static async get(id) {
+        await Util.AuthUtil.validateTokens();
+        return new List(await Util.apiRequest(`/list/${id}`));
     }
 
     /**
      * Create a new custom list. Must be logged in
      * @param {String} name
-     * @param {Manga|String} manga
-     * @param {Boolean} [public] Public visibility?
+     * @param {Manga[]|String[]} manga
+     * @param {'public'|'private'} [visibility='private'] 
      * @returns {Promise<List>}
      */
-    static async create(name, manga, publicVis = true) {
-        return new Promise(async (resolve, reject) => {
-            if (!name || !manga || !manga.every(e => e instanceof Manga || typeof e === 'string')) reject(new Error('Invalid Argument(s)'));
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest('/list', 'POST', {
-                    name: name,
-                    manga: manga.map(elem => elem.id),
-                    visibility: publicVis ? 'public' : 'private'
-                });
-                resolve(new List(res));
-            } catch (error) {
-                reject(error);
-            }
+    static async create(name, manga, visibility = 'private') {
+        if (!name || !manga || !manga.every(e => typeof e === 'string' || 'id' in e)) throw new Error('Invalid Argument(s)');
+        await Util.AuthUtil.validateTokens();
+        let res = await Util.apiRequest('/list', 'POST', {
+            name: name,
+            manga: manga.map(elem => typeof elem === 'string' ? elem : elem.id),
+            visibility: visibility === 'public' ? visibility : 'private'
         });
+        return new List(res);
     }
 
     /**
      * Deletes a custom list. Must be logged in
      * @param {String} id 
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
     static delete(id) {
         let l = new List(id);
@@ -129,40 +123,26 @@ class List {
      * Adds a manga to a custom list. Must be logged in
      * @param {String} listId
      * @param {Manga|String} manga
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
-    static addManga(listId, manga) {
-        return new Promise(async (resolve, reject) => {
-            if (!listId || !manga) reject(new Error('Invalid Argument(s)'));
-            if (typeof manga !== 'string') manga = manga.id;
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'POST');
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async addManga(listId, manga) {
+        if (!listId || !manga) throw new Error('Invalid Argument(s)');
+        if (typeof manga !== 'string') manga = manga.id;
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'POST');
     }
 
     /**
      * Removes a manga from a custom list. Must be logged in
      * @param {String} listId
      * @param {Manga|String} manga
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
-    static removeManga(listId, manga) {
-        return new Promise(async (resolve, reject) => {
-            if (!listId || !manga) reject(new Error('Invalid Argument(s)'));
-            if (typeof manga !== 'string') manga = manga.id;
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'DELETE');
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    static async removeManga(listId, manga) {
+        if (!listId || !manga) throw new Error('Invalid Argument(s)');
+        if (typeof manga !== 'string') manga = manga.id;
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'DELETE');
     }
 
     /**
@@ -194,32 +174,18 @@ class List {
      * @param {FeedParameterObject} [parameterObject] Information on which chapters to be returned
      * @returns {Promise<Chapter[]>}
      */
-    getFeed(parameterObject = {}) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
-                let res = await Util.apiSearchRequest(`/list/${this.id}/feed`, parameterObject, 500, 100);
-                resolve(res.map(elem => new Chapter(elem)));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async getFeed(parameterObject = {}) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest(`/list/${this.id}/feed`, Chapter, parameterObject, 500, 100);
     }
 
     /**
      * Delete a custom list. Must be logged in
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
-    delete() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest(`/list/${this.id}`, 'DELETE');
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async delete() {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/list/${this.id}`, 'DELETE');
     }
 
     /**
@@ -227,18 +193,12 @@ class List {
      * @param {String} newName
      * @returns {Promise<List>}
      */
-    rename(newName) {
-        return new Promise(async (resolve, reject) => {
-            if (!newName || typeof newName !== 'string') reject(new Error('Invalid Argument(s)'));
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { name: newName, version: this.version });
-                this.name = newName;
-                resolve(this);
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async rename(newName) {
+        if (!newName || typeof newName !== 'string') throw new Error('Invalid Argument(s)');
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/list/${this.id}`, 'PUT', { name: newName, version: this.version });
+        this.name = newName;
+        return this;
     }
 
     /**
@@ -246,20 +206,14 @@ class List {
      * @param {'public'|'private'} [newVis] Leave blank to toggle
      * @returns {Promise<List>}
      */
-    changeVisibility(newVis) {
-        return new Promise(async (resolve, reject) => {
-            if (!newVis && this.public) newVis = 'private';
-            else if (!newVis && this.public !== null) newVis = 'public';
-            else if (newVis !== 'private' && newVis !== 'public') reject(new Error('Invalid Argument(s)'));
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { visibility: newVis, version: this.version });
-                this.visibility = newVis;
-                resolve(this);
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async changeVisibility(newVis) {
+        if (!newVis && this.public) newVis = 'private';
+        else if (!newVis && this.public !== null) newVis = 'public';
+        else if (newVis !== 'private' && newVis !== 'public') throw new Error('Invalid Argument(s)');
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/list/${this.id}`, 'PUT', { visibility: newVis, version: this.version });
+        this.visibility = newVis;
+        return this;
     }
 
     /**
@@ -267,19 +221,13 @@ class List {
      * @param {Manga[]|String[]} newList
      * @returns {Promise<List>}
      */
-    updateMangaList(newList) {
-        return new Promise(async (resolve, reject) => {
-            if (!(newList instanceof Array)) reject(new Error('Invalid Argument(s)'));
-            let idList = newList.map(elem => typeof elem === 'string' ? elem : elem.id);
-            try {
-                await Util.AuthUtil.validateTokens();
-                let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { manga: idList, version: this.version });
-                this.manga = Relationship.convertType('manga', res.relationships);
-                resolve(this);
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async updateMangaList(newList) {
+        if (!(newList instanceof Array)) throw new Error('Invalid Argument(s)');
+        let idList = newList.map(elem => typeof elem === 'string' ? elem : elem.id);
+        await Util.AuthUtil.validateTokens();
+        let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { manga: idList, version: this.version });
+        this.manga = Relationship.convertType('manga', res.relationships);
+        return this;
     }
 
     /**
@@ -287,18 +235,12 @@ class List {
      * @param {Manga|String} manga
      * @returns {Promise<List>}
      */
-    addManga(manga) {
-        return new Promise(async (resolve, reject) => {
-            if (typeof manga !== 'string') manga = manga.id;
-            let idList = this.manga.map(elem => elem.id);
-            try {
-                // Uses updateMangaList to maintain server-side order
-                if (!idList.includes(manga)) await this.updateMangaList(idList.concat(manga));
-                resolve(this);
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async addManga(manga) {
+        if (typeof manga !== 'string') manga = manga.id;
+        let idList = this.manga.map(elem => elem.id);
+        // Uses updateMangaList to maintain server-side order
+        if (!idList.includes(manga)) await this.updateMangaList(idList.concat(manga));
+        return this;
     }
 
     /**
@@ -306,36 +248,11 @@ class List {
      * @param {Manga|String} manga
      * @returns {Promise<List>}
      */
-    removeManga(manga) {
-        return new Promise(async (resolve, reject) => {
-            if (typeof manga !== 'string') manga = manga.id;
-            try {
-                await List.removeManga(this.id, manga);
-                this.manga = this.manga.filter(elem => elem.id !== manga);
-                resolve(this);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    /**
-     * Retrieves all data for this list from the API using its id.
-     * Sets the data in place and returns a new list object as well.
-     * Use if there is an incomplete in this object
-     * @returns {Promise<List>}
-     */
-    fill() {
-        return new Promise(async (resolve, reject) => {
-            if (!this.id) reject(new Error('Attempted to fill custom list with no id.'));
-            if (Util.AuthUtil.canAuth) Util.AuthUtil.validateTokens();
-            try {
-                let res = await Util.apiRequest(`/list/${this.id}`);
-                resolve(new List(res));
-            } catch (error) {
-                reject(error);
-            }
-        });
+    async removeManga(manga) {
+        if (typeof manga !== 'string') manga = manga.id;
+        await List.removeManga(this.id, manga);
+        this.manga = this.manga.filter(elem => elem.id !== manga);
+        return this;
     }
 }
 
