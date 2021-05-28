@@ -7,6 +7,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "types",
-    "lib": [ "ES2018" ]
+    "lib": [ "ES2018" ],
+    "module": "CommonJS"
   }
 }
