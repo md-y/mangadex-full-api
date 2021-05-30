@@ -4,6 +4,7 @@ const Manga = require('./manga.js');
 const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
 const Chapter = require('./chapter.js');
+const User = require('./user.js');
 
 /**
  * Represents a custom, user-created list of manga
@@ -143,6 +144,31 @@ class List {
         if (typeof manga !== 'string') manga = manga.id;
         await Util.AuthUtil.validateTokens();
         await Util.apiRequest(`/manga/${manga}/list/${listId}`, 'DELETE');
+    }
+
+    /**
+     * Returns all lists created by the logged in user.
+     * As of the MD v5 Beta, this returns an empty list.
+     * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
+     * @param {Number} [offset=0] How many lists to skip before returning
+     * @returns {Promise<List[]>}
+     */
+    static async getLoggedInUserLists(limit = 100, offset = 10) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest('/user/list', List, { limit: limit, offset: offset });
+    }
+
+    /**
+     * Returns all public lists created by a user.
+     * As of the MD v5 Beta, this returns an empty list.
+     * @param {String|User} user
+     * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
+     * @param {Number} [offset=0] How many lists to skip before returning
+     * @returns {Promise<List[]>}
+     */
+    static async getUserLists(user, limit = 100, offset = 10) {
+        if (typeof user !== 'string') user = user.id;
+        return await Util.apiCastedRequest(`/user/${user}/list`, List, { limit: limit, offset: offset });
     }
 
     /**

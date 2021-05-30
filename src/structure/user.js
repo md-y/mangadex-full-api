@@ -66,7 +66,30 @@ class User {
      * @returns {Promise<User>}
      */
     static async getLoggedInUser() {
+        await Util.AuthUtil.validateTokens();
         return new User(await Util.apiRequest('/user/me'));
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow a user
+     * As of the MD v5 Beta, this returns an empty list.
+     * @param {String} id 
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<void>}
+     */
+    static async changeFollowship(id, follow = true) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/user/${id}/follow`, follow ? 'POST' : 'DELETE');
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow this user
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<User>}
+     */
+    async changeFollowship(follow = true) {
+        await User.changeFollowship(this.id, follow);
+        return this;
     }
 }
 

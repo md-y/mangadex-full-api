@@ -587,11 +587,13 @@ Represents a scanlation grouphttps://api.mangadex.org/docs.html#tag/Group
         * [.leader](#Group+leader) : [<code>Relationship</code>](#Relationship)
         * [.memberNames](#Group+memberNames) : [<code>Array.&lt;User&gt;</code>](#User)
         * [.members](#Group+members) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
+        * [.changeFollowship([follow])](#Group+changeFollowship) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
     * _static_
         * [.search([searchParameters])](#Group.search) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
         * [.get(id)](#Group.get) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
         * [.getByQuery([searchParameters])](#Group.getByQuery) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
         * [.getFollowedGroups([limit], [offset])](#Group.getFollowedGroups) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
+        * [.changeFollowship(id, [follow])](#Group.changeFollowship) ⇒ <code>Promise.&lt;void&gt;</code>
 
 <a name="new_Group_new"></a>
 
@@ -657,6 +659,17 @@ Username of the group's member. Resolve the members' relationships to retrieve o
 Relationships to each group's members
 
 **Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+changeFollowship"></a>
+
+### group.changeFollowship([follow]) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
+Makes the logged in user either follow or unfollow this group
+
+**Kind**: instance method of [<code>Group</code>](#Group)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [follow] | <code>Boolean</code> | <code>true</code> | True to follow, false to unfollow |
+
 <a name="Group.search"></a>
 
 ### Group.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
@@ -702,6 +715,18 @@ Returns all groups followed by the logged in user
 | [limit] | <code>Number</code> | <code>100</code> | Amount of groups to return (0 to Infinity) |
 | [offset] | <code>Number</code> | <code>0</code> | How many groups to skip before returning |
 
+<a name="Group.changeFollowship"></a>
+
+### Group.changeFollowship(id, [follow]) ⇒ <code>Promise.&lt;void&gt;</code>
+Makes the logged in user either follow or unfollow a group
+
+**Kind**: static method of [<code>Group</code>](#Group)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| id | <code>String</code> |  |  |
+| [follow] | <code>Boolean</code> | <code>true</code> | True to follow, false to unfollow |
+
 <a name="List"></a>
 
 ## List
@@ -733,6 +758,8 @@ Represents a custom, user-created list of mangahttps://api.mangadex.org/docs.ht
         * [.delete(id)](#List.delete) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.addManga(listId, manga)](#List.addManga) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.removeManga(listId, manga)](#List.removeManga) ⇒ <code>Promise.&lt;void&gt;</code>
+        * [.getLoggedInUserLists([limit], [offset])](#List.getLoggedInUserLists) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+        * [.getUserLists(user, [limit], [offset])](#List.getUserLists) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
         * [.getFeed(id, parameterObject)](#List.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 
 <a name="new_List_new"></a>
@@ -923,6 +950,31 @@ Removes a manga from a custom list. Must be logged in
 | --- | --- |
 | listId | <code>String</code> | 
 | manga | [<code>Manga</code>](#Manga) \| <code>String</code> | 
+
+<a name="List.getLoggedInUserLists"></a>
+
+### List.getLoggedInUserLists([limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+Returns all lists created by the logged in user.As of the MD v5 Beta, this returns an empty list.
+
+**Kind**: static method of [<code>List</code>](#List)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [limit] | <code>Number</code> | <code>100</code> | Amount of lists to return (0 to Infinity) |
+| [offset] | <code>Number</code> | <code>0</code> | How many lists to skip before returning |
+
+<a name="List.getUserLists"></a>
+
+### List.getUserLists(user, [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+Returns all public lists created by a user.As of the MD v5 Beta, this returns an empty list.
+
+**Kind**: static method of [<code>List</code>](#List)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| user | <code>String</code> \| [<code>User</code>](#User) |  |  |
+| [limit] | <code>Number</code> | <code>100</code> | Amount of lists to return (0 to Infinity) |
+| [offset] | <code>Number</code> | <code>0</code> | How many lists to skip before returning |
 
 <a name="List.getFeed"></a>
 
@@ -1356,10 +1408,12 @@ Represents an userhttps://api.mangadex.org/docs.html#tag/User
         * [.id](#User+id) : <code>String</code>
         * [.username](#User+username) : <code>String</code>
         * [.chapters](#User+chapters) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
+        * [.changeFollowship([follow])](#User+changeFollowship) ⇒ [<code>Promise.&lt;User&gt;</code>](#User)
     * _static_
         * [.get(id)](#User.get) ⇒ [<code>Promise.&lt;User&gt;</code>](#User)
         * [.getFollowedUsers([limit], [offset])](#User.getFollowedUsers) ⇒ <code>Promise.&lt;Array.&lt;User&gt;&gt;</code>
         * [.getLoggedInUser()](#User.getLoggedInUser) ⇒ [<code>Promise.&lt;User&gt;</code>](#User)
+        * [.changeFollowship(id, [follow])](#User.changeFollowship) ⇒ <code>Promise.&lt;void&gt;</code>
 
 <a name="new_User_new"></a>
 
@@ -1389,6 +1443,17 @@ Username of this user
 Relationships to chapters attributed to this user
 
 **Kind**: instance property of [<code>User</code>](#User)  
+<a name="User+changeFollowship"></a>
+
+### user.changeFollowship([follow]) ⇒ [<code>Promise.&lt;User&gt;</code>](#User)
+Makes the logged in user either follow or unfollow this user
+
+**Kind**: instance method of [<code>User</code>](#User)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [follow] | <code>Boolean</code> | <code>true</code> | True to follow, false to unfollow |
+
 <a name="User.get"></a>
 
 ### User.get(id) ⇒ [<code>Promise.&lt;User&gt;</code>](#User)
@@ -1418,6 +1483,18 @@ Returns all users followed by the logged in user
 Returns the logged in user as a user object
 
 **Kind**: static method of [<code>User</code>](#User)  
+<a name="User.changeFollowship"></a>
+
+### User.changeFollowship(id, [follow]) ⇒ <code>Promise.&lt;void&gt;</code>
+Makes the logged in user either follow or unfollow a userAs of the MD v5 Beta, this returns an empty list.
+
+**Kind**: static method of [<code>User</code>](#User)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| id | <code>String</code> |  |  |
+| [follow] | <code>Boolean</code> | <code>true</code> | True to follow, false to unfollow |
+
 <a name="Links"></a>
 
 ## Links

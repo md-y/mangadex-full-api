@@ -112,7 +112,7 @@ class Group {
      * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
      * @returns {Promise<Group>}
      */
-     static async getByQuery(searchParameters = {}) {
+    static async getByQuery(searchParameters = {}) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters, limit: 1 };
         else searchParameters.limit = 1;
         let res = await Group.search(searchParameters);
@@ -129,6 +129,27 @@ class Group {
     static async getFollowedGroups(limit = 100, offset = 10) {
         await Util.AuthUtil.validateTokens();
         return await Util.apiCastedRequest('/user/follows/group', Group, { limit: limit, offset: offset });
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow a group
+     * @param {String} id 
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<void>}
+     */
+    static async changeFollowship(id, follow = true) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/group/${id}/follow`, follow ? 'POST' : 'DELETE');
+    }
+
+    /**
+     * Makes the logged in user either follow or unfollow this group
+     * @param {Boolean} [follow=true] True to follow, false to unfollow
+     * @returns {Promise<Group>}
+     */
+    async changeFollowship(follow = true) {
+        await Group.changeFollowship(this.id, follow);
+        return this;
     }
 }
 
