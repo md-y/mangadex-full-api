@@ -166,6 +166,8 @@ class AuthUtil {
     static authUser;
     /** @type {Boolean} */
     static canAuth = false;
+    /** @type {Number} */
+    static timeOfRefresh;
 
     /**
      * @param {String} username 
@@ -188,6 +190,7 @@ class AuthUtil {
                 // Continue and retry at login
                 AuthUtil.refreshToken = null;
                 AuthUtil.sessionToken = null;
+                AuthUtil.timeOfRefresh = null;
             }
         }
 
@@ -196,6 +199,7 @@ class AuthUtil {
         let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
         AuthUtil.sessionToken = res.token.session;
         AuthUtil.refreshToken = res.token.refresh;
+        AuthUtil.timeOfRefresh = Date.now();
         if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
         return;
     }
@@ -205,6 +209,11 @@ class AuthUtil {
      * @returns {Promise<String>} Session Token
      */
     static async validateTokens(token) {
+        if (typeof AuthUtil.timeOfRefresh === 'number' && Date.now() - AuthUtil.timeOfRefresh < 870000) {
+            // Don't refresh if the token was refreshed less than 14.5 minutes ago (15 is the maximum age)
+            return AuthUtil.sessionToken;
+        }
+
         if (token) AuthUtil.refreshToken = token;
         if (!AuthUtil.canAuth || !AuthUtil.refreshToken) throw new APIRequestError('Not logged in.', APIRequestError.AUTHORIZATION);
         // Check if session token is out of date:
@@ -215,6 +224,7 @@ class AuthUtil {
             } catch (error) {
                 // If it fails the check, refresh it in the next try-catch block
                 AuthUtil.sessionToken = null;
+                AuthUtil.timeOfRefresh = null;
             }
         }
 
@@ -222,6 +232,7 @@ class AuthUtil {
         let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
         AuthUtil.sessionToken = res.token.session;
         AuthUtil.refreshToken = res.token.refresh;
+        AuthUtil.timeOfRefresh = Date.now();
         AuthUtil.writeToCache();
         return AuthUtil.sessionToken;
     }
