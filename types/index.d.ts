@@ -512,6 +512,13 @@ declare module 'mangadex-full-api' {
 	     */
 	    static getFollowedGroups(limit?: number, offset?: number): Promise<Group[]>;
 	    /**
+	     * Makes the logged in user either follow or unfollow a group
+	     * @param {String} id
+	     * @param {Boolean} [follow=true] True to follow, false to unfollow
+	     * @returns {Promise<void>}
+	     */
+	    static changeFollowship(id: string, follow?: boolean): Promise<void>;
+	    /**
 	     * There is no reason to directly create a group object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
 	     */
@@ -557,6 +564,12 @@ declare module 'mangadex-full-api' {
 	     * @type {Relationship[]}
 	     */
 	    members: Relationship[];
+	    /**
+	     * Makes the logged in user either follow or unfollow this group
+	     * @param {Boolean} [follow=true] True to follow, false to unfollow
+	     * @returns {Promise<Group>}
+	     */
+	    changeFollowship(follow?: boolean): Promise<Group>;
 	}
 	
 	/**
@@ -598,6 +611,23 @@ declare module 'mangadex-full-api' {
 	     * @returns {Promise<void>}
 	     */
 	    static removeManga(listId: string, manga: Manga | string): Promise<void>;
+	    /**
+	     * Returns all lists created by the logged in user.
+	     * As of the MD v5 Beta, this returns an empty list.
+	     * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
+	     * @param {Number} [offset=0] How many lists to skip before returning
+	     * @returns {Promise<List[]>}
+	     */
+	    static getLoggedInUserLists(limit?: number, offset?: number): Promise<List[]>;
+	    /**
+	     * Returns all public lists created by a user.
+	     * As of the MD v5 Beta, this returns an empty list.
+	     * @param {String|User} user
+	     * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
+	     * @param {Number} [offset=0] How many lists to skip before returning
+	     * @returns {Promise<List[]>}
+	     */
+	    static getUserLists(user: string | User, limit?: number, offset?: number): Promise<List[]>;
 	    /**
 	     * @private
 	     * @typedef {Object} FeedParameterObject
@@ -1186,6 +1216,14 @@ declare module 'mangadex-full-api' {
 	     */
 	    static getLoggedInUser(): Promise<User>;
 	    /**
+	     * Makes the logged in user either follow or unfollow a user
+	     * As of the MD v5 Beta, this returns an empty list.
+	     * @param {String} id
+	     * @param {Boolean} [follow=true] True to follow, false to unfollow
+	     * @returns {Promise<void>}
+	     */
+	    static changeFollowship(id: string, follow?: boolean): Promise<void>;
+	    /**
 	     * There is no reason to directly create a user object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
 	     */
@@ -1201,6 +1239,12 @@ declare module 'mangadex-full-api' {
 	     * @type {Relationship[]}
 	     */
 	    chapters: Relationship[];
+	    /**
+	     * Makes the logged in user either follow or unfollow this user
+	     * @param {Boolean} [follow=true] True to follow, false to unfollow
+	     * @returns {Promise<User>}
+	     */
+	    changeFollowship(follow?: boolean): Promise<User>;
 	}
 	
 }
