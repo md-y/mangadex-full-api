@@ -52,7 +52,11 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                             `Header: ${res.headers['content-type']}\n${error}`
                         ), APIRequestError.INVALID_RESPONSE);
                     }
-                } else resolve(responsePayload);
+                } else {
+                    if (res.statusCode === 429 || res.toLowerCase().includes('rate limited')) reject(new APIRequestError('You have been rate limited', APIRequestError.INVALID_RESPONSE));
+                    else if (res.statusCode >= 400) reject(new APIRequestError(`Returned HTML error page ${res}`, APIRequestError.INVALID_RESPONSE));
+                    else resolve(responsePayload);
+                }
             });
 
             res.on('error', (error) => {
@@ -88,10 +92,15 @@ async function apiParameterRequest(baseEndpoint, parameterObject) {
     let cleanParameters = {};
     for (let i in parameterObject) {
         if (parameterObject[i] instanceof Array) cleanParameters[i] = parameterObject[i].map(elem => {
+            // Arrays are kept in their arrays because the query name is repeated and cannot be represented as pairs (?key[]=1&key[]=2)
             if (typeof elem === 'string') return elem;
-            if ('id' in elem) return elem.id;
+            if (typeof elem === 'object' && 'id' in elem) return elem.id;
             return elem.toString();
         });
+        else if (typeof parameterObject[i] === 'object') {
+            // Objects are represented as new properties with a key of 'object[property]'
+            Object.keys(parameterObject[i]).forEach(elem => cleanParameters[`${i}[${elem}]`] = parameterObject[i][elem]);
+        }
         else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
         else cleanParameters[i] = parameterObject[i];
     }
@@ -122,7 +131,7 @@ async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, d
     let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
     let finalArray = res.results;
     if (!(finalArray instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
-    if (limit > maxLimit && finalArray.length === maxLimit) {
+    if (limit > maxLimit && finalArray.length === maxLimit && res.offset + res.limit < res.total) {
         parameterObject.limit = limit - maxLimit;
         parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
         let newRes = await apiSearchRequest(baseEndpoint, parameterObject);
