@@ -40,7 +40,7 @@ describe('Chapter', function () {
             if (pages.length === 0) assert.fail('Chapter returned 0 readable pages.');
             pages.forEach(elem => {
                 assert.strictEqual(typeof elem, 'string');
-                assert.match(elem, /mangadex\.network/);
+                assert.match(elem, /\..{3,4}$/);
             });
         });
     });
