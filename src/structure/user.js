@@ -72,7 +72,6 @@ class User {
 
     /**
      * Makes the logged in user either follow or unfollow a user
-     * As of the MD v5 Beta, this returns an empty list.
      * @param {String} id 
      * @param {Boolean} [follow=true] True to follow, false to unfollow
      * @returns {Promise<void>}

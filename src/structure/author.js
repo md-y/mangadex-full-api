@@ -73,6 +73,7 @@ class Author {
      * @property {Number} AuthorParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} AuthorParameterObject.offset
      * @property {Object} AuthorParameterObject.order 
+     * @property {'asc'|'desc'} AuthorParameterObject.order.name
      */
 
     /**
@@ -84,6 +85,15 @@ class Author {
     static search(searchParameters = {}) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
         return Util.apiCastedRequest('/author', Author, searchParameters);
+    }
+
+    /**
+     * Gets multiple authors
+     * @param {...String|Relationship} ids
+     * @returns {Promise<Author[]>}
+     */
+    static getMultiple(...ids) {
+        return Util.getMultipleIds(Author.search, ids);
     }
 
     /**

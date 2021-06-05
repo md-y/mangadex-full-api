@@ -37,6 +37,7 @@ declare module 'mangadex-full-api' {
 	     * @property {Number} AuthorParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	     * @property {Number} AuthorParameterObject.offset
 	     * @property {Object} AuthorParameterObject.order
+	     * @property {'asc'|'desc'} AuthorParameterObject.order.name
 	     */
 	    /**
 	     * Peforms a search and returns an array of a authors/artists.
@@ -55,8 +56,16 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit: number;
 	        offset: number;
-	        order: any;
+	        order: {
+	            name: 'asc' | 'desc';
+	        };
 	    }): Promise<Author[]>;
+	    /**
+	     * Gets multiple authors
+	     * @param {...String|Relationship} ids
+	     * @returns {Promise<Author[]>}
+	     */
+	    static getMultiple(...ids: (string | Relationship)[]): Promise<Author[]>;
 	    /**
 	     * Retrieves and returns a author by its id
 	     * @param {String} id Mangadex id
@@ -79,7 +88,9 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit: number;
 	        offset: number;
-	        order: any;
+	        order: {
+	            name: 'asc' | 'desc';
+	        };
 	    }): Promise<Author>;
 	    /**
 	     * There is no reason to directly create an author object. Use static methods, ie 'get()'.
@@ -132,13 +143,18 @@ declare module 'mangadex-full-api' {
 	     * @property {String} ChapterParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {String} ChapterParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {Object} ChapterParameterObject.order
+	     * @property {'asc'|'desc'} ChapterParameterObject.order.createdAt
+	     * @property {'asc'|'desc'} ChapterParameterObject.order.updatedAt
+	     * @property {'asc'|'desc'} ChapterParameterObject.order.publishAt
+	     * @property {'asc'|'desc'} ChapterParameterObject.order.volume
+	     * @property {'asc'|'desc'} ChapterParameterObject.order.chapter
 	     * @property {String[]} ChapterParameterObject.translatedLanguage
 	     * @property {String[]} ChapterParameterObject.ids Max of 100 per request
 	     * @property {Number} ChapterParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	     * @property {Number} ChapterParameterObject.offset
 	     * @property {String[]|Group[]} ChapterParameterObject.groups
-	     * @property {String|User} ChapterParameterObject.uploader
-	     * @property {String|Manga} ChapterParameterObject.manga
+	     * @property {String|User|Relationship} ChapterParameterObject.uploader
+	     * @property {String|Manga|Relationship} ChapterParameterObject.manga
 	     * @property {String} ChapterParameterObject.volume
 	     * @property {String} ChapterParameterObject.chapter
 	     */
@@ -162,7 +178,13 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	            publishAt: 'asc' | 'desc';
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	        };
 	        translatedLanguage: string[];
 	        /**
 	         * Max of 100 per request
@@ -174,11 +196,17 @@ declare module 'mangadex-full-api' {
 	        limit: number;
 	        offset: number;
 	        groups: string[] | any[];
-	        uploader: string | any;
-	        manga: string | any;
+	        uploader: string | any | Relationship;
+	        manga: string | any | Relationship;
 	        volume: string;
 	        chapter: string;
 	    }): Promise<Chapter[]>;
+	    /**
+	     * Gets multiple chapters
+	     * @param {...String|Relationship} ids
+	     * @returns {Promise<Chapter[]>}
+	     */
+	    static getMultiple(...ids: (string | Relationship)[]): Promise<Chapter[]>;
 	    /**
 	     * Retrieves and returns a chapter by its id
 	     * @param {String} id Mangadex id
@@ -204,7 +232,13 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	            publishAt: 'asc' | 'desc';
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	        };
 	        translatedLanguage: string[];
 	        /**
 	         * Max of 100 per request
@@ -216,8 +250,8 @@ declare module 'mangadex-full-api' {
 	        limit: number;
 	        offset: number;
 	        groups: string[] | any[];
-	        uploader: string | any;
-	        manga: string | any;
+	        uploader: string | any | Relationship;
+	        manga: string | any | Relationship;
 	        volume: string;
 	        chapter: string;
 	    }): Promise<Chapter>;
@@ -336,6 +370,9 @@ declare module 'mangadex-full-api' {
 	     * @property {String[]|Cover[]} CoverParameterObject.ids Covers ids (limited to 100 per request)
 	     * @property {String[]|User[]} CoverParameterObject.uploaders User ids (limited to 100 per request)
 	     * @property {Object} CoverParameterObject.order
+	     * @property {'asc'|'desc'} CoverParameterObject.order.createdAt
+	     * @property {'asc'|'desc'} CoverParameterObject.order.updatedAt
+	     * @property {'asc'|'desc'} CoverParameterObject.order.volume
 	     */
 	    /**
 	     * Peforms a search and returns an array of covers.
@@ -361,8 +398,18 @@ declare module 'mangadex-full-api' {
 	         * User ids (limited to 100 per request)
 	         */
 	        uploaders: string[] | any[];
-	        order: any;
+	        order: {
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	            volume: 'asc' | 'desc';
+	        };
 	    }): Promise<Cover[]>;
+	    /**
+	     * Gets multiple covers
+	     * @param {...String|Relationship} ids
+	     * @returns {Promise<Cover[]>}
+	     */
+	    static getMultiple(...ids: (string | Relationship)[]): Promise<Cover[]>;
 	    /**
 	     * Performs a search for one manga and returns that manga
 	     * @param {CoverParameterObject} [searchParameters]
@@ -386,14 +433,18 @@ declare module 'mangadex-full-api' {
 	         * User ids (limited to 100 per request)
 	         */
 	        uploaders: string[] | any[];
-	        order: any;
+	        order: {
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	            volume: 'asc' | 'desc';
+	        };
 	    }): Promise<Cover>;
 	    /**
 	     * Get an array of manga's covers
-	     * @param {...String|Manga} manga
+	     * @param {...String|Manga|Relationship} manga
 	     * @returns {Promise<Cover[]>}
 	     */
-	    static getMangaCovers(...manga: (string | any)[]): Promise<Cover[]>;
+	    static getMangaCovers(...manga: (string | any | Relationship)[]): Promise<Cover[]>;
 	    /**
 	     * There is no reason to directly create a cover art object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
@@ -459,7 +510,6 @@ declare module 'mangadex-full-api' {
 	     * @property {String[]} GroupParameterObject.ids Max of 100 per request
 	     * @property {Number} GroupParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	     * @property {Number} GroupParameterObject.offset
-	     * @property {Object} GroupParameterObject.order
 	     */
 	    /**
 	     * Peforms a search and returns an array of groups.
@@ -478,8 +528,13 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit: number;
 	        offset: number;
-	        order: any;
 	    }): Promise<Group[]>;
+	    /**
+	     * Gets multiple groups
+	     * @param {...String|Relationship} ids
+	     * @returns {Promise<Group[]>}
+	     */
+	    static getMultiple(...ids: (string | Relationship)[]): Promise<Group[]>;
 	    /**
 	     * Retrieves and returns a group by its id
 	     * @param {String} id Mangadex id
@@ -502,7 +557,6 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit: number;
 	        offset: number;
-	        order: any;
 	    }): Promise<Group>;
 	    /**
 	     * Returns all groups followed by the logged in user
@@ -638,6 +692,10 @@ declare module 'mangadex-full-api' {
 	     * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {Object} FeedParameterObject.order
+	     * @property {'asc'|'desc'} FeedParameterObject.order.volume
+	     * @property {'asc'|'desc'} FeedParameterObject.order.chapter
+	     * @property {'asc'|'desc'} FeedParameterObject.order.createdAt
+	     * @property {'asc'|'desc'} FeedParameterObject.order.updatedAt
 	     */
 	    /**
 	     * Returns a list of the most recent chapters from the manga in a list
@@ -664,7 +722,12 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	    }): Promise<Chapter[]>;
 	    /**
 	     * There is no reason to directly create a custom list object. Use static methods, ie 'get()'.
@@ -732,7 +795,12 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	    }): Promise<Chapter[]>;
 	    /**
 	     * Delete a custom list. Must be logged in
@@ -786,6 +854,8 @@ declare module 'mangadex-full-api' {
 	     * @property {String} MangaParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {String} MangaParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {Object} MangaParameterObject.order
+	     * @property {'asc'|'desc'} MangaParameterObject.order.createdAt
+	     * @property {'asc'|'desc'} MangaParameterObject.order.updatedAt
 	     * @property {String[]|Author[]} MangaParameterObject.authors Array of author ids
 	     * @property {String[]|Author[]} MangaParameterObject.artists Array of artist ids
 	     * @property {String[]|Tag[]} MangaParameterObject.includedTags
@@ -817,7 +887,10 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        updatedAtSince: string;
-	        order: any;
+	        order: {
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	        /**
 	         * Array of author ids
 	         */
@@ -843,6 +916,12 @@ declare module 'mangadex-full-api' {
 	        offset: number;
 	    }): Promise<Manga[]>;
 	    /**
+	     * Gets multiple manga
+	     * @param {...String|Relationship} ids
+	     * @returns {Promise<Manga[]>}
+	     */
+	    static getMultiple(...ids: (string | Relationship)[]): Promise<Manga[]>;
+	    /**
 	     * Retrieves and returns a manga by its id
 	     * @param {String} id Mangadex id
 	     * @returns {Promise<Manga>}
@@ -866,7 +945,10 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        updatedAtSince: string;
-	        order: any;
+	        order: {
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	        /**
 	         * Array of author ids
 	         */
@@ -901,9 +983,13 @@ declare module 'mangadex-full-api' {
 	     * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	     * @property {Object} FeedParameterObject.order
+	     * @property {'asc'|'desc'} FeedParameterObject.order.volume
+	     * @property {'asc'|'desc'} FeedParameterObject.order.chapter
+	     * @property {'asc'|'desc'} FeedParameterObject.order.createdAt
+	     * @property {'asc'|'desc'} FeedParameterObject.order.updatedAt
 	     */
 	    /**
-	     * Returns a feed of the most recent chapters of this manga
+	     * Returns a feed of chapters for a manga
 	     * @param {String} id
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
 	     * @returns {Promise<Chapter[]>}
@@ -927,7 +1013,12 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	    }): Promise<Chapter[]>;
 	    /**
 	     * Returns one random manga
@@ -995,7 +1086,12 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	    }): Promise<Chapter[]>;
 	    /**
 	     * Makes the logged in user either follow or unfollow a manga
@@ -1006,16 +1102,16 @@ declare module 'mangadex-full-api' {
 	    static changeFollowship(id: string, follow?: boolean): Promise<void>;
 	    /**
 	     * Retrieves the read chapters for multiple manga
-	     * @param  {...String} ids
+	     * @param  {...String|Manga|Relationship} ids
 	     * @returns {Promise<Chapter[]>}
 	     */
-	    static getReadChapters(...ids: string[]): Promise<Chapter[]>;
+	    static getReadChapters(...ids: (string | Manga | Relationship)[]): Promise<Chapter[]>;
 	    /**
 	     * Returns all covers for a manga
-	     * @param {...String|Manga} id Manga id(s)
+	     * @param {...String|Manga|Relationship} id Manga id(s)
 	     * @returns {Promise<Cover[]>}
 	     */
-	    static getCovers(...id: (string | Manga)[]): Promise<Cover[]>;
+	    static getCovers(...id: (string | Manga | Relationship)[]): Promise<Cover[]>;
 	    /**
 	     * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
@@ -1135,7 +1231,7 @@ declare module 'mangadex-full-api' {
 	     */
 	    getCovers(): Promise<Cover[]>;
 	    /**
-	     * Returns a feed of the most recent chapters of this manga
+	     * Returns a feed of this manga's chapters
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
 	     * @returns {Promise<Chapter[]>}
 	     */
@@ -1158,7 +1254,12 @@ declare module 'mangadex-full-api' {
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
 	        publishAtSince: string;
-	        order: any;
+	        order: {
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	        };
 	    }): Promise<Chapter[]>;
 	    /**
 	     * Adds this manga to a list
@@ -1176,9 +1277,9 @@ declare module 'mangadex-full-api' {
 	     * Sets the logged in user's reading status for this manga.
 	     * Call without arguments to clear the reading status
 	     * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
-	     * @returns {Promise<void>}
+	     * @returns {Promise<Manga>}
 	     */
-	    setReadingStatus(status?: 'reading' | 'on_hold' | 'plan_to_read' | 'dropped' | 're_reading' | 'completed'): Promise<void>;
+	    setReadingStatus(status?: 'reading' | 'on_hold' | 'plan_to_read' | 'dropped' | 're_reading' | 'completed'): Promise<Manga>;
 	    /**
 	     * Makes the logged in user either follow or unfollow this manga
 	     * @param {Boolean} [follow=true] True to follow, false to unfollow
@@ -1217,7 +1318,6 @@ declare module 'mangadex-full-api' {
 	    static getLoggedInUser(): Promise<User>;
 	    /**
 	     * Makes the logged in user either follow or unfollow a user
-	     * As of the MD v5 Beta, this returns an empty list.
 	     * @param {String} id
 	     * @param {Boolean} [follow=true] True to follow, false to unfollow
 	     * @returns {Promise<void>}

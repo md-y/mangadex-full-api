@@ -156,6 +156,31 @@ async function apiCastedRequest(endpoint, classObject, parameterObject = {}, max
 exports.apiCastedRequest = apiCastedRequest;
 
 /**
+ * Retrieves an unlimted amount of an object via a search function and id array
+ * @param {Function} searchFunction 
+ * @param {String[]} ids
+ * @param {Number} [limit=100]
+ * @param {String} [searchProperty='ids']
+ * @returns {Promise<Array>}
+ */
+async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty = 'ids') {
+    if (ids[0] instanceof Array) ids = ids[0];
+    ids = ids.map(elem => {
+        if (typeof elem === 'string') return elem;
+        else if (typeof elem === 'object' && 'id' in elem) return elem.id;
+        else return elem.toString();
+    });
+    let searchParameters = { limit: limit };
+    let finalArray = [];
+    while (ids.length > 0) {
+        searchParameters[searchProperty] = ids.splice(0, 100);
+        finalArray = finalArray.concat(await searchFunction(searchParameters));
+    }
+    return finalArray;
+}
+exports.getMultipleIds = getMultipleIds;
+
+/**
  * Any function that requires authentication should call 'validateTokens().'
  * How authentication works:
  * If there is no cache or its invalid, simply request tokens through logging in ('login()').

@@ -84,7 +84,6 @@ class Group {
      * @property {String[]} GroupParameterObject.ids Max of 100 per request
      * @property {Number} GroupParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} GroupParameterObject.offset
-     * @property {Object} GroupParameterObject.order
      */
 
     /**
@@ -96,6 +95,15 @@ class Group {
     static search(searchParameters = {}) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
         return Util.apiCastedRequest('/group', Group, searchParameters);
+    }
+
+    /**
+     * Gets multiple groups
+     * @param {...String|Relationship} ids
+     * @returns {Promise<Group[]>}
+     */
+    static getMultiple(...ids) {
+        return Util.getMultipleIds(Group.search, ids);
     }
 
     /**

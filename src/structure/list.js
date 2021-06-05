@@ -115,9 +115,9 @@ class List {
      * @param {String} id 
      * @returns {Promise<void>}
      */
-    static delete(id) {
-        let l = new List(id);
-        return l.delete();
+    static async delete(id) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/list/${id}`, 'DELETE');
     }
 
     /**
@@ -161,7 +161,7 @@ class List {
     /**
      * Returns all public lists created by a user.
      * As of the MD v5 Beta, this returns an empty list.
-     * @param {String|User} user
+     * @param {String|User|Relationship} user
      * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
      * @param {Number} [offset=0] How many lists to skip before returning
      * @returns {Promise<List[]>}
@@ -181,6 +181,10 @@ class List {
      * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {Object} FeedParameterObject.order
+     * @property {'asc'|'desc'} FeedParameterObject.order.volume
+     * @property {'asc'|'desc'} FeedParameterObject.order.chapter
+     * @property {'asc'|'desc'} FeedParameterObject.order.createdAt
+     * @property {'asc'|'desc'} FeedParameterObject.order.updatedAt
      */
 
     /**
@@ -189,9 +193,9 @@ class List {
      * @param {FeedParameterObject} parameterObject Information on which chapters to be returned
      * @returns {Promise<Chapter[]>}
      */
-    static getFeed(id, parameterObject) {
-        let l = new List(id);
-        return l.getFeed(parameterObject);
+    static async getFeed(id, parameterObject) {
+        await Util.AuthUtil.validateTokens();
+        return await Util.apiCastedRequest(`/list/${id}/feed`, Chapter, parameterObject, 500, 100);
     }
 
     /**
@@ -200,18 +204,16 @@ class List {
      * @param {FeedParameterObject} [parameterObject] Information on which chapters to be returned
      * @returns {Promise<Chapter[]>}
      */
-    async getFeed(parameterObject = {}) {
-        await Util.AuthUtil.validateTokens();
-        return await Util.apiCastedRequest(`/list/${this.id}/feed`, Chapter, parameterObject, 500, 100);
+    getFeed(parameterObject = {}) {
+        return List.getFeed(this.id, parameterObject);
     }
 
     /**
      * Delete a custom list. Must be logged in
      * @returns {Promise<void>}
      */
-    async delete() {
-        await Util.AuthUtil.validateTokens();
-        await Util.apiRequest(`/list/${this.id}`, 'DELETE');
+    delete() {
+        return List.delete(this.id);
     }
 
     /**

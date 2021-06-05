@@ -184,6 +184,8 @@ class Manga {
      * @property {String} MangaParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {String} MangaParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {Object} MangaParameterObject.order
+     * @property {'asc'|'desc'} MangaParameterObject.order.createdAt
+     * @property {'asc'|'desc'} MangaParameterObject.order.updatedAt
      * @property {String[]|Author[]} MangaParameterObject.authors Array of author ids
      * @property {String[]|Author[]} MangaParameterObject.artists Array of artist ids
      * @property {String[]|Tag[]} MangaParameterObject.includedTags
@@ -206,6 +208,15 @@ class Manga {
     static search(searchParameters = {}) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
         return Util.apiCastedRequest('/manga', Manga, searchParameters);
+    }
+
+    /**
+     * Gets multiple manga
+     * @param {...String|Relationship} ids
+     * @returns {Promise<Manga[]>}
+     */
+     static getMultiple(...ids) {
+        return Util.getMultipleIds(Manga.search, ids);
     }
 
     /**
@@ -240,17 +251,21 @@ class Manga {
      * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
      * @property {Object} FeedParameterObject.order
+     * @property {'asc'|'desc'} FeedParameterObject.order.volume
+     * @property {'asc'|'desc'} FeedParameterObject.order.chapter
+     * @property {'asc'|'desc'} FeedParameterObject.order.createdAt
+     * @property {'asc'|'desc'} FeedParameterObject.order.updatedAt
      */
 
     /**
-     * Returns a feed of the most recent chapters of this manga
+     * Returns a feed of chapters for a manga
      * @param {String} id
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
      * @returns {Promise<Chapter[]>}
      */
     static getFeed(id, parameterObject = {}) {
-        let m = new Manga(id);
-        return m.getFeed(parameterObject);
+        if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
+        return Util.apiCastedRequest(`/manga/${id}/feed`, Chapter, parameterObject, 500, 100);
     }
 
     /**
@@ -299,9 +314,10 @@ class Manga {
      * @param {String} id
      * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
      */
-    static getReadingStatus(id) {
-        let m = new Manga(id);
-        return m.getReadingStatus();
+    static async getReadingStatus(id) {
+        await Util.AuthUtil.validateTokens();
+        let res = await Util.apiRequest(`/manga/${id}/status`);
+        return (typeof res.status === 'string' ? res.status : null);
     }
 
     /**
@@ -311,9 +327,9 @@ class Manga {
      * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
      * @returns {Promise<void>}
      */
-    static setReadingStatus(id, status = null) {
-        let m = new Manga(id);
-        return m.setReadingStatus(status);
+    static async setReadingStatus(id, status = null) {
+        await Util.AuthUtil.validateTokens();
+        await Util.apiRequest(`/manga/${id}/status`, 'POST', { status: status });
     }
 
     /**
@@ -340,7 +356,7 @@ class Manga {
 
     /**
      * Retrieves the read chapters for multiple manga
-     * @param  {...String} ids
+     * @param  {...String|Manga|Relationship} ids
      * @returns {Promise<Chapter[]>} 
      */
     static async getReadChapters(...ids) {
@@ -349,14 +365,12 @@ class Manga {
         await Util.AuthUtil.validateTokens();
         let chapterIds = await Util.apiParameterRequest(`/manga/read`, { ids: ids });
         if (!(chapterIds.data instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
-        let finalArray = [];
-        while (chapterIds.data.length > 0) finalArray = finalArray.concat(await Chapter.search({ ids: chapterIds.data.splice(0, 100), limit: 100 }));
-        return finalArray;
+        return Chapter.getMultiple(...chapterIds);
     }
 
     /**
      * Returns all covers for a manga
-     * @param {...String|Manga} id Manga id(s)
+     * @param {...String|Manga|Relationship} id Manga id(s)
      * @returns {Promise<Cover[]>}
      */
     static getCovers(...id) {
@@ -372,13 +386,12 @@ class Manga {
     }
 
     /**
-     * Returns a feed of the most recent chapters of this manga
+     * Returns a feed of this manga's chapters 
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
      * @returns {Promise<Chapter[]>}
      */
     getFeed(parameterObject = {}) {
-        if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
-        return Util.apiCastedRequest(`/manga/${this.id}/feed`, Chapter, parameterObject, 500, 100);
+        return Manga.getFeed(this.id, parameterObject);
     }
 
     /**
@@ -396,21 +409,19 @@ class Manga {
      * If there is no status, null is returned
      * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
      */
-    async getReadingStatus() {
-        await Util.AuthUtil.validateTokens();
-        let res = await Util.apiRequest(`/manga/${this.id}/status`);
-        return (typeof res.status === 'string' ? res.status : null);
+    getReadingStatus() {
+        return Manga.getReadingStatus(this.id);
     }
 
     /**
      * Sets the logged in user's reading status for this manga. 
      * Call without arguments to clear the reading status
      * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
-     * @returns {Promise<void>}
+     * @returns {Promise<Manga>}
      */
     async setReadingStatus(status = null) {
-        await Util.AuthUtil.validateTokens();
-        await Util.apiRequest(`/manga/${this.id}/status`, 'POST', { status: status });
+        await Manga.setReadingStatus(this.id, status);
+        return this;
     }
 
     /**

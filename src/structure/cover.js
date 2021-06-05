@@ -106,6 +106,9 @@ class Cover {
      * @property {String[]|Cover[]} CoverParameterObject.ids Covers ids (limited to 100 per request)
      * @property {String[]|User[]} CoverParameterObject.uploaders User ids (limited to 100 per request)
      * @property {Object} CoverParameterObject.order
+     * @property {'asc'|'desc'} CoverParameterObject.order.createdAt
+     * @property {'asc'|'desc'} CoverParameterObject.order.updatedAt
+     * @property {'asc'|'desc'} CoverParameterObject.order.volume
      */
 
     /**
@@ -119,11 +122,20 @@ class Cover {
     }
 
     /**
+     * Gets multiple covers
+     * @param {...String|Relationship} ids
+     * @returns {Promise<Cover[]>}
+     */
+    static getMultiple(...ids) {
+        return Util.getMultipleIds(Cover.search, ids);
+    }
+
+    /**
      * Performs a search for one manga and returns that manga
      * @param {CoverParameterObject} [searchParameters]
      * @returns {Promise<Cover>}
      */
-     static async getByQuery(searchParameters = {}) {
+    static async getByQuery(searchParameters = {}) {
         searchParameters.limit = 1;
         let res = await Cover.search(searchParameters);
         if (res.length === 0) throw new Error('Search returned no results.');
@@ -132,13 +144,11 @@ class Cover {
 
     /**
      * Get an array of manga's covers
-     * @param {...String|Manga} manga
+     * @param {...String|Manga|Relationship} manga
      * @returns {Promise<Cover[]>}
      */
-    static async getMangaCovers(...manga) {
-        if (manga[0] instanceof Array) manga = manga[0];
-        manga = manga.map(elem => typeof elem === 'string' ? elem : elem.id);
-        return await Cover.search({ manga: manga.splice(0, 100), limit: Infinity });
+    static getMangaCovers(...manga) {
+        return Util.getMultipleIds(Cover.search, manga, Infinity, 'manga');
     }
 }
 
