@@ -382,7 +382,7 @@ class Manga {
      * https://api.mangadex.org/docs.html#operation/post-manga
      * @param {String} id
      * @param {...String} languages 
-     * @returns {Promise<Object}
+     * @returns {Promise<Object>}
      */
     static async getAggregate(id, ...languages) {
         if (languages[0] instanceof Array) languages = languages[0];

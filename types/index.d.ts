@@ -676,12 +676,12 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Returns all public lists created by a user.
 	     * As of the MD v5 Beta, this returns an empty list.
-	     * @param {String|User} user
+	     * @param {String|User|Relationship} user
 	     * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
 	     * @param {Number} [offset=0] How many lists to skip before returning
 	     * @returns {Promise<List[]>}
 	     */
-	    static getUserLists(user: string | User, limit?: number, offset?: number): Promise<List[]>;
+	    static getUserLists(user: string | User | Relationship, limit?: number, offset?: number): Promise<List[]>;
 	    /**
 	     * @private
 	     * @typedef {Object} FeedParameterObject
@@ -1113,6 +1113,14 @@ declare module 'mangadex-full-api' {
 	     */
 	    static getCovers(...id: (string | Manga | Relationship)[]): Promise<Cover[]>;
 	    /**
+	     * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
+	     * https://api.mangadex.org/docs.html#operation/post-manga
+	     * @param {String} id
+	     * @param {...String} languages
+	     * @returns {Promise<Object>}
+	     */
+	    static getAggregate(id: string, ...languages: string[]): Promise<any>;
+	    /**
 	     * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
 	     */
@@ -1150,15 +1158,15 @@ declare module 'mangadex-full-api' {
 	     */
 	    originalLanguage: string;
 	    /**
-	     * Number this manga's last volume
+	     * Number this manga's last volume based on the default feed order
 	     * @type {Number}
 	     */
 	    lastVolume: number;
 	    /**
-	     * Name of this manga's last chapter
-	     * @type {String}
+	     * Number of this manga's last chapter based on the default feed order
+	     * @type {Number}
 	     */
-	    lastChapter: string;
+	    lastChapter: number;
 	    /**
 	     * Publication demographic of this manga
 	     * https://api.mangadex.org/docs.html#section/Static-data/Manga-publication-demographic
@@ -1291,6 +1299,12 @@ declare module 'mangadex-full-api' {
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    getReadChapters(): Promise<Chapter[]>;
+	    /**
+	     * Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
+	     * https://api.mangadex.org/docs.html#operation/post-manga
+	     * @param {...String} languages
+	     */
+	    getAggregate(...languages: string[]): Promise<any>;
 	}
 	
 	/**

@@ -1018,7 +1018,7 @@ Returns all public lists created by a user.As of the MD v5 Beta, this returns a
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| user | <code>String</code> \| [<code>User</code>](#User) |  |  |
+| user | <code>String</code> \| [<code>User</code>](#User) \| [<code>Relationship</code>](#Relationship) |  |  |
 | [limit] | <code>Number</code> | <code>100</code> | Amount of lists to return (0 to Infinity) |
 | [offset] | <code>Number</code> | <code>0</code> | How many lists to skip before returning |
 
@@ -1052,7 +1052,7 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.links](#Manga+links) : [<code>Links</code>](#Links)
         * [.originalLanguage](#Manga+originalLanguage) : <code>String</code>
         * [.lastVolume](#Manga+lastVolume) : <code>Number</code>
-        * [.lastChapter](#Manga+lastChapter) : <code>String</code>
+        * [.lastChapter](#Manga+lastChapter) : <code>Number</code>
         * [.publicationDemographic](#Manga+publicationDemographic) : <code>&#x27;shounen&#x27;</code> \| <code>&#x27;shoujo&#x27;</code> \| <code>&#x27;josei&#x27;</code> \| <code>&#x27;seinen&#x27;</code>
         * [.status](#Manga+status) : <code>&#x27;ongoing&#x27;</code> \| <code>&#x27;completed&#x27;</code> \| <code>&#x27;hiatus&#x27;</code> \| <code>&#x27;cancelled&#x27;</code>
         * [.year](#Manga+year) : <code>Number</code>
@@ -1073,6 +1073,7 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.setReadingStatus([status])](#Manga+setReadingStatus) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
         * [.changeFollowship([follow])](#Manga+changeFollowship) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
         * [.getReadChapters()](#Manga+getReadChapters) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.getAggregate(...languages)](#Manga+getAggregate)
     * _static_
         * [.search([searchParameters])](#Manga.search) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
         * [.getMultiple(...ids)](#Manga.getMultiple) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
@@ -1089,6 +1090,7 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.changeFollowship(id, [follow])](#Manga.changeFollowship) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.getReadChapters(...ids)](#Manga.getReadChapters) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.getCovers(...id)](#Manga.getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
+        * [.getAggregate(id, ...languages)](#Manga.getAggregate) ⇒ <code>Promise.&lt;Object&gt;</code>
 
 <a name="new_Manga_new"></a>
 
@@ -1145,13 +1147,13 @@ Link object representing links to other websites about this mangahttps://api.ma
 <a name="Manga+lastVolume"></a>
 
 ### manga.lastVolume : <code>Number</code>
-Number this manga's last volume
+Number this manga's last volume based on the default feed order
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+lastChapter"></a>
 
-### manga.lastChapter : <code>String</code>
-Name of this manga's last chapter
+### manga.lastChapter : <code>Number</code>
+Number of this manga's last chapter based on the default feed order
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+publicationDemographic"></a>
@@ -1294,6 +1296,17 @@ Makes the logged in user either follow or unfollow this manga
 Returns an array of every chapter that has been marked as read for this manga
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
+<a name="Manga+getAggregate"></a>
+
+### manga.getAggregate(...languages)
+Returns a summary of every chapter for this manga including each of their numbers and volumes they belong tohttps://api.mangadex.org/docs.html#operation/post-manga
+
+**Kind**: instance method of [<code>Manga</code>](#Manga)  
+
+| Param | Type |
+| --- | --- |
+| ...languages | <code>String</code> | 
+
 <a name="Manga.search"></a>
 
 ### Manga.search([searchParameters]) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
@@ -1452,6 +1465,18 @@ Returns all covers for a manga
 | Param | Type | Description |
 | --- | --- | --- |
 | ...id | <code>String</code> \| [<code>Manga</code>](#Manga) \| [<code>Relationship</code>](#Relationship) | Manga id(s) |
+
+<a name="Manga.getAggregate"></a>
+
+### Manga.getAggregate(id, ...languages) ⇒ <code>Promise.&lt;Object&gt;</code>
+Returns a summary of every chapter for a manga including each of their numbers and volumes they belong tohttps://api.mangadex.org/docs.html#operation/post-manga
+
+**Kind**: static method of [<code>Manga</code>](#Manga)  
+
+| Param | Type |
+| --- | --- |
+| id | <code>String</code> | 
+| ...languages | <code>String</code> | 
 
 <a name="User"></a>
 
