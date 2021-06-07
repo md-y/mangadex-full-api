@@ -73,16 +73,16 @@ class Manga {
         this.originalLanguage = context.data.attributes.originalLanguage;
 
         /**
-         * Number this manga's last volume
+         * Number this manga's last volume based on the default feed order
          * @type {Number}
          */
         this.lastVolume = context.data.attributes.lastVolume !== null && !isNaN(context.data.attributes.lastVolume) ? parseFloat(context.data.attributes.lastVolume) : null;
 
         /**
-         * Name of this manga's last chapter
-         * @type {String}
+         * Number of this manga's last chapter based on the default feed order
+         * @type {Number}
          */
-        this.lastChapter = context.data.attributes.lastChapter;
+        this.lastChapter = context.data.attributes.lastChapter !== null && !isNaN(context.data.attributes.lastChapter) ? parseFloat(context.data.attributes.lastChapter) : null;
 
         /**
          * Publication demographic of this manga
@@ -215,7 +215,7 @@ class Manga {
      * @param {...String|Relationship} ids
      * @returns {Promise<Manga[]>}
      */
-     static getMultiple(...ids) {
+    static getMultiple(...ids) {
         return Util.getMultipleIds(Manga.search, ids);
     }
 
@@ -378,6 +378,20 @@ class Manga {
     }
 
     /**
+     * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
+     * https://api.mangadex.org/docs.html#operation/post-manga
+     * @param {String} id
+     * @param {...String} languages 
+     * @returns {Promise<Object}
+     */
+    static async getAggregate(id, ...languages) {
+        if (languages[0] instanceof Array) languages = languages[0];
+        let res = await Util.apiParameterRequest(`/manga/${id}/aggregate`, { translatedLanguage: languages });
+        if (!('volumes' in res)) throw new APIRequestError('The API did not respond with the appropriate aggregate structure', APIRequestError.INVALID_RESPONSE);
+        return res.volumes;
+    }
+
+    /**
      * Returns all covers for this manga
      * @returns {Promise<Cover[]>}
      */
@@ -440,6 +454,15 @@ class Manga {
      */
     getReadChapters() {
         return Manga.getReadChapters(this.id);
+    }
+
+    /**
+     * Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
+     * https://api.mangadex.org/docs.html#operation/post-manga
+     * @param {...String} languages 
+     */
+    getAggregate(...languages) {
+        return Manga.getAggregate(this.id, ...languages);
     }
 }
 
