@@ -79,13 +79,13 @@ class Chapter {
 
         /**
          * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-         * @type {String}
+         * @type {String[]}
          */
         this.pageNames = context.data.attributes.data;
 
         /**
          * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-         * @type {String}
+         * @type {String[]}
          */
         this.saverPageNames = context.data.attributes.dataSaver;
 
