@@ -310,14 +310,14 @@ declare module 'mangadex-full-api' {
 	    publishAt: Date;
 	    /**
 	     * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-	     * @type {String}
+	     * @type {String[]}
 	     */
-	    pageNames: string;
+	    pageNames: string[];
 	    /**
 	     * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-	     * @type {String}
+	     * @type {String[]}
 	     */
-	    saverPageNames: string;
+	    saverPageNames: string[];
 	    /**
 	     * Relationships to scanlation groups that are attributed to this chapter
 	     * @type {Relationship[]}
