@@ -875,45 +875,45 @@ declare module 'mangadex-full-api' {
 	     * @returns {Promise<Manga[]>}
 	     */
 	    static search(searchParameters?: string | {
-	        title: string;
-	        year: number;
-	        includedTagsMode: 'AND' | 'OR';
-	        excludedTagsMode: 'AND' | 'OR';
+	        title?: string;
+	        year?: number;
+	        includedTagsMode?: 'AND' | 'OR';
+	        excludedTagsMode?: 'AND' | 'OR';
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        createdAtSince: string;
+	        createdAtSince?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        updatedAtSince: string;
-	        order: {
-	            createdAt: 'asc' | 'desc';
-	            updatedAt: 'asc' | 'desc';
+	        updatedAtSince?: string;
+	        order?: {
+	            createdAt?: 'asc' | 'desc';
+	            updatedAt?: 'asc' | 'desc';
 	        };
 	        /**
 	         * Array of author ids
 	         */
-	        authors: string[] | any[];
+	        authors?: string[] | any[];
 	        /**
 	         * Array of artist ids
 	         */
-	        artists: string[] | any[];
-	        includedTags: string[] | Tag[];
-	        excludedTags: string[] | Tag[];
-	        status: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
-	        originalLanguage: string[];
-	        publicationDemographic: Array<'shounen' | 'shoujo' | 'josei' | 'seinen' | 'none'>;
+	        artists?: string[] | any[];
+	        includedTags?: string[] | Tag[];
+	        excludedTags?: string[] | Tag[];
+	        status?: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
+	        originalLanguage?: string[];
+	        publicationDemographic?: Array<'shounen' | 'shoujo' | 'josei' | 'seinen' | 'none'>;
 	        /**
 	         * Max of 100 per request
 	         */
-	        ids: string[];
-	        contentRating: Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>;
+	        ids?: string[];
+	        contentRating?: Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>;
 	        /**
 	         * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	         */
-	        limit: number;
-	        offset: number;
+	        limit?: number;
+	        offset?: number;
 	    }): Promise<Manga[]>;
 	    /**
 	     * Gets multiple manga

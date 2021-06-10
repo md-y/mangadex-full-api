@@ -177,26 +177,26 @@ class Manga {
     /**
      * @private
      * @typedef {Object} MangaParameterObject
-     * @property {String} MangaParameterObject.title
-     * @property {Number} MangaParameterObject.year
-     * @property {'AND'|'OR'} MangaParameterObject.includedTagsMode
-     * @property {'AND'|'OR'} MangaParameterObject.excludedTagsMode
-     * @property {String} MangaParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {String} MangaParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {Object} MangaParameterObject.order
-     * @property {'asc'|'desc'} MangaParameterObject.order.createdAt
-     * @property {'asc'|'desc'} MangaParameterObject.order.updatedAt
-     * @property {String[]|Author[]} MangaParameterObject.authors Array of author ids
-     * @property {String[]|Author[]} MangaParameterObject.artists Array of artist ids
-     * @property {String[]|Tag[]} MangaParameterObject.includedTags
-     * @property {String[]|Tag[]} MangaParameterObject.excludedTags
-     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} MangaParameterObject.status
-     * @property {String[]} MangaParameterObject.originalLanguage
-     * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} MangaParameterObject.publicationDemographic
-     * @property {String[]} MangaParameterObject.ids Max of 100 per request
-     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} MangaParameterObject.contentRating
-     * @property {Number} MangaParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-     * @property {Number} MangaParameterObject.offset
+     * @property {String?} [MangaParameterObject.title]
+     * @property {Number} [MangaParameterObject.year]
+     * @property {'AND'|'OR'} [MangaParameterObject.includedTagsMode]
+     * @property {'AND'|'OR'} [MangaParameterObject.excludedTagsMode]
+     * @property {String} [MangaParameterObject.createdAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} [MangaParameterObject.updatedAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} [MangaParameterObject.order]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.createdAt]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.updatedAt]
+     * @property {String[]|Author[]} [MangaParameterObject.authors] Array of author ids
+     * @property {String[]|Author[]} [MangaParameterObject.artists] Array of artist ids
+     * @property {String[]|Tag[]} [MangaParameterObject.includedTags]
+     * @property {String[]|Tag[]} [MangaParameterObject.excludedTags]
+     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} [MangaParameterObject.status]
+     * @property {String[]} [MangaParameterObject.originalLanguage]
+     * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} [MangaParameterObject.publicationDemographic]
+     * @property {String[]} [MangaParameterObject.ids] Max of 100 per request
+     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [MangaParameterObject.contentRating]
+     * @property {Number} [MangaParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [MangaParameterObject.offset]
      */
 
     /**
