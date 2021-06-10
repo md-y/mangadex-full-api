@@ -177,7 +177,7 @@ class Manga {
     /**
      * @private
      * @typedef {Object} MangaParameterObject
-     * @property {String?} [MangaParameterObject.title]
+     * @property {String} [MangaParameterObject.title]
      * @property {Number} [MangaParameterObject.year]
      * @property {'AND'|'OR'} [MangaParameterObject.includedTagsMode]
      * @property {'AND'|'OR'} [MangaParameterObject.excludedTagsMode]
