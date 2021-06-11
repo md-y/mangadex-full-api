@@ -179,11 +179,11 @@ declare module 'mangadex-full-api' {
 	         */
 	        publishAtSince?: string;
 	        order?: {
-	            createdAt: 'asc' | 'desc';
-	            updatedAt: 'asc' | 'desc';
-	            publishAt: 'asc' | 'desc';
-	            volume: 'asc' | 'desc';
-	            chapter: 'asc' | 'desc';
+	            createdAt?: 'asc' | 'desc';
+	            updatedAt?: 'asc' | 'desc';
+	            publishAt?: 'asc' | 'desc';
+	            volume?: 'asc' | 'desc';
+	            chapter?: 'asc' | 'desc';
 	        };
 	        translatedLanguage?: string[];
 	        /**
