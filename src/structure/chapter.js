@@ -111,25 +111,25 @@ class Chapter {
     /**
      * @private
      * @typedef {Object} ChapterParameterObject
-     * @property {String} ChapterParameterObject.title
-     * @property {String} ChapterParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {String} ChapterParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {String} ChapterParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {Object} ChapterParameterObject.order
-     * @property {'asc'|'desc'} ChapterParameterObject.order.createdAt
-     * @property {'asc'|'desc'} ChapterParameterObject.order.updatedAt
-     * @property {'asc'|'desc'} ChapterParameterObject.order.publishAt
-     * @property {'asc'|'desc'} ChapterParameterObject.order.volume
-     * @property {'asc'|'desc'} ChapterParameterObject.order.chapter
-     * @property {String[]} ChapterParameterObject.translatedLanguage
-     * @property {String[]} ChapterParameterObject.ids Max of 100 per request
-     * @property {Number} ChapterParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-     * @property {Number} ChapterParameterObject.offset
-     * @property {String[]|Group[]} ChapterParameterObject.groups
-     * @property {String|User|Relationship} ChapterParameterObject.uploader
-     * @property {String|Manga|Relationship} ChapterParameterObject.manga
-     * @property {String} ChapterParameterObject.volume
-     * @property {String} ChapterParameterObject.chapter
+     * @property {String} [ChapterParameterObject.title]
+     * @property {String} [ChapterParameterObject.createdAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} [ChapterParameterObject.updatedAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} [ChapterParameterObject.publishAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} [ChapterParameterObject.order]
+     * @property {'asc'|'desc'} [ChapterParameterObject.order.createdAt]
+     * @property {'asc'|'desc'} [ChapterParameterObject.order.updatedAt]
+     * @property {'asc'|'desc'} [ChapterParameterObject.order.publishAt]
+     * @property {'asc'|'desc'} [ChapterParameterObject.order.volume]
+     * @property {'asc'|'desc'} [ChapterParameterObject.order.chapter]
+     * @property {String[]} [ChapterParameterObject.translatedLanguage]
+     * @property {String[]} [ChapterParameterObject.ids] Max of 100 per request
+     * @property {Number} [ChapterParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [ChapterParameterObject.offset]
+     * @property {String[]|Group[]} [ChapterParameterObject.groups]
+     * @property {String|User|Relationship} [ChapterParameterObject.uploader]
+     * @property {String|Manga|Relationship} [ChapterParameterObject.manga]
+     * @property {String} [ChapterParameterObject.volume]
+     * @property {String} [ChapterParameterObject.chapter]
      */
 
     /**
