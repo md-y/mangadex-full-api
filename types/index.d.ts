@@ -165,41 +165,41 @@ declare module 'mangadex-full-api' {
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static search(searchParameters?: string | {
-	        title: string;
+	        title?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        createdAtSince: string;
+	        createdAtSince?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        updatedAtSince: string;
+	        updatedAtSince?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        publishAtSince: string;
-	        order: {
-	            createdAt: 'asc' | 'desc';
-	            updatedAt: 'asc' | 'desc';
-	            publishAt: 'asc' | 'desc';
-	            volume: 'asc' | 'desc';
-	            chapter: 'asc' | 'desc';
+	        publishAtSince?: string;
+	        order?: {
+	            createdAt?: 'asc' | 'desc';
+	            updatedAt?: 'asc' | 'desc';
+	            publishAt?: 'asc' | 'desc';
+	            volume?: 'asc' | 'desc';
+	            chapter?: 'asc' | 'desc';
 	        };
-	        translatedLanguage: string[];
+	        translatedLanguage?: string[];
 	        /**
 	         * Max of 100 per request
 	         */
-	        ids: string[];
+	        ids?: string[];
 	        /**
 	         * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	         */
-	        limit: number;
-	        offset: number;
-	        groups: string[] | any[];
-	        uploader: string | any | Relationship;
-	        manga: string | any | Relationship;
-	        volume: string;
-	        chapter: string;
+	        limit?: number;
+	        offset?: number;
+	        groups?: string[] | any[];
+	        uploader?: string | any | Relationship;
+	        manga?: string | any | Relationship;
+	        volume?: string;
+	        chapter?: string;
 	    }): Promise<Chapter[]>;
 	    /**
 	     * Gets multiple chapters
