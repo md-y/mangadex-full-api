@@ -2,6 +2,8 @@
 
 const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
+const Manga = require('./manga.js');
+const User = require('./user.js');
 
 /**
  * Represents the cover art of a manga volume
@@ -53,20 +55,18 @@ class Cover {
          */
         this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
-        if (context.relationships === undefined) context.relationships = [];
-
         /**
          * Manga this is a cover for
-         * @type {Relationship}
+         * @type {Manga}
          */
-        this.manga = Relationship.convertType('manga', context.relationships).pop();
+        this.manga = Relationship.convertType('manga', context.relationships, this).pop();
         if (!this.manga) this.manga = null;
 
         /**
          * The user who uploaded this cover
-         * @type {Relationship}
+         * @type {User}
          */
-        this.uploader = Relationship.convertType('user', context.relationships).pop();
+        this.uploader = Relationship.convertType('user', context.relationships, this).pop();
         if (!this.uploader) this.uploader = null;
 
         /**
@@ -91,10 +91,11 @@ class Cover {
     /**
      * Retrieves and returns a cover by its id
      * @param {String} id Mangadex id
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Cover>}
      */
-    static async get(id) {
-        return new Cover(await Util.apiRequest(`/cover/${id}`));
+    static async get(id, includeSubObjects = true) {
+        return new Cover(await Util.apiRequest(`/cover/${id}${includeSubObjects ? '?includes[]=user&includes[]=manga' : ''}`));
     }
 
     /**
@@ -115,15 +116,17 @@ class Cover {
      * Peforms a search and returns an array of covers.
      * https://api.mangadex.org/docs.html#operation/get-cover
      * @param {CoverParameterObject} [searchParameters]
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Cover[]>}
      */
-    static search(searchParameters = {}) {
+    static search(searchParameters = {}, includeSubObjects = true) {
+        if (includeSubObjects) searchParameters.includes = ['user', 'manga'];
         return Util.apiCastedRequest('/cover', Cover, searchParameters);
     }
 
     /**
      * Gets multiple covers
-     * @param {...String|Relationship} ids
+     * @param {...String|Cover|Relationship} ids
      * @returns {Promise<Cover[]>}
      */
     static getMultiple(...ids) {

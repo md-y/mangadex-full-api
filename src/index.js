@@ -49,16 +49,18 @@ function setGlobalLocale(newLocale) {
 };
 exports.setGlobalLocale = setGlobalLocale;
 
+const AuthUtil = require('./auth.js');
+
 /**
  * Required for authorization
  * https://api.mangadex.org/docs.html#operation/post-auth-login
  * @param {String} username 
  * @param {String} password 
- * @param {String} [cacheLocation] File location to store the persistent token (Warning: saved in plaintext)
+ * @param {String} [cacheLocation] File location (or localStorage key for browsers) to store the persistent token IN PLAIN TEXT
  * @returns {Promise<void>}
  */
 function login(username, password, cacheLocation) {
-    return Util.AuthUtil.login(username, password, cacheLocation);
+    return AuthUtil.login(username, password, cacheLocation);
 }
 exports.login = login;
 

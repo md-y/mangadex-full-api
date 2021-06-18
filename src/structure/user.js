@@ -1,7 +1,7 @@
 'use strict';
 
 const Util = require('../util.js');
-const Relationship = require('../internal/relationship.js');
+const AuthUtil = require('../auth.js');
 
 /**
  * Represents an user
@@ -33,12 +33,6 @@ class User {
          * @type {String}
          */
         this.username = context.data.attributes.username;
-
-        /**
-         * Relationships to chapters attributed to this user
-         * @type {Relationship[]}
-         */
-        this.chapters = Relationship.convertType('chapter', context.relationships);
     }
 
     /**
@@ -57,7 +51,7 @@ class User {
      * @returns {Promise<User[]>}
      */
     static async getFollowedUsers(limit = 100, offset = 10) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         return await Util.apiCastedRequest('/user/follows/user', User, { limit: limit, offset: offset });
     }
 
@@ -66,7 +60,7 @@ class User {
      * @returns {Promise<User>}
      */
     static async getLoggedInUser() {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         return new User(await Util.apiRequest('/user/me'));
     }
 
@@ -77,7 +71,7 @@ class User {
      * @returns {Promise<void>}
      */
     static async changeFollowship(id, follow = true) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         await Util.apiRequest(`/user/${id}/follow`, follow ? 'POST' : 'DELETE');
     }
 

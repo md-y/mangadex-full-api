@@ -1,7 +1,9 @@
 'use strict';
 
 const Util = require('../util.js');
+const AuthUtil = require('../auth.js');
 const Relationship = require('../internal/relationship.js');
+const User = require('./user.js');
 
 /**
  * Represents a scanlation group
@@ -47,34 +49,16 @@ class Group {
         this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
         /**
-         * Relationships to chapters attributed to this group
-         * @type {Relationship[]}
-         */
-        this.chapters = Relationship.convertType('chapter', context.relationships);
-
-        /**
-         * Username of the group's leader. Resolve the leader relationship to retrieve other data
+         * This group's leader
          * @type {User}
          */
-        this.leaderName = context.data.attributes.leader ? context.data.attributes.leader.attributes.username : null;
+        this.leader = context.data.attributes.leader ? new User({ data: context.data.attributes.leader }) : null;
 
         /**
-         * Relationship to this group's leader
-         * @type {Relationship}
-         */
-        this.leader = new Relationship({ type: 'user', id: context.data.attributes.leader.id });
-
-        /**
-         * Username of the group's member. Resolve the members' relationships to retrieve other data
+         * Array of this group's members
          * @type {User[]}
          */
-        this.memberNames = (context.data.attributes.members || []).map(elem => elem.attributes.username);
-
-        /**
-         * Relationships to each group's members
-         * @type {Relationship[]}
-         */
-        this.members = (context.data.attributes.members || []).map(elem => new Relationship({ type: 'user', id: elem.id }));
+        this.members = (context.data.attributes.members || []).map(elem => new User({ data: elem }));
     }
 
     /**
@@ -90,16 +74,18 @@ class Group {
      * Peforms a search and returns an array of groups.
      * https://api.mangadex.org/docs.html#operation/get-search-group
      * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Group[]>}
      */
-    static search(searchParameters = {}) {
+    static search(searchParameters = {}, includeSubObjects = true) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
+        if (includeSubObjects) searchParameters.includes = ['user'];
         return Util.apiCastedRequest('/group', Group, searchParameters);
     }
 
     /**
      * Gets multiple groups
-     * @param {...String|Relationship} ids
+     * @param {...String|Group|Relationship} ids
      * @returns {Promise<Group[]>}
      */
     static getMultiple(...ids) {
@@ -109,10 +95,11 @@ class Group {
     /**
      * Retrieves and returns a group by its id
      * @param {String} id Mangadex id
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Group>}
      */
-    static async get(id) {
-        return new Group(await Util.apiRequest(`/group/${id}`));
+    static async get(id, includeSubObjects = true) {
+        return new Group(await Util.apiRequest(`/group/${id}${includeSubObjects ? '?includes[]=user' : ''}`));
     }
 
     /**
@@ -135,8 +122,9 @@ class Group {
      * @returns {Promise<Group[]>}
      */
     static async getFollowedGroups(limit = 100, offset = 10) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         return await Util.apiCastedRequest('/user/follows/group', Group, { limit: limit, offset: offset });
+        // Currently (6/16/21) MD does not support includes[]=user for this endpoint
     }
 
     /**
@@ -146,7 +134,7 @@ class Group {
      * @returns {Promise<void>}
      */
     static async changeFollowship(id, follow = true) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         await Util.apiRequest(`/group/${id}/follow`, follow ? 'POST' : 'DELETE');
     }
 

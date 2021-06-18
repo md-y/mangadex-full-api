@@ -1,7 +1,10 @@
 'use strict';
 
 const Util = require('../util.js');
+const AuthUtil = require('../auth.js');
 const Relationship = require('../internal/relationship.js');
+const Group = require('./group.js');
+const Manga = require('./manga.js');
 
 /**
  * Represents a chapter with readable pages
@@ -90,22 +93,22 @@ class Chapter {
         this.saverPageNames = context.data.attributes.dataSaver;
 
         /**
-         * Relationships to scanlation groups that are attributed to this chapter
-         * @type {Relationship[]}
+         * The scanlation groups that are attributed to this chapter
+         * @type {Group[]}
          */
-        this.groups = Relationship.convertType('scanlation_group', context.relationships);
+        this.groups = Relationship.convertType('scanlation_group', context.relationships, this);
 
         /**
-         * Relationships to the manga this chapter belongs to
-         * @type {Relationship}
+         * The manga this chapter belongs to
+         * @type {Manga}
          */
-        this.manga = Relationship.convertType('manga', context.relationships)[0];
+        this.manga = Relationship.convertType('manga', context.relationships, this).pop();
 
         /**
-         * Relationships to the user who uploaded this chapter
-         * @type {Relationship}
+         * The user who uploaded this chapter
+         * @type {User}
          */
-        this.uploader = Relationship.convertType('user', context.relationships)[0];
+        this.uploader = Relationship.convertType('user', context.relationships, this).pop();
     }
 
     /**
@@ -136,16 +139,18 @@ class Chapter {
      * Peforms a search and returns an array of chapters.
      * https://api.mangadex.org/docs.html#operation/get-chapter
      * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static search(searchParameters = {}) {
+    static search(searchParameters = {}, includeSubObjects = true) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        if (includeSubObjects) searchParameters.includes = ['scanlation_group', 'manga', 'user'];
         return Util.apiCastedRequest('/chapter', Chapter, searchParameters);
     }
 
     /**
      * Gets multiple chapters
-     * @param {...String|Relationship} ids
+     * @param {...String|Chapter|Relationship} ids
      * @returns {Promise<Chapter[]>}
      */
     static getMultiple(...ids) {
@@ -156,10 +161,11 @@ class Chapter {
     /**
      * Retrieves and returns a chapter by its id
      * @param {String} id Mangadex id
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter>}
      */
-    static async get(id) {
-        return new Chapter(await Util.apiRequest(`/chapter/${id}`));
+    static async get(id, includeSubObjects = true) {
+        return new Chapter(await Util.apiRequest(`/chapter/${id}${includeSubObjects ? '?includes[]=scanlation_group&includes[]=manga&includes[]=user' : ''}`));
     }
 
     /**
@@ -182,7 +188,7 @@ class Chapter {
      * @returns {Promise<void>}
      */
     static async changeReadMarker(id, read = true) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         await Util.apiRequest(`/chapter/${id}/read`, read ? 'POST' : 'DELETE');
     }
 

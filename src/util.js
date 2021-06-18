@@ -1,36 +1,55 @@
 'use strict';
 
 const HTTPS = require('https');
-const Fs = require('fs');
-const Path = require('path');
 const APIRequestError = require('./internal/requesterror.js');
 
 /**
- * @typedef {(Object|Object[])} APIResponse
+ * Being a browser only affects how tokens are stored, so localStorage's existance is the only thing checked
+ * @returns {Boolean}
  */
+function isBrowser() {
+    try {
+        return window !== undefined && window !== null && window.localStorage !== undefined && window.localStorage !== null;
+    } catch (error) {
+        return false;
+    }
+}
+exports.isBrowser = isBrowser;
+
+var requestHeaders = {};
+/**
+ * Sets a specific header value to be used by every api request
+ * @param {String} name Header key
+ * @param {String} value Header value
+ */
+function registerHeader(name, value) {
+    requestHeaders[name] = value;
+}
+exports.registerHeader = registerHeader;
+
+if (!isBrowser()) {
+    const packageJSON = require('../package.json');
+    registerHeader('User-Agent', `mangadex-full-api/${packageJSON.version} Server-side Node`);
+}
 
 /**
  * Sends a HTTPS request to a specified endpoint
  * @param {String} endpoint API endpoint (ex: /ping)
  * @param {'GET'|'POST'|'PUT'|'DELETE'} [method='GET'] GET, POST, PUT, or DELETE. (Default: GET)
  * @param {Object} [requestPayload] Payload used for POST and DELETE requests
- * @returns {Promise<APIResponse>}
+ * @returns {Promise<Object>}
  */
 function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
     return new Promise((resolve, reject) => {
         if (endpoint === undefined || typeof endpoint !== 'string') reject(new Error('Invalid Argument(s)'));
         if (endpoint[0] !== '/') endpoint = `/${endpoint}`;
-
-        let headerObj = {};
-        if (method !== 'GET') headerObj['content-type'] = 'application/json';
-        if (AuthUtil.sessionToken) headerObj['authorization'] = `bearer ${AuthUtil.sessionToken}`;
-        // console.log(endpoint, 'authorization' in headerObj);
+        // console.log(endpoint, 'authorization' in requestHeaders);
 
         const req = HTTPS.request({
             hostname: 'api.mangadex.org',
             path: endpoint,
             method: method,
-            headers: headerObj
+            headers: method === 'GET' ? requestHeaders : { ...requestHeaders, 'content-type': 'application/json' }
         }, (res) => {
             let responsePayload = '';
 
@@ -39,6 +58,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
             });
 
             res.on('end', () => {
+                if ('set-cookie' in res.headers && !isBrowser()) registerHeader('cookie', res.headers['set-cookie'].concat(requestHeaders['cookie']).join('; '));
                 if (res.headers['content-type'] !== undefined && res.headers['content-type'].includes('json')) {
                     try {
                         let parsedObj = JSON.parse(responsePayload);
@@ -85,7 +105,7 @@ exports.apiRequest = apiRequest;
  * If the response contains a results array, that is returned instead
  * @param {String} baseEndpoint Endpoint with no parameters
  * @param {Object} parameterObject Object of search parameters based on API specifications
- * @returns {Promise<APIResponse|APIResponse[]>}
+ * @returns {Promise<Object|Object[]>}
  */
 async function apiParameterRequest(baseEndpoint, parameterObject) {
     if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
@@ -98,8 +118,9 @@ async function apiParameterRequest(baseEndpoint, parameterObject) {
             return elem.toString();
         });
         else if (typeof parameterObject[i] === 'object') {
+            if ('id' in parameterObject[i]) cleanParameters[i] = parameterObject[i].id;
+            else Object.keys(parameterObject[i]).forEach(elem => cleanParameters[`${i}[${elem}]`] = parameterObject[i][elem]);
             // Objects are represented as new properties with a key of 'object[property]'
-            Object.keys(parameterObject[i]).forEach(elem => cleanParameters[`${i}[${elem}]`] = parameterObject[i][elem]);
         }
         else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
         else cleanParameters[i] = parameterObject[i];
@@ -122,7 +143,7 @@ exports.apiParameterRequest = apiParameterRequest;
  * @param {Object} parameterObject Object of search parameters based on API specifications
  * @param {Number} [maxLimit=100] What is the maximum number of results that can be returned from this endpoint at once?
  * @param {Number} [defaultLimit=10] How many should be returned by default?
- * @returns {Promise<APIResponse[]>}
+ * @returns {Promise<Object[]>}
  */
 async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, defaultLimit = 10) {
     if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
@@ -147,7 +168,7 @@ exports.apiSearchRequest = apiSearchRequest;
  * @param {Object} parameterObject
  * @param {Number} [maxLimit=100] What is the maximum number of results that can be returned from this endpoint at once?
  * @param {Number} [defaultLimit=10] How many should be returned by default?
- * @returns {Promise<APIResponse[]>}
+ * @returns {Promise<Object[]>}
  */
 async function apiCastedRequest(endpoint, classObject, parameterObject = {}, maxLimit = 100, defaultLimit = 10) {
     let res = await apiSearchRequest(endpoint, parameterObject, maxLimit, defaultLimit);
@@ -179,137 +200,3 @@ async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty =
     return finalArray;
 }
 exports.getMultipleIds = getMultipleIds;
-
-/**
- * Any function that requires authentication should call 'validateTokens().'
- * How authentication works:
- * If there is no cache or its invalid, simply request tokens through logging in ('login()').
- * If there is a cache, check if the tokens are up to date ('validateTokens()').
- * If the session token is out of date, refresh it ('validateTokens()').
- * If the refresh token is out of date, log in again ('login()').
- * At most there are three calls to the API, two of which are rate limited (/auth/refresh and /auth/login).
- */
-class AuthUtil {
-    /** @type {String} */
-    static sessionToken;
-    /** @type {String} */
-    static refreshToken;
-    /** @type {String} */
-    static cacheLocation;
-    /** @type {String} */
-    static authUser;
-    /** @type {Boolean} */
-    static canAuth = false;
-    /** @type {Number} */
-    static timeOfRefresh;
-
-    /**
-     * @param {String} username 
-     * @param {String} password 
-     * @param {String} [cacheLocation]
-     * @returns {Promise<void>}
-     */
-    static async login(username, password, cacheLocation) {
-        if (username === undefined || password === undefined) throw new Error('Invalid Argument(s)');
-        AuthUtil.canAuth = true;
-        // Read refresh token from file
-        if (cacheLocation) {
-            try {
-                if (!Path.basename(cacheLocation).includes('.')) cacheLocation = Path.join(cacheLocation, '.md_token');
-                if (AuthUtil.readFromCache(cacheLocation) && AuthUtil.authUser === username) {
-                    await AuthUtil.validateTokens();
-                    return;
-                }
-            } catch (error) {
-                // Continue and retry at login
-                AuthUtil.refreshToken = null;
-                AuthUtil.sessionToken = null;
-                AuthUtil.timeOfRefresh = null;
-            }
-        }
-
-        // Login
-        AuthUtil.authUser = username;
-        let res = await apiRequest('/auth/login', 'POST', { username: username, password: password });
-        AuthUtil.sessionToken = res.token.session;
-        AuthUtil.refreshToken = res.token.refresh;
-        AuthUtil.timeOfRefresh = Date.now();
-        if (cacheLocation) AuthUtil.writeToCache(cacheLocation);
-        return;
-    }
-
-    /**
-     * @param {String} [token] Refresh token
-     * @returns {Promise<String>} Session Token
-     */
-    static async validateTokens(token) {
-        if (typeof AuthUtil.timeOfRefresh === 'number' && Date.now() - AuthUtil.timeOfRefresh < 870000) {
-            // Don't refresh if the token was refreshed less than 14.5 minutes ago (15 is the maximum age)
-            return AuthUtil.sessionToken;
-        }
-
-        if (token) AuthUtil.refreshToken = token;
-        if (!AuthUtil.canAuth || !AuthUtil.refreshToken) throw new APIRequestError('Not logged in.', APIRequestError.AUTHORIZATION);
-        // Check if session token is out of date:
-        if (AuthUtil.sessionToken) {
-            try {
-                let res = await apiRequest('/auth/check');
-                if (res.isAuthenticated) return AuthUtil.sessionToken;
-            } catch (error) {
-                // If it fails the check, refresh it in the next try-catch block
-                AuthUtil.sessionToken = null;
-                AuthUtil.timeOfRefresh = null;
-            }
-        }
-
-        // Refresh token/Check if refresh token is out of date
-        let res = await apiRequest('/auth/refresh', 'POST', { token: AuthUtil.refreshToken });
-        AuthUtil.sessionToken = res.token.session;
-        AuthUtil.refreshToken = res.token.refresh;
-        AuthUtil.timeOfRefresh = Date.now();
-        AuthUtil.writeToCache();
-        return AuthUtil.sessionToken;
-    }
-
-    /**
-     * Writes the current state of authentication to a file
-     * @param {String} [cacheLocation] 
-     * @returns {Boolean} True of OK, False if not
-     */
-    static writeToCache(cacheLocation) {
-        if (cacheLocation) AuthUtil.cacheLocation = cacheLocation;
-        if (AuthUtil.cacheLocation) {
-            try {
-                Fs.writeFileSync(AuthUtil.cacheLocation, `${AuthUtil.authUser}\n${AuthUtil.refreshToken}\n${AuthUtil.sessionToken}`);
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Reads the state of authentication from a file
-     * @param {String} cacheLocation 
-     * @returns {Boolean} True of OK, False if not
-     */
-    static readFromCache(cacheLocation) {
-        if (cacheLocation) AuthUtil.cacheLocation = cacheLocation;
-        if (AuthUtil.cacheLocation) {
-            try {
-                if (!Fs.existsSync(AuthUtil.cacheLocation)) return false;
-                let tokenArray = Fs.readFileSync(AuthUtil.cacheLocation).toString().split('\n');
-                if (tokenArray.length < 3) return false;
-                AuthUtil.authUser = tokenArray[0];
-                AuthUtil.refreshToken = tokenArray[1];
-                AuthUtil.sessionToken = tokenArray[2];
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-        return false;
-    }
-}
-exports.AuthUtil = AuthUtil;

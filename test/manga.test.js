@@ -26,28 +26,19 @@ describe('Manga', function () {
             assert.strictEqual(typeof manga.id, 'string');
             assert.strictEqual(typeof manga.title, 'string');
         });
-    });
-    describe('resovle()', function () {
-        it(`resolved an author of a manga (${targetId}) via get()`, async function () {
+        it(`authors are author objects`, async function () {
             let manga = await MFA.Manga.get(targetId);
-            if (manga.authors.length === 0) assert.fail('Manga has no authors.');
-            let author = await manga.authors[0].resolve();
-            assert.strictEqual(author instanceof MFA.Author, true);
-            assert.strictEqual(typeof author.id, 'string');
+            assert.strictEqual(manga.authors instanceof Array, true);
+            manga.authors.forEach(elem => {
+                assert.strictEqual(elem instanceof MFA.Author, true)
+            });
         });
-        it(`resolved an artist of a manga (${targetId}) via get()`, async function () {
+        it(`artists are author objects`, async function () {
             let manga = await MFA.Manga.get(targetId);
-            if (manga.artists.length === 0) assert.fail('Manga has no artists.');
-            let artist = await manga.artists[0].resolve();
-            assert.strictEqual(artist instanceof MFA.Author, true);
-            assert.strictEqual(typeof artist.id, 'string');
-        });
-        it(`resolved a cover of a manga (${targetId}) via get()`, async function () {
-            let manga = await MFA.Manga.get(targetId);
-            if (!manga.mainCover) assert.fail('Manga has no main cover relationship.');
-            let cover = await manga.mainCover.resolve();
-            assert.strictEqual(cover instanceof MFA.Cover, true);
-            assert.strictEqual(typeof cover.id, 'string');
+            assert.strictEqual(manga.artists instanceof Array, true);
+            manga.artists.forEach(elem => {
+                assert.strictEqual(elem instanceof MFA.Author, true)
+            });
         });
     });
     describe('search()', function () {

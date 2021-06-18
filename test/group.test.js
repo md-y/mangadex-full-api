@@ -23,14 +23,16 @@ describe('Group', function () {
             assert.strictEqual(group.id, targetId);
             assert.strictEqual(typeof group.name, 'string');
         });
-    });
-    describe('resovle()', function () {
-        it(`resolved the leader of a group (${targetId}) via get()`, async function () {
+        it(`the leader is a user object`, async function () {
             let group = await MFA.Group.get(targetId);
-            if (!group.leader) assert.fail('Group has no leader relationship.');
-            let leader = await group.leader.resolve();
-            assert.strictEqual(leader instanceof MFA.User, true);
-            assert.strictEqual(typeof leader.id, 'string');
+            assert.strictEqual(group.leader instanceof MFA.User, true);
+        });
+        it(`each member is a user object`, async function () {
+            let group = await MFA.Group.get(targetId);
+            assert.strictEqual(group.members instanceof Array, true);
+            group.members.forEach(elem => {
+                assert.strictEqual(elem instanceof MFA.User, true);
+            });
         });
     });
 });

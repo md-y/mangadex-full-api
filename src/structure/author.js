@@ -2,6 +2,7 @@
 
 const Util = require('../util.js');
 const Relationship = require('../internal/relationship.js');
+const Manga = require('./manga.js');
 
 /**
  * Represents an author or artist
@@ -59,10 +60,10 @@ class Author {
         this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : context.data.attributes.updatedAt;
 
         /**
-         * Relationships to manga this author/artist has been attributed to
-         * @type {Relationship[]}
+         * Manga this author/artist has been attributed to
+         * @type {Manga[]}
          */
-        this.manga = Relationship.convertType('manga', context.relationships);
+        this.manga = Relationship.convertType('manga', context.relationships, this);
     }
 
     /**
@@ -80,16 +81,18 @@ class Author {
      * Peforms a search and returns an array of a authors/artists.
      * https://api.mangadex.org/docs.html#operation/get-author
      * @param {AuthorParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Author[]>}
      */
-    static search(searchParameters = {}) {
+    static search(searchParameters = {}, includeSubObjects = true) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
+        if (includeSubObjects) searchParameters.includes = ['manga'];
         return Util.apiCastedRequest('/author', Author, searchParameters);
     }
 
     /**
      * Gets multiple authors
-     * @param {...String|Relationship} ids
+     * @param {...String|Author|Relationship} ids
      * @returns {Promise<Author[]>}
      */
     static getMultiple(...ids) {
@@ -99,10 +102,11 @@ class Author {
     /**
      * Retrieves and returns a author by its id
      * @param {String} id Mangadex id
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Author>}
      */
-    static async get(id) {
-        return new Author(await Util.apiRequest(`/author/${id}`));
+    static async get(id, includeSubObjects = true) {
+        return new Author(await Util.apiRequest(`/author/${id}${includeSubObjects ? '?includes[]=manga' : ''}`));
     }
 
     /**

@@ -32,15 +32,26 @@ class Relationship {
     }
 
     /**
-     * Returns an array of Relationship objects from a Mangadex Relationships Array
+     * Returns an array of converted objects from a Mangadex Relationships Array
      * @private
      * @param {String} type 
      * @param {Object[]} dataArray 
-     * @returns {Relationship[]}
+     * @param {Object} caller
+     * @returns {Object[]}
      */
-    static convertType(type, dataArray) {
+    static convertType(type, dataArray, caller) {
         if (!(dataArray instanceof Array)) return [];
-        return dataArray.filter(elem => elem.type === type).map(elem => new Relationship(elem));
+        let classObject = Relationship.types[type];
+        let relationshipArray = dataArray;
+        if (caller && typeof caller.id === 'string') Object.keys(Relationship.types).some(key => {
+            let isType = caller instanceof Relationship.types[key];
+            if (isType) relationshipArray.push({ id: caller.id, type: key });
+            return isType;
+        });
+        return dataArray.filter(elem => elem.type === type).map(elem => {
+            if ('attributes' in elem) return new classObject({ data: elem, relationships: relationshipArray });
+            else return new Relationship(elem);
+        });
     }
 
     /**

@@ -1,12 +1,14 @@
 'use strict';
 
 const Util = require('../util.js');
+const AuthUtil = require('../auth.js');
 const Links = require('../internal/links.js');
 const LocalizedString = require('../internal/localizedstring.js');
 const Relationship = require('../internal/relationship.js');
 const Tag = require('../internal/tag.js');
 const Chapter = require('./chapter.js');
 const Cover = require('./cover.js');
+const Author = require('./author.js');
 const List = require('./list.js');
 const APIRequestError = require('../internal/requesterror.js');
 
@@ -122,22 +124,22 @@ class Manga {
         this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
         /**
-         * Relationships to authors attributed to this manga
-         * @type {Relationship[]}
+         * Authors attributed to this manga
+         * @type {Author[]}
          */
-        this.authors = Relationship.convertType('author', context.relationships);
+        this.authors = Relationship.convertType('author', context.relationships, this);
 
         /**
-         * Relationships to artists attributed to this manga
-         * @type {Relationship[]}
+         * Artists attributed to this manga
+         * @type {Author[]}
          */
-        this.artists = Relationship.convertType('artist', context.relationships);
+        this.artists = Relationship.convertType('artist', context.relationships, this);
 
         /**
-         * Relationships to this manga's main cover. Use 'getCovers' to retrive other covers
-         * @type {Relationship}
+         * This manga's main cover. Use 'getCovers' to retrive other covers
+         * @type {Cover}
          */
-        this.mainCover = Relationship.convertType('cover_art', context.relationships).pop();
+        this.mainCover = Relationship.convertType('cover_art', context.relationships, this).pop();
         if (!this.mainCover) this.mainCover = null;
 
         /**
@@ -203,10 +205,12 @@ class Manga {
      * Peforms a search and returns an array of manga.
      * https://api.mangadex.org/docs.html#operation/get-search-manga
      * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga[]>}
      */
-    static search(searchParameters = {}) {
+    static search(searchParameters = {}, includeSubObjects = true) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        if (includeSubObjects) searchParameters.includes = ['artist', 'author', 'cover_art'];
         return Util.apiCastedRequest('/manga', Manga, searchParameters);
     }
 
@@ -222,10 +226,11 @@ class Manga {
     /**
      * Retrieves and returns a manga by its id
      * @param {String} id Mangadex id
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
-    static async get(id) {
-        return new Manga(await Util.apiRequest(`/manga/${id}`));
+    static async get(id, includeSubObjects = true) {
+        return new Manga(await Util.apiRequest(`/manga/${id}${includeSubObjects ? '?includes[]=artist&includes[]=author&includes[]=cover_art' : ''}`));
     }
 
     /**
@@ -261,19 +266,22 @@ class Manga {
      * Returns a feed of chapters for a manga
      * @param {String} id
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static getFeed(id, parameterObject = {}) {
+    static getFeed(id, parameterObject = {}, includeSubObjects = true) {
         if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
+        if (includeSubObjects) parameterObject.includes = ['scanlation_group', 'manga', 'user'];
         return Util.apiCastedRequest(`/manga/${id}/feed`, Chapter, parameterObject, 500, 100);
     }
 
     /**
      * Returns one random manga
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
-    static async getRandom() {
-        return new Manga(await Util.apiRequest('/manga/random'));
+    static async getRandom(includeSubObjects = true) {
+        return new Manga(await Util.apiRequest(`/manga/random${includeSubObjects ? '?includes[]=artist&includes[]=author&includes[]=cover_art' : ''}`));
     }
 
     /**
@@ -283,8 +291,10 @@ class Manga {
      * @returns {Promise<Manga[]>}
      */
     static async getFollowedManga(limit = 100, offset = 0) {
-        await Util.AuthUtil.validateTokens();
-        return await Util.apiCastedRequest('/user/follows/manga', Manga, { limit: limit, offset: offset });
+        await AuthUtil.validateTokens();
+        let params = { limit: limit, offset: offset };
+        return await Util.apiCastedRequest('/user/follows/manga', Manga, params);
+        // Currently (6/16/21) MD does not support includes[]=artist&includes[]=author&includes[]=cover_art for this endpoint
     }
 
     /**
@@ -315,7 +325,7 @@ class Manga {
      * @returns {Promise<'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
      */
     static async getReadingStatus(id) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         let res = await Util.apiRequest(`/manga/${id}/status`);
         return (typeof res.status === 'string' ? res.status : null);
     }
@@ -328,18 +338,20 @@ class Manga {
      * @returns {Promise<void>}
      */
     static async setReadingStatus(id, status = null) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         await Util.apiRequest(`/manga/${id}/status`, 'POST', { status: status });
     }
 
     /**
      * Gets the combined feed of every manga followed by the logged in user
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static async getFollowedFeed(parameterObject) {
+    static async getFollowedFeed(parameterObject, includeSubObjects = true) {
         if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
-        await Util.AuthUtil.validateTokens();
+        if (includeSubObjects) parameterObject.includes = ['scanlation_group', 'manga', 'user'];
+        await AuthUtil.validateTokens();
         return await Util.apiCastedRequest(`/user/follows/manga/feed`, Chapter, parameterObject, 500, 100);
     }
 
@@ -350,7 +362,7 @@ class Manga {
      * @returns {Promise<void>}
      */
     static async changeFollowship(id, follow = true) {
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         await Util.apiRequest(`/manga/${id}/follow`, follow ? 'POST' : 'DELETE');
     }
 
@@ -362,7 +374,7 @@ class Manga {
     static async getReadChapters(...ids) {
         if (ids.length === 0) throw new Error('Invalid Argument(s)');
         if (ids[0] instanceof Array) ids = ids[0];
-        await Util.AuthUtil.validateTokens();
+        await AuthUtil.validateTokens();
         let chapterIds = await Util.apiParameterRequest(`/manga/read`, { ids: ids });
         if (!(chapterIds.data instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
         return Chapter.getMultiple(...chapterIds);
@@ -400,12 +412,13 @@ class Manga {
     }
 
     /**
-     * Returns a feed of this manga's chapters 
+     * Returns a feed of this manga's chapters.
+     * The the value of 'manga' for each chapter instance will not be filled since this method is called from that very manga instance
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
      * @returns {Promise<Chapter[]>}
      */
     getFeed(parameterObject = {}) {
-        return Manga.getFeed(this.id, parameterObject);
+        return Manga.getFeed(this.id, parameterObject, false);
     }
 
     /**
@@ -460,6 +473,7 @@ class Manga {
      * Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
      * @param {...String} languages 
+     * @returns {Promise<Object>}
      */
     getAggregate(...languages) {
         return Manga.getAggregate(this.id, ...languages);

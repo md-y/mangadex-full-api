@@ -19,7 +19,7 @@ declare module 'mangadex-full-api' {
 	 * https://api.mangadex.org/docs.html#operation/post-auth-login
 	 * @param {String} username
 	 * @param {String} password
-	 * @param {String} [cacheLocation] File location to store the persistent token (Warning: saved in plaintext)
+	 * @param {String} [cacheLocation] File location (or localStorage key for browsers) to store the persistent token IN PLAIN TEXT
 	 * @returns {Promise<void>}
 	 */
 	export function login(username: string, password: string, cacheLocation?: string): Promise<void>;
@@ -43,6 +43,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of a authors/artists.
 	     * https://api.mangadex.org/docs.html#operation/get-author
 	     * @param {AuthorParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Author[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -59,19 +60,20 @@ declare module 'mangadex-full-api' {
 	        order: {
 	            name: 'asc' | 'desc';
 	        };
-	    }): Promise<Author[]>;
+	    }, includeSubObjects?: boolean): Promise<Author[]>;
 	    /**
 	     * Gets multiple authors
-	     * @param {...String|Relationship} ids
+	     * @param {...String|Author|Relationship} ids
 	     * @returns {Promise<Author[]>}
 	     */
-	    static getMultiple(...ids: (string | Relationship)[]): Promise<Author[]>;
+	    static getMultiple(...ids: (string | Author | Relationship)[]): Promise<Author[]>;
 	    /**
 	     * Retrieves and returns a author by its id
 	     * @param {String} id Mangadex id
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Author>}
 	     */
-	    static get(id: string): Promise<Author>;
+	    static get(id: string, includeSubObjects?: boolean): Promise<Author>;
 	    /**
 	     * Performs a search for one author and returns that author
 	     * @param {AuthorParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
@@ -124,10 +126,10 @@ declare module 'mangadex-full-api' {
 	     */
 	    updatedAt: Date;
 	    /**
-	     * Relationships to manga this author/artist has been attributed to
-	     * @type {Relationship[]}
+	     * Manga this author/artist has been attributed to
+	     * @type {Manga[]}
 	     */
-	    manga: Relationship[];
+	    manga: Manga[];
 	}
 	
 	/**
@@ -138,30 +140,31 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * @private
 	     * @typedef {Object} ChapterParameterObject
-	     * @property {String} ChapterParameterObject.title
-	     * @property {String} ChapterParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-	     * @property {String} ChapterParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-	     * @property {String} ChapterParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-	     * @property {Object} ChapterParameterObject.order
-	     * @property {'asc'|'desc'} ChapterParameterObject.order.createdAt
-	     * @property {'asc'|'desc'} ChapterParameterObject.order.updatedAt
-	     * @property {'asc'|'desc'} ChapterParameterObject.order.publishAt
-	     * @property {'asc'|'desc'} ChapterParameterObject.order.volume
-	     * @property {'asc'|'desc'} ChapterParameterObject.order.chapter
-	     * @property {String[]} ChapterParameterObject.translatedLanguage
-	     * @property {String[]} ChapterParameterObject.ids Max of 100 per request
-	     * @property {Number} ChapterParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-	     * @property {Number} ChapterParameterObject.offset
-	     * @property {String[]|Group[]} ChapterParameterObject.groups
-	     * @property {String|User|Relationship} ChapterParameterObject.uploader
-	     * @property {String|Manga|Relationship} ChapterParameterObject.manga
-	     * @property {String} ChapterParameterObject.volume
-	     * @property {String} ChapterParameterObject.chapter
+	     * @property {String} [ChapterParameterObject.title]
+	     * @property {String} [ChapterParameterObject.createdAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+	     * @property {String} [ChapterParameterObject.updatedAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+	     * @property {String} [ChapterParameterObject.publishAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+	     * @property {Object} [ChapterParameterObject.order]
+	     * @property {'asc'|'desc'} [ChapterParameterObject.order.createdAt]
+	     * @property {'asc'|'desc'} [ChapterParameterObject.order.updatedAt]
+	     * @property {'asc'|'desc'} [ChapterParameterObject.order.publishAt]
+	     * @property {'asc'|'desc'} [ChapterParameterObject.order.volume]
+	     * @property {'asc'|'desc'} [ChapterParameterObject.order.chapter]
+	     * @property {String[]} [ChapterParameterObject.translatedLanguage]
+	     * @property {String[]} [ChapterParameterObject.ids] Max of 100 per request
+	     * @property {Number} [ChapterParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+	     * @property {Number} [ChapterParameterObject.offset]
+	     * @property {String[]|Group[]} [ChapterParameterObject.groups]
+	     * @property {String|User|Relationship} [ChapterParameterObject.uploader]
+	     * @property {String|Manga|Relationship} [ChapterParameterObject.manga]
+	     * @property {String} [ChapterParameterObject.volume]
+	     * @property {String} [ChapterParameterObject.chapter]
 	     */
 	    /**
 	     * Peforms a search and returns an array of chapters.
 	     * https://api.mangadex.org/docs.html#operation/get-chapter
 	     * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -179,11 +182,11 @@ declare module 'mangadex-full-api' {
 	         */
 	        publishAtSince?: string;
 	        order?: {
-	            createdAt?: 'asc' | 'desc';
-	            updatedAt?: 'asc' | 'desc';
-	            publishAt?: 'asc' | 'desc';
-	            volume?: 'asc' | 'desc';
-	            chapter?: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
+	            publishAt: 'asc' | 'desc';
+	            volume: 'asc' | 'desc';
+	            chapter: 'asc' | 'desc';
 	        };
 	        translatedLanguage?: string[];
 	        /**
@@ -195,65 +198,66 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit?: number;
 	        offset?: number;
-	        groups?: string[] | any[];
+	        groups?: string[] | Group[];
 	        uploader?: string | any | Relationship;
-	        manga?: string | any | Relationship;
+	        manga?: string | Manga | Relationship;
 	        volume?: string;
 	        chapter?: string;
-	    }): Promise<Chapter[]>;
+	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
 	     * Gets multiple chapters
-	     * @param {...String|Relationship} ids
+	     * @param {...String|Chapter|Relationship} ids
 	     * @returns {Promise<Chapter[]>}
 	     */
-	    static getMultiple(...ids: (string | Relationship)[]): Promise<Chapter[]>;
+	    static getMultiple(...ids: (string | Chapter | Relationship)[]): Promise<Chapter[]>;
 	    /**
 	     * Retrieves and returns a chapter by its id
 	     * @param {String} id Mangadex id
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter>}
 	     */
-	    static get(id: string): Promise<Chapter>;
+	    static get(id: string, includeSubObjects?: boolean): Promise<Chapter>;
 	    /**
 	     * Performs a search for one chapter and returns that chapter
 	     * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
 	     * @returns {Promise<Chapter>}
 	     */
 	    static getByQuery(searchParameters?: string | {
-	        title: string;
+	        title?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        createdAtSince: string;
+	        createdAtSince?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        updatedAtSince: string;
+	        updatedAtSince?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        publishAtSince: string;
-	        order: {
+	        publishAtSince?: string;
+	        order?: {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	            publishAt: 'asc' | 'desc';
 	            volume: 'asc' | 'desc';
 	            chapter: 'asc' | 'desc';
 	        };
-	        translatedLanguage: string[];
+	        translatedLanguage?: string[];
 	        /**
 	         * Max of 100 per request
 	         */
-	        ids: string[];
+	        ids?: string[];
 	        /**
 	         * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	         */
-	        limit: number;
-	        offset: number;
-	        groups: string[] | any[];
-	        uploader: string | any | Relationship;
-	        manga: string | any | Relationship;
-	        volume: string;
-	        chapter: string;
+	        limit?: number;
+	        offset?: number;
+	        groups?: string[] | Group[];
+	        uploader?: string | any | Relationship;
+	        manga?: string | Manga | Relationship;
+	        volume?: string;
+	        chapter?: string;
 	    }): Promise<Chapter>;
 	    /**
 	     * Marks a chapter as either read or unread
@@ -319,20 +323,20 @@ declare module 'mangadex-full-api' {
 	     */
 	    saverPageNames: string[];
 	    /**
-	     * Relationships to scanlation groups that are attributed to this chapter
-	     * @type {Relationship[]}
+	     * The scanlation groups that are attributed to this chapter
+	     * @type {Group[]}
 	     */
-	    groups: Relationship[];
+	    groups: Group[];
 	    /**
-	     * Relationships to the manga this chapter belongs to
-	     * @type {Relationship}
+	     * The manga this chapter belongs to
+	     * @type {Manga}
 	     */
-	    manga: Relationship;
+	    manga: Manga;
 	    /**
-	     * Relationships to the user who uploaded this chapter
-	     * @type {Relationship}
+	     * The user who uploaded this chapter
+	     * @type {User}
 	     */
-	    uploader: Relationship;
+	    uploader: any;
 	    /**
 	     * Retrieves URLs for actual images from Mangadex @ Home.
 	     * This only gives URLs, so it does not report the status of the server to Mangadex @ Home.
@@ -358,9 +362,10 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a cover by its id
 	     * @param {String} id Mangadex id
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Cover>}
 	     */
-	    static get(id: string): Promise<Cover>;
+	    static get(id: string, includeSubObjects?: boolean): Promise<Cover>;
 	    /**
 	     * @private
 	     * @typedef {Object} CoverParameterObject
@@ -378,6 +383,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of covers.
 	     * https://api.mangadex.org/docs.html#operation/get-cover
 	     * @param {CoverParameterObject} [searchParameters]
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Cover[]>}
 	     */
 	    static search(searchParameters?: {
@@ -389,7 +395,7 @@ declare module 'mangadex-full-api' {
 	        /**
 	         * Manga ids (limited to 100 per request)
 	         */
-	        manga: string[] | any[];
+	        manga: string[] | Manga[];
 	        /**
 	         * Covers ids (limited to 100 per request)
 	         */
@@ -397,19 +403,19 @@ declare module 'mangadex-full-api' {
 	        /**
 	         * User ids (limited to 100 per request)
 	         */
-	        uploaders: string[] | any[];
+	        uploaders: string[] | User[];
 	        order: {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	            volume: 'asc' | 'desc';
 	        };
-	    }): Promise<Cover[]>;
+	    }, includeSubObjects?: boolean): Promise<Cover[]>;
 	    /**
 	     * Gets multiple covers
-	     * @param {...String|Relationship} ids
+	     * @param {...String|Cover|Relationship} ids
 	     * @returns {Promise<Cover[]>}
 	     */
-	    static getMultiple(...ids: (string | Relationship)[]): Promise<Cover[]>;
+	    static getMultiple(...ids: (string | Cover | Relationship)[]): Promise<Cover[]>;
 	    /**
 	     * Performs a search for one manga and returns that manga
 	     * @param {CoverParameterObject} [searchParameters]
@@ -424,7 +430,7 @@ declare module 'mangadex-full-api' {
 	        /**
 	         * Manga ids (limited to 100 per request)
 	         */
-	        manga: string[] | any[];
+	        manga: string[] | Manga[];
 	        /**
 	         * Covers ids (limited to 100 per request)
 	         */
@@ -432,7 +438,7 @@ declare module 'mangadex-full-api' {
 	        /**
 	         * User ids (limited to 100 per request)
 	         */
-	        uploaders: string[] | any[];
+	        uploaders: string[] | User[];
 	        order: {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
@@ -444,7 +450,7 @@ declare module 'mangadex-full-api' {
 	     * @param {...String|Manga|Relationship} manga
 	     * @returns {Promise<Cover[]>}
 	     */
-	    static getMangaCovers(...manga: (string | any | Relationship)[]): Promise<Cover[]>;
+	    static getMangaCovers(...manga: (string | Manga | Relationship)[]): Promise<Cover[]>;
 	    /**
 	     * There is no reason to directly create a cover art object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
@@ -473,14 +479,14 @@ declare module 'mangadex-full-api' {
 	    updatedAt: Date;
 	    /**
 	     * Manga this is a cover for
-	     * @type {Relationship}
+	     * @type {Manga}
 	     */
-	    manga: Relationship;
+	    manga: Manga;
 	    /**
 	     * The user who uploaded this cover
-	     * @type {Relationship}
+	     * @type {User}
 	     */
-	    uploader: Relationship;
+	    uploader: User;
 	    /**
 	     * URL to the source image of the cover
 	     * @type {String}
@@ -515,6 +521,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of groups.
 	     * https://api.mangadex.org/docs.html#operation/get-search-group
 	     * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Group[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -528,19 +535,20 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit: number;
 	        offset: number;
-	    }): Promise<Group[]>;
+	    }, includeSubObjects?: boolean): Promise<Group[]>;
 	    /**
 	     * Gets multiple groups
-	     * @param {...String|Relationship} ids
+	     * @param {...String|Group|Relationship} ids
 	     * @returns {Promise<Group[]>}
 	     */
-	    static getMultiple(...ids: (string | Relationship)[]): Promise<Group[]>;
+	    static getMultiple(...ids: (string | Group | Relationship)[]): Promise<Group[]>;
 	    /**
 	     * Retrieves and returns a group by its id
 	     * @param {String} id Mangadex id
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Group>}
 	     */
-	    static get(id: string): Promise<Group>;
+	    static get(id: string, includeSubObjects?: boolean): Promise<Group>;
 	    /**
 	     * Performs a search for one group and returns that group
 	     * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
@@ -594,30 +602,15 @@ declare module 'mangadex-full-api' {
 	     */
 	    updatedAt: Date;
 	    /**
-	     * Relationships to chapters attributed to this group
-	     * @type {Relationship[]}
-	     */
-	    chapters: Relationship[];
-	    /**
-	     * Username of the group's leader. Resolve the leader relationship to retrieve other data
+	     * This group's leader
 	     * @type {User}
 	     */
-	    leaderName: any;
+	    leader: User;
 	    /**
-	     * Relationship to this group's leader
-	     * @type {Relationship}
-	     */
-	    leader: Relationship;
-	    /**
-	     * Username of the group's member. Resolve the members' relationships to retrieve other data
+	     * Array of this group's members
 	     * @type {User[]}
 	     */
-	    memberNames: any[];
-	    /**
-	     * Relationships to each group's members
-	     * @type {Relationship[]}
-	     */
-	    members: Relationship[];
+	    members: User[];
 	    /**
 	     * Makes the logged in user either follow or unfollow this group
 	     * @param {Boolean} [follow=true] True to follow, false to unfollow
@@ -634,9 +627,10 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a list by its id
 	     * @param {String} id Mangadex id
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<List>}
 	     */
-	    static get(id: string): Promise<List>;
+	    static get(id: string, includeSubObjects?: boolean): Promise<List>;
 	    /**
 	     * Create a new custom list. Must be logged in
 	     * @param {String} name
@@ -701,9 +695,10 @@ declare module 'mangadex-full-api' {
 	     * Returns a list of the most recent chapters from the manga in a list
 	     * @param {String} id Mangadex id of the list
 	     * @param {FeedParameterObject} parameterObject Information on which chapters to be returned
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
-	    static getFeed(id: string, parameterObject: {
+	    static getFeed(id: string, parameterObject?: {
 	        /**
 	         * Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
 	         */
@@ -728,7 +723,7 @@ declare module 'mangadex-full-api' {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	        };
-	    }): Promise<Chapter[]>;
+	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
 	     * There is no reason to directly create a custom list object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
@@ -756,15 +751,10 @@ declare module 'mangadex-full-api' {
 	     */
 	    manga: Relationship[];
 	    /**
-	     * Relationship to this list's owner
-	     * @type {Relationship}
+	     * This list's owner
+	     * @type {User}
 	     */
-	    owner: Relationship;
-	    /**
-	     * Name of this list's owner. Resolve this owner relationship object for other user info
-	     * @type {String}
-	     */
-	    ownerName: string;
+	    owner: User;
 	    /**
 	     * Is this list public?
 	     * @type {Boolean}
@@ -847,31 +837,32 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * @private
 	     * @typedef {Object} MangaParameterObject
-	     * @property {String} MangaParameterObject.title
-	     * @property {Number} MangaParameterObject.year
-	     * @property {'AND'|'OR'} MangaParameterObject.includedTagsMode
-	     * @property {'AND'|'OR'} MangaParameterObject.excludedTagsMode
-	     * @property {String} MangaParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-	     * @property {String} MangaParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-	     * @property {Object} MangaParameterObject.order
-	     * @property {'asc'|'desc'} MangaParameterObject.order.createdAt
-	     * @property {'asc'|'desc'} MangaParameterObject.order.updatedAt
-	     * @property {String[]|Author[]} MangaParameterObject.authors Array of author ids
-	     * @property {String[]|Author[]} MangaParameterObject.artists Array of artist ids
-	     * @property {String[]|Tag[]} MangaParameterObject.includedTags
-	     * @property {String[]|Tag[]} MangaParameterObject.excludedTags
-	     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} MangaParameterObject.status
-	     * @property {String[]} MangaParameterObject.originalLanguage
-	     * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} MangaParameterObject.publicationDemographic
-	     * @property {String[]} MangaParameterObject.ids Max of 100 per request
-	     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} MangaParameterObject.contentRating
-	     * @property {Number} MangaParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-	     * @property {Number} MangaParameterObject.offset
+	     * @property {String} [MangaParameterObject.title]
+	     * @property {Number} [MangaParameterObject.year]
+	     * @property {'AND'|'OR'} [MangaParameterObject.includedTagsMode]
+	     * @property {'AND'|'OR'} [MangaParameterObject.excludedTagsMode]
+	     * @property {String} [MangaParameterObject.createdAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+	     * @property {String} [MangaParameterObject.updatedAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+	     * @property {Object} [MangaParameterObject.order]
+	     * @property {'asc'|'desc'} [MangaParameterObject.order.createdAt]
+	     * @property {'asc'|'desc'} [MangaParameterObject.order.updatedAt]
+	     * @property {String[]|Author[]} [MangaParameterObject.authors] Array of author ids
+	     * @property {String[]|Author[]} [MangaParameterObject.artists] Array of artist ids
+	     * @property {String[]|Tag[]} [MangaParameterObject.includedTags]
+	     * @property {String[]|Tag[]} [MangaParameterObject.excludedTags]
+	     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} [MangaParameterObject.status]
+	     * @property {String[]} [MangaParameterObject.originalLanguage]
+	     * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} [MangaParameterObject.publicationDemographic]
+	     * @property {String[]} [MangaParameterObject.ids] Max of 100 per request
+	     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [MangaParameterObject.contentRating]
+	     * @property {Number} [MangaParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+	     * @property {Number} [MangaParameterObject.offset]
 	     */
 	    /**
 	     * Peforms a search and returns an array of manga.
 	     * https://api.mangadex.org/docs.html#operation/get-search-manga
 	     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -888,17 +879,17 @@ declare module 'mangadex-full-api' {
 	         */
 	        updatedAtSince?: string;
 	        order?: {
-	            createdAt?: 'asc' | 'desc';
-	            updatedAt?: 'asc' | 'desc';
+	            createdAt: 'asc' | 'desc';
+	            updatedAt: 'asc' | 'desc';
 	        };
 	        /**
 	         * Array of author ids
 	         */
-	        authors?: string[] | any[];
+	        authors?: string[] | Author[];
 	        /**
 	         * Array of artist ids
 	         */
-	        artists?: string[] | any[];
+	        artists?: string[] | Author[];
 	        includedTags?: string[] | Tag[];
 	        excludedTags?: string[] | Tag[];
 	        status?: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
@@ -914,7 +905,7 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit?: number;
 	        offset?: number;
-	    }): Promise<Manga[]>;
+	    }, includeSubObjects?: boolean): Promise<Manga[]>;
 	    /**
 	     * Gets multiple manga
 	     * @param {...String|Relationship} ids
@@ -924,54 +915,55 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a manga by its id
 	     * @param {String} id Mangadex id
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga>}
 	     */
-	    static get(id: string): Promise<Manga>;
+	    static get(id: string, includeSubObjects?: boolean): Promise<Manga>;
 	    /**
 	     * Performs a search for one manga and returns that manga
 	     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
 	     * @returns {Promise<Manga>}
 	     */
 	    static getByQuery(searchParameters?: string | {
-	        title: string;
-	        year: number;
-	        includedTagsMode: 'AND' | 'OR';
-	        excludedTagsMode: 'AND' | 'OR';
+	        title?: string;
+	        year?: number;
+	        includedTagsMode?: 'AND' | 'OR';
+	        excludedTagsMode?: 'AND' | 'OR';
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        createdAtSince: string;
+	        createdAtSince?: string;
 	        /**
 	         * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
 	         */
-	        updatedAtSince: string;
-	        order: {
+	        updatedAtSince?: string;
+	        order?: {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	        };
 	        /**
 	         * Array of author ids
 	         */
-	        authors: string[] | any[];
+	        authors?: string[] | Author[];
 	        /**
 	         * Array of artist ids
 	         */
-	        artists: string[] | any[];
-	        includedTags: string[] | Tag[];
-	        excludedTags: string[] | Tag[];
-	        status: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
-	        originalLanguage: string[];
-	        publicationDemographic: Array<'shounen' | 'shoujo' | 'josei' | 'seinen' | 'none'>;
+	        artists?: string[] | Author[];
+	        includedTags?: string[] | Tag[];
+	        excludedTags?: string[] | Tag[];
+	        status?: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
+	        originalLanguage?: string[];
+	        publicationDemographic?: Array<'shounen' | 'shoujo' | 'josei' | 'seinen' | 'none'>;
 	        /**
 	         * Max of 100 per request
 	         */
-	        ids: string[];
-	        contentRating: Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>;
+	        ids?: string[];
+	        contentRating?: Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>;
 	        /**
 	         * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	         */
-	        limit: number;
-	        offset: number;
+	        limit?: number;
+	        offset?: number;
 	    }): Promise<Manga>;
 	    /**
 	     * @private
@@ -992,6 +984,7 @@ declare module 'mangadex-full-api' {
 	     * Returns a feed of chapters for a manga
 	     * @param {String} id
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static getFeed(id: string, parameterObject?: number | {
@@ -1019,12 +1012,13 @@ declare module 'mangadex-full-api' {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	        };
-	    }): Promise<Chapter[]>;
+	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
 	     * Returns one random manga
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga>}
 	     */
-	    static getRandom(): Promise<Manga>;
+	    static getRandom(includeSubObjects?: boolean): Promise<Manga>;
 	    /**
 	     * Returns all manga followed by the logged in user
 	     * @param {Number} [limit=100] Amount of manga to return (0 to Infinity)
@@ -1065,6 +1059,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Gets the combined feed of every manga followed by the logged in user
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static getFollowedFeed(parameterObject?: number | {
@@ -1092,7 +1087,7 @@ declare module 'mangadex-full-api' {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	        };
-	    }): Promise<Chapter[]>;
+	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
 	     * Makes the logged in user either follow or unfollow a manga
 	     * @param {String} id
@@ -1199,20 +1194,20 @@ declare module 'mangadex-full-api' {
 	     */
 	    updatedAt: Date;
 	    /**
-	     * Relationships to authors attributed to this manga
-	     * @type {Relationship[]}
+	     * Authors attributed to this manga
+	     * @type {Author[]}
 	     */
-	    authors: Relationship[];
+	    authors: Author[];
 	    /**
-	     * Relationships to artists attributed to this manga
-	     * @type {Relationship[]}
+	     * Artists attributed to this manga
+	     * @type {Author[]}
 	     */
-	    artists: Relationship[];
+	    artists: Author[];
 	    /**
-	     * Relationships to this manga's main cover. Use 'getCovers' to retrive other covers
-	     * @type {Relationship}
+	     * This manga's main cover. Use 'getCovers' to retrive other covers
+	     * @type {Cover}
 	     */
-	    mainCover: Relationship;
+	    mainCover: Cover;
 	    /**
 	     * Array of tags for this manga
 	     * @type {Tag[]}
@@ -1239,7 +1234,8 @@ declare module 'mangadex-full-api' {
 	     */
 	    getCovers(): Promise<Cover[]>;
 	    /**
-	     * Returns a feed of this manga's chapters
+	     * Returns a feed of this manga's chapters.
+	     * The the value of 'manga' for each chapter instance will not be filled since this method is called from that very manga instance
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
 	     * @returns {Promise<Chapter[]>}
 	     */
@@ -1303,6 +1299,7 @@ declare module 'mangadex-full-api' {
 	     * Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
 	     * https://api.mangadex.org/docs.html#operation/post-manga
 	     * @param {...String} languages
+	     * @returns {Promise<Object>}
 	     */
 	    getAggregate(...languages: string[]): Promise<any>;
 	}
@@ -1348,11 +1345,6 @@ declare module 'mangadex-full-api' {
 	     * @type {String}
 	     */
 	    username: string;
-	    /**
-	     * Relationships to chapters attributed to this user
-	     * @type {Relationship[]}
-	     */
-	    chapters: Relationship[];
 	    /**
 	     * Makes the logged in user either follow or unfollow this user
 	     * @param {Boolean} [follow=true] True to follow, false to unfollow
@@ -1459,11 +1451,12 @@ declare class LocalizedString {
 declare class Relationship {
     static types: {};
     /**
-     * Returns an array of Relationship objects from a Mangadex Relationships Array
+     * Returns an array of converted objects from a Mangadex Relationships Array
      * @private
      * @param {String} type
      * @param {Object[]} dataArray
-     * @returns {Relationship[]}
+     * @param {Object} caller
+     * @returns {Object[]}
      */
     private static convertType;
     /**

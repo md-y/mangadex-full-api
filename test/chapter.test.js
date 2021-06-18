@@ -23,14 +23,9 @@ describe('Chapter', function () {
             assert.strictEqual(chapter.id, targetId);
             assert.strictEqual(typeof chapter.title, 'string');
         });
-    });
-    describe('resolve()', function () {
-        it(`resolved a manga by a chapter (${targetId}) via get()`, async function () {
+        it(`manga is a manga object`, async function () {
             let chapter = await MFA.Chapter.get(targetId);
-            if (chapter.manga.length === 0) assert.fail('Chapter has no manga.');
-            let manga = await chapter.manga.resolve();
-            assert.strictEqual(manga instanceof MFA.Manga, true);
-            assert.strictEqual(typeof manga.id, 'string');
+            assert.strictEqual(chapter.manga instanceof MFA.Manga, true);
         });
     });
     describe('getReadablePages()', function () {
