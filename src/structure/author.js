@@ -61,7 +61,7 @@ class Author {
 
         /**
          * Manga this author/artist has been attributed to
-         * @type {Manga[]}
+         * @type {Relationship[]}
          */
         this.manga = Relationship.convertType('manga', context.relationships, this);
     }
@@ -81,10 +81,10 @@ class Author {
      * Peforms a search and returns an array of a authors/artists.
      * https://api.mangadex.org/docs.html#operation/get-author
      * @param {AuthorParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Author[]>}
      */
-    static search(searchParameters = {}, includeSubObjects = true) {
+    static search(searchParameters = {}, includeSubObjects = false) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
         if (includeSubObjects) searchParameters.includes = ['manga'];
         return Util.apiCastedRequest('/author', Author, searchParameters);
@@ -102,10 +102,10 @@ class Author {
     /**
      * Retrieves and returns a author by its id
      * @param {String} id Mangadex id
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Author>}
      */
-    static async get(id, includeSubObjects = true) {
+    static async get(id, includeSubObjects = false) {
         return new Author(await Util.apiRequest(`/author/${id}${includeSubObjects ? '?includes[]=manga' : ''}`));
     }
 

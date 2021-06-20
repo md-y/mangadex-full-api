@@ -74,10 +74,10 @@ class Group {
      * Peforms a search and returns an array of groups.
      * https://api.mangadex.org/docs.html#operation/get-search-group
      * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Group[]>}
      */
-    static search(searchParameters = {}, includeSubObjects = true) {
+    static search(searchParameters = {}, includeSubObjects = false) {
         if (typeof searchParameters === 'string') searchParameters = { name: searchParameters };
         if (includeSubObjects) searchParameters.includes = ['user'];
         return Util.apiCastedRequest('/group', Group, searchParameters);
@@ -95,10 +95,10 @@ class Group {
     /**
      * Retrieves and returns a group by its id
      * @param {String} id Mangadex id
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Group>}
      */
-    static async get(id, includeSubObjects = true) {
+    static async get(id, includeSubObjects = false) {
         return new Group(await Util.apiRequest(`/group/${id}${includeSubObjects ? '?includes[]=user' : ''}`));
     }
 

@@ -125,19 +125,19 @@ class Manga {
 
         /**
          * Authors attributed to this manga
-         * @type {Author[]}
+         * @type {Relationship[]}
          */
         this.authors = Relationship.convertType('author', context.relationships, this);
 
         /**
          * Artists attributed to this manga
-         * @type {Author[]}
+         * @type {Relationship[]}
          */
         this.artists = Relationship.convertType('artist', context.relationships, this);
 
         /**
          * This manga's main cover. Use 'getCovers' to retrive other covers
-         * @type {Cover}
+         * @type {Relationship}
          */
         this.mainCover = Relationship.convertType('cover_art', context.relationships, this).pop();
         if (!this.mainCover) this.mainCover = null;
@@ -205,10 +205,10 @@ class Manga {
      * Peforms a search and returns an array of manga.
      * https://api.mangadex.org/docs.html#operation/get-search-manga
      * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga[]>}
      */
-    static search(searchParameters = {}, includeSubObjects = true) {
+    static search(searchParameters = {}, includeSubObjects = false) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
         if (includeSubObjects) searchParameters.includes = ['artist', 'author', 'cover_art'];
         return Util.apiCastedRequest('/manga', Manga, searchParameters);
@@ -226,22 +226,23 @@ class Manga {
     /**
      * Retrieves and returns a manga by its id
      * @param {String} id Mangadex id
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
-    static async get(id, includeSubObjects = true) {
+    static async get(id, includeSubObjects = false) {
         return new Manga(await Util.apiRequest(`/manga/${id}${includeSubObjects ? '?includes[]=artist&includes[]=author&includes[]=cover_art' : ''}`));
     }
 
     /**
      * Performs a search for one manga and returns that manga
      * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
-    static async getByQuery(searchParameters = {}) {
+    static async getByQuery(searchParameters = {}, includeSubObjects = false) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters, limit: 1 };
         else searchParameters.limit = 1;
-        let res = await Manga.search(searchParameters);
+        let res = await Manga.search(searchParameters, includeSubObjects);
         if (res.length === 0) throw new Error('Search returned no results.');
         return res[0];
     }
@@ -266,10 +267,10 @@ class Manga {
      * Returns a feed of chapters for a manga
      * @param {String} id
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static getFeed(id, parameterObject = {}, includeSubObjects = true) {
+    static getFeed(id, parameterObject = {}, includeSubObjects = false) {
         if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
         if (includeSubObjects) parameterObject.includes = ['scanlation_group', 'manga', 'user'];
         return Util.apiCastedRequest(`/manga/${id}/feed`, Chapter, parameterObject, 500, 100);
@@ -277,10 +278,10 @@ class Manga {
 
     /**
      * Returns one random manga
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
-    static async getRandom(includeSubObjects = true) {
+    static async getRandom(includeSubObjects = false) {
         return new Manga(await Util.apiRequest(`/manga/random${includeSubObjects ? '?includes[]=artist&includes[]=author&includes[]=cover_art' : ''}`));
     }
 
@@ -345,10 +346,10 @@ class Manga {
     /**
      * Gets the combined feed of every manga followed by the logged in user
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static async getFollowedFeed(parameterObject, includeSubObjects = true) {
+    static async getFollowedFeed(parameterObject, includeSubObjects = false) {
         if (typeof parameterObject === 'number') parameterObject = { limit: parameterObject };
         if (includeSubObjects) parameterObject.includes = ['scanlation_group', 'manga', 'user'];
         await AuthUtil.validateTokens();
@@ -413,12 +414,12 @@ class Manga {
 
     /**
      * Returns a feed of this manga's chapters.
-     * The the value of 'manga' for each chapter instance will not be filled since this method is called from that very manga instance
      * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    getFeed(parameterObject = {}) {
-        return Manga.getFeed(this.id, parameterObject, false);
+    getFeed(parameterObject = {}, includeSubObjects = false) {
+        return Manga.getFeed(this.id, parameterObject, includeSubObjects);
     }
 
     /**

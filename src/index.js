@@ -64,6 +64,16 @@ function login(username, password, cacheLocation) {
 }
 exports.login = login;
 
+/**
+ * A shortcut for resolving all relationships in an array
+ * @param {Relationship[]} relationshipArray
+ * @returns {Promise}
+ */
+function resolveArray(relationshipArray) {
+    return Promise.all(relationshipArray.map(elem => elem.resolve()));
+}
+exports.resolveArray = resolveArray;
+
 // Register class types to bypass circular references
 const Relationship = require('./internal/relationship.js');
 Relationship.registerType('author', Author);

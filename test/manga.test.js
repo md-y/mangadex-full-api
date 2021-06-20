@@ -27,14 +27,14 @@ describe('Manga', function () {
             assert.strictEqual(typeof manga.title, 'string');
         });
         it(`authors are author objects`, async function () {
-            let manga = await MFA.Manga.get(targetId);
+            let manga = await MFA.Manga.get(targetId, true);
             assert.strictEqual(manga.authors instanceof Array, true);
             manga.authors.forEach(elem => {
                 assert.strictEqual(elem instanceof MFA.Author, true)
             });
         });
         it(`artists are author objects`, async function () {
-            let manga = await MFA.Manga.get(targetId);
+            let manga = await MFA.Manga.get(targetId, true);
             assert.strictEqual(manga.artists instanceof Array, true);
             manga.artists.forEach(elem => {
                 assert.strictEqual(elem instanceof MFA.Author, true)

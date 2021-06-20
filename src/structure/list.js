@@ -77,10 +77,10 @@ class List {
     /**
      * Retrieves and returns a list by its id
      * @param {String} id Mangadex id
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<List>}
      */
-    static async get(id, includeSubObjects = true) {
+    static async get(id, includeSubObjects = false) {
         if (AuthUtil.canAuth) await AuthUtil.validateTokens();
         return new List(await Util.apiRequest(`/list/${id}${includeSubObjects ? '?includes[]=manga' : ''}`));
         // Currently (6/16/21) MD allows includes[]=manga for this endpoint, but it does nothing
@@ -187,10 +187,10 @@ class List {
      * Returns a list of the most recent chapters from the manga in a list
      * @param {String} id Mangadex id of the list
      * @param {FeedParameterObject} parameterObject Information on which chapters to be returned
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static async getFeed(id, parameterObject = {}, includeSubObjects = true) {
+    static async getFeed(id, parameterObject = {}, includeSubObjects = false) {
         if (AuthUtil.canAuth) await AuthUtil.validateTokens();
         if (includeSubObjects) parameterObject.includes = ['scanlation_group', 'manga', 'user'];
         return await Util.apiCastedRequest(`/list/${id}/feed`, Chapter, parameterObject, 500, 100);

@@ -23,15 +23,17 @@ describe('Group', function () {
             assert.strictEqual(group.id, targetId);
             assert.strictEqual(typeof group.name, 'string');
         });
-        it(`the leader is a user object`, async function () {
-            let group = await MFA.Group.get(targetId);
+        it(`the leader is a user object and not undefined`, async function () {
+            let group = await MFA.Group.get(targetId, true);
             assert.strictEqual(group.leader instanceof MFA.User, true);
+            assert.strictEqual(group.leader.username !== undefined, true);
         });
-        it(`each member is a user object`, async function () {
-            let group = await MFA.Group.get(targetId);
+        it(`each member is a user object and not undefined`, async function () {
+            let group = await MFA.Group.get(targetId, true);
             assert.strictEqual(group.members instanceof Array, true);
             group.members.forEach(elem => {
                 assert.strictEqual(elem instanceof MFA.User, true);
+                assert.strictEqual(elem.username !== undefined, true);
             });
         });
     });

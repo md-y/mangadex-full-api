@@ -94,19 +94,19 @@ class Chapter {
 
         /**
          * The scanlation groups that are attributed to this chapter
-         * @type {Group[]}
+         * @type {Relationship[]}
          */
         this.groups = Relationship.convertType('scanlation_group', context.relationships, this);
 
         /**
          * The manga this chapter belongs to
-         * @type {Manga}
+         * @type {Relationship}
          */
         this.manga = Relationship.convertType('manga', context.relationships, this).pop();
 
         /**
          * The user who uploaded this chapter
-         * @type {User}
+         * @type {Relationship}
          */
         this.uploader = Relationship.convertType('user', context.relationships, this).pop();
     }
@@ -139,10 +139,10 @@ class Chapter {
      * Peforms a search and returns an array of chapters.
      * https://api.mangadex.org/docs.html#operation/get-chapter
      * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter[]>}
      */
-    static search(searchParameters = {}, includeSubObjects = true) {
+    static search(searchParameters = {}, includeSubObjects = false) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
         if (includeSubObjects) searchParameters.includes = ['scanlation_group', 'manga', 'user'];
         return Util.apiCastedRequest('/chapter', Chapter, searchParameters);
@@ -161,10 +161,10 @@ class Chapter {
     /**
      * Retrieves and returns a chapter by its id
      * @param {String} id Mangadex id
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Chapter>}
      */
-    static async get(id, includeSubObjects = true) {
+    static async get(id, includeSubObjects = false) {
         return new Chapter(await Util.apiRequest(`/chapter/${id}${includeSubObjects ? '?includes[]=scanlation_group&includes[]=manga&includes[]=user' : ''}`));
     }
 

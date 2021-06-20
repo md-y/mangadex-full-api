@@ -24,7 +24,7 @@ describe('Chapter', function () {
             assert.strictEqual(typeof chapter.title, 'string');
         });
         it(`manga is a manga object`, async function () {
-            let chapter = await MFA.Chapter.get(targetId);
+            let chapter = await MFA.Chapter.get(targetId, true);
             assert.strictEqual(chapter.manga instanceof MFA.Manga, true);
         });
     });

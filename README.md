@@ -37,21 +37,24 @@ MFA.login('username', 'password123', './bin/.md_cache').then(async () => {
     let manga = await MFA.Manga.getByQuery('Ancient Magus Bride');
 
     // Get the manga's chapters:
-    let chapters = await manga.getFeed({ translatedLanguage: ['en'] });
+    let chapters = await manga.getFeed({ translatedLanguage: ['en'] }, true); 
+    // True means that related objects are returned with the base request
+    // See Release 5.2.0 for more info: https://github.com/md-y/mangadex-full-api/releases/tag/5.2.0
     let chapter = chapters[0];
 
     // Get the chapter's pages:
-    let pages = await chapter.getReadablePages();
+    let pages = await chapter.getReadablePages(); 
+    // Please read the following page if you are creating a chapter-reading application:
+    // https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
 
     // Get who uploaded the chapter:
     let uploader = await chapter.uploader.resolve();
+    // It is recommended that any property that COULD be a Relationship is resolved like above since even if the endpoint resolves sub-objects (like getFeed(..., true)),
+    // if there is an error, MD returns a normal Relationship object. If the object is valid, however, it returns an instantly-resolving promise with the valid data.
 
     // Get the names of the groups who scanlated the chapter:
-    let groupNames = [];
-    for (let i of chapter.groups) {
-        let group = await i.resolve();
-        groupNames.push(group.name);
-    }
+    let resolvedGroups = await MFA.resolveArray(chapter.groups) // You can also resolve Relationship arrays with this shortcut, or do it yourself with Promise.all()
+    let groupNames = resolvedGroups.map(elem => elem.name);
 
     console.log(`Manga "${manga.title}" has a chapter titled "${chapter.title}" that was uploaded by ${uploader.username} and scanlated by ${groupNames.join('and')}.`);
     console.log(`Here is the first page: ${pages[0]}`);
@@ -127,13 +130,15 @@ Uses 2-letter Mangadex region codes.</p>
 <dd><p>Required for authorization
 <a href="https://api.mangadex.org/docs.html#operation/post-auth-login">https://api.mangadex.org/docs.html#operation/post-auth-login</a></p>
 </dd>
+<dt><a href="#resolveArray">resolveArray(relationshipArray)</a> ⇒ <code>Promise</code></dt>
+<dd><p>A shortcut for resolving all relationships in an array</p>
+</dd>
 </dl>
 
 <a name="Author"></a>
 
 ## Author
-Represents an author or artist
-https://api.mangadex.org/docs.html#tag/Author
+Represents an author or artisthttps://api.mangadex.org/docs.html#tag/Author
 
 **Kind**: global class  
 
@@ -146,7 +151,7 @@ https://api.mangadex.org/docs.html#tag/Author
         * [.biography](#Author+biography) : <code>Array.&lt;String&gt;</code>
         * [.createdAt](#Author+createdAt) : <code>Date</code>
         * [.updatedAt](#Author+updatedAt) : <code>Date</code>
-        * [.manga](#Author+manga) : [<code>Array.&lt;Manga&gt;</code>](#Manga)
+        * [.manga](#Author+manga) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
     * _static_
         * [.search([searchParameters], [includeSubObjects])](#Author.search) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
         * [.getMultiple(...ids)](#Author.getMultiple) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
@@ -201,22 +206,21 @@ The date the author/artist was last updated
 **Kind**: instance property of [<code>Author</code>](#Author)  
 <a name="Author+manga"></a>
 
-### author.manga : [<code>Array.&lt;Manga&gt;</code>](#Manga)
+### author.manga : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
 Manga this author/artist has been attributed to
 
 **Kind**: instance property of [<code>Author</code>](#Author)  
 <a name="Author.search"></a>
 
 ### Author.search([searchParameters], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Author&gt;&gt;</code>
-Peforms a search and returns an array of a authors/artists.
-https://api.mangadex.org/docs.html#operation/get-author
+Peforms a search and returns an array of a authors/artists.https://api.mangadex.org/docs.html#operation/get-author
 
 **Kind**: static method of [<code>Author</code>](#Author)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [searchParameters] | <code>AuthorParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the name |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Author.getMultiple"></a>
 
@@ -239,7 +243,7 @@ Retrieves and returns a author by its id
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Author.getByQuery"></a>
 
@@ -255,8 +259,7 @@ Performs a search for one author and returns that author
 <a name="Chapter"></a>
 
 ## Chapter
-Represents a chapter with readable pages
-https://api.mangadex.org/docs.html#tag/Chapter
+Represents a chapter with readable pageshttps://api.mangadex.org/docs.html#tag/Chapter
 
 **Kind**: global class  
 
@@ -274,9 +277,9 @@ https://api.mangadex.org/docs.html#tag/Chapter
         * [.publishAt](#Chapter+publishAt) : <code>Date</code>
         * [.pageNames](#Chapter+pageNames) : <code>Array.&lt;String&gt;</code>
         * [.saverPageNames](#Chapter+saverPageNames) : <code>Array.&lt;String&gt;</code>
-        * [.groups](#Chapter+groups) : [<code>Array.&lt;Group&gt;</code>](#Group)
-        * [.manga](#Chapter+manga) : [<code>Manga</code>](#Manga)
-        * [.uploader](#Chapter+uploader) : [<code>User</code>](#User)
+        * [.groups](#Chapter+groups) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
+        * [.manga](#Chapter+manga) : [<code>Relationship</code>](#Relationship)
+        * [.uploader](#Chapter+uploader) : [<code>Relationship</code>](#Relationship)
         * [.getReadablePages([saver])](#Chapter+getReadablePages) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>
         * [.changeReadMarker([read])](#Chapter+changeReadMarker) ⇒ [<code>Promise.&lt;Chapter&gt;</code>](#Chapter)
     * _static_
@@ -364,29 +367,26 @@ Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+groups"></a>
 
-### chapter.groups : [<code>Array.&lt;Group&gt;</code>](#Group)
+### chapter.groups : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
 The scanlation groups that are attributed to this chapter
 
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+manga"></a>
 
-### chapter.manga : [<code>Manga</code>](#Manga)
+### chapter.manga : [<code>Relationship</code>](#Relationship)
 The manga this chapter belongs to
 
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+uploader"></a>
 
-### chapter.uploader : [<code>User</code>](#User)
+### chapter.uploader : [<code>Relationship</code>](#Relationship)
 The user who uploaded this chapter
 
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+getReadablePages"></a>
 
 ### chapter.getReadablePages([saver]) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>
-Retrieves URLs for actual images from Mangadex @ Home.
-This only gives URLs, so it does not report the status of the server to Mangadex @ Home.
-Therefore applications that download image data pleaese report failures as stated here:
-https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
+Retrieves URLs for actual images from Mangadex @ Home.This only gives URLs, so it does not report the status of the server to Mangadex @ Home.Therefore applications that download image data pleaese report failures as stated here:https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
 
 **Kind**: instance method of [<code>Chapter</code>](#Chapter)  
 
@@ -408,15 +408,14 @@ Marks this chapter as either read or unread
 <a name="Chapter.search"></a>
 
 ### Chapter.search([searchParameters], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
-Peforms a search and returns an array of chapters.
-https://api.mangadex.org/docs.html#operation/get-chapter
+Peforms a search and returns an array of chapters.https://api.mangadex.org/docs.html#operation/get-chapter
 
 **Kind**: static method of [<code>Chapter</code>](#Chapter)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [searchParameters] | <code>ChapterParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the title |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Chapter.getMultiple"></a>
 
@@ -439,7 +438,7 @@ Retrieves and returns a chapter by its id
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Chapter.getByQuery"></a>
 
@@ -467,8 +466,7 @@ Marks a chapter as either read or unread
 <a name="Cover"></a>
 
 ## Cover
-Represents the cover art of a manga volume
-https://api.mangadex.org/docs.html#tag/Cover
+Represents the cover art of a manga volumehttps://api.mangadex.org/docs.html#tag/Cover
 
 **Kind**: global class  
 
@@ -480,8 +478,8 @@ https://api.mangadex.org/docs.html#tag/Cover
         * [.description](#Cover+description) : <code>String</code>
         * [.createdAt](#Cover+createdAt) : <code>Date</code>
         * [.updatedAt](#Cover+updatedAt) : <code>Date</code>
-        * [.manga](#Cover+manga) : [<code>Manga</code>](#Manga)
-        * [.uploader](#Cover+uploader) : [<code>User</code>](#User)
+        * [.manga](#Cover+manga) : [<code>Relationship</code>](#Relationship)
+        * [.uploader](#Cover+uploader) : [<code>Relationship</code>](#Relationship)
         * [.imageSource](#Cover+imageSource) : <code>String</code>
         * [.image512](#Cover+image512) : <code>String</code>
         * [.image256](#Cover+image256) : <code>String</code>
@@ -534,13 +532,13 @@ The date the cover was last updated
 **Kind**: instance property of [<code>Cover</code>](#Cover)  
 <a name="Cover+manga"></a>
 
-### cover.manga : [<code>Manga</code>](#Manga)
+### cover.manga : [<code>Relationship</code>](#Relationship)
 Manga this is a cover for
 
 **Kind**: instance property of [<code>Cover</code>](#Cover)  
 <a name="Cover+uploader"></a>
 
-### cover.uploader : [<code>User</code>](#User)
+### cover.uploader : [<code>Relationship</code>](#Relationship)
 The user who uploaded this cover
 
 **Kind**: instance property of [<code>Cover</code>](#Cover)  
@@ -572,20 +570,19 @@ Retrieves and returns a cover by its id
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Cover.search"></a>
 
 ### Cover.search([searchParameters], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
-Peforms a search and returns an array of covers.
-https://api.mangadex.org/docs.html#operation/get-cover
+Peforms a search and returns an array of covers.https://api.mangadex.org/docs.html#operation/get-cover
 
 **Kind**: static method of [<code>Cover</code>](#Cover)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [searchParameters] | <code>CoverParameterObject</code> |  |  |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Cover.getMultiple"></a>
 
@@ -623,8 +620,7 @@ Get an array of manga's covers
 <a name="Group"></a>
 
 ## Group
-Represents a scanlation group
-https://api.mangadex.org/docs.html#tag/Group
+Represents a scanlation grouphttps://api.mangadex.org/docs.html#tag/Group
 
 **Kind**: global class  
 
@@ -706,15 +702,14 @@ Makes the logged in user either follow or unfollow this group
 <a name="Group.search"></a>
 
 ### Group.search([searchParameters], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
-Peforms a search and returns an array of groups.
-https://api.mangadex.org/docs.html#operation/get-search-group
+Peforms a search and returns an array of groups.https://api.mangadex.org/docs.html#operation/get-search-group
 
 **Kind**: static method of [<code>Group</code>](#Group)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [searchParameters] | <code>GroupParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the name |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Group.getMultiple"></a>
 
@@ -726,7 +721,7 @@ Gets multiple groups
 | Param | Type |
 | --- | --- |
 | ...ids | <code>String</code> \| [<code>Group</code>](#Group) \| [<code>Relationship</code>](#Relationship) | 
-when available through the base request
+
 <a name="Group.get"></a>
 
 ### Group.get(id, [includeSubObjects]) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
@@ -737,7 +732,7 @@ Retrieves and returns a group by its id
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Group.getByQuery"></a>
 
@@ -777,8 +772,7 @@ Makes the logged in user either follow or unfollow a group
 <a name="List"></a>
 
 ## List
-Represents a custom, user-created list of manga
-https://api.mangadex.org/docs.html#tag/CustomList
+Represents a custom, user-created list of mangahttps://api.mangadex.org/docs.html#tag/CustomList
 
 **Kind**: global class  
 
@@ -864,8 +858,7 @@ Is this list public?
 <a name="List+getFeed"></a>
 
 ### list.getFeed([parameterObject]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
-Returns a list of the most recent chapters from the manga in a list
-https://api.mangadex.org/docs.html#operation/get-list-id-feed
+Returns a list of the most recent chapters from the manga in a listhttps://api.mangadex.org/docs.html#operation/get-list-id-feed
 
 **Kind**: instance method of [<code>List</code>](#List)  
 
@@ -931,7 +924,7 @@ Removes a manga from this list
 **Kind**: instance method of [<code>List</code>](#List)  
 
 | Param | Type |
-| --- | --- |when available through the base request
+| --- | --- |
 | manga | [<code>Manga</code>](#Manga) \| <code>String</code> | 
 
 <a name="List.get"></a>
@@ -944,7 +937,7 @@ Retrieves and returns a list by its id
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="List.create"></a>
 
@@ -997,8 +990,7 @@ Removes a manga from a custom list. Must be logged in
 <a name="List.getLoggedInUserLists"></a>
 
 ### List.getLoggedInUserLists([limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
-Returns all lists created by the logged in user.
-As of the MD v5 Beta, this returns an empty list.
+Returns all lists created by the logged in user.As of the MD v5 Beta, this returns an empty list.
 
 **Kind**: static method of [<code>List</code>](#List)  
 
@@ -1010,8 +1002,7 @@ As of the MD v5 Beta, this returns an empty list.
 <a name="List.getUserLists"></a>
 
 ### List.getUserLists(user, [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
-Returns all public lists created by a user.
-As of the MD v5 Beta, this returns an empty list.
+Returns all public lists created by a user.As of the MD v5 Beta, this returns an empty list.
 
 **Kind**: static method of [<code>List</code>](#List)  
 
@@ -1032,13 +1023,12 @@ Returns a list of the most recent chapters from the manga in a list
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id of the list |
 | parameterObject | <code>FeedParameterObject</code> |  | Information on which chapters to be returned |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Manga"></a>
 
 ## Manga
-Represents a manga object
-https://api.mangadex.org/docs.html#tag/Manga
+Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
 
 **Kind**: global class  
 
@@ -1060,15 +1050,15 @@ https://api.mangadex.org/docs.html#tag/Manga
         * [.contentRating](#Manga+contentRating) : <code>&#x27;safe&#x27;</code> \| <code>&#x27;suggestive&#x27;</code> \| <code>&#x27;erotica&#x27;</code> \| <code>&#x27;pornographic&#x27;</code>
         * [.createdAt](#Manga+createdAt) : <code>Date</code>
         * [.updatedAt](#Manga+updatedAt) : <code>Date</code>
-        * [.authors](#Manga+authors) : [<code>Array.&lt;Author&gt;</code>](#Author)
-        * [.artists](#Manga+artists) : [<code>Array.&lt;Author&gt;</code>](#Author)
-        * [.mainCover](#Manga+mainCover) : [<code>Cover</code>](#Cover)
+        * [.authors](#Manga+authors) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
+        * [.artists](#Manga+artists) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
+        * [.mainCover](#Manga+mainCover) : [<code>Relationship</code>](#Relationship)
         * [.tags](#Manga+tags) : [<code>Array.&lt;Tag&gt;</code>](#Tag)
         * [.title](#Manga+title) : <code>String</code>
         * [.altTitles](#Manga+altTitles) : <code>Array.&lt;String&gt;</code>
         * [.description](#Manga+description) : <code>String</code>
         * [.getCovers()](#Manga+getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
-        * [.getFeed([parameterObject])](#Manga+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+        * [.getFeed([parameterObject], [includeSubObjects])](#Manga+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.addToList(list)](#Manga+addToList) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.getReadingStatus()](#Manga+getReadingStatus) ⇒ <code>Promise.&lt;(&#x27;reading&#x27;\|&#x27;on\_hold&#x27;\|&#x27;plan\_to\_read&#x27;\|&#x27;dropped&#x27;\|&#x27;re\_reading&#x27;\|&#x27;completed&#x27;)&gt;</code>
         * [.setReadingStatus([status])](#Manga+setReadingStatus) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
@@ -1079,7 +1069,7 @@ https://api.mangadex.org/docs.html#tag/Manga
         * [.search([searchParameters], [includeSubObjects])](#Manga.search) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
         * [.getMultiple(...ids)](#Manga.getMultiple) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
         * [.get(id, [includeSubObjects])](#Manga.get) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
-        * [.getByQuery([searchParameters])](#Manga.getByQuery) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
+        * [.getByQuery([searchParameters], [includeSubObjects])](#Manga.getByQuery) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
         * [.getFeed(id, [parameterObject], [includeSubObjects])](#Manga.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.getRandom([includeSubObjects])](#Manga.getRandom) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
         * [.getFollowedManga([limit], [offset])](#Manga.getFollowedManga) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
@@ -1136,8 +1126,7 @@ Is this Manga locked?
 <a name="Manga+links"></a>
 
 ### manga.links : [<code>Links</code>](#Links)
-Link object representing links to other websites about this manga
-https://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
+Link object representing links to other websites about this mangahttps://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+originalLanguage"></a>
@@ -1161,8 +1150,7 @@ Number of this manga's last chapter based on the default feed order
 <a name="Manga+publicationDemographic"></a>
 
 ### manga.publicationDemographic : <code>&#x27;shounen&#x27;</code> \| <code>&#x27;shoujo&#x27;</code> \| <code>&#x27;josei&#x27;</code> \| <code>&#x27;seinen&#x27;</code>
-Publication demographic of this manga
-https://api.mangadex.org/docs.html#section/Static-data/Manga-publication-demographic
+Publication demographic of this mangahttps://api.mangadex.org/docs.html#section/Static-data/Manga-publication-demographic
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+status"></a>
@@ -1197,19 +1185,19 @@ The date the manga was last updated
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+authors"></a>
 
-### manga.authors : [<code>Array.&lt;Author&gt;</code>](#Author)
+### manga.authors : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
 Authors attributed to this manga
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+artists"></a>
 
-### manga.artists : [<code>Array.&lt;Author&gt;</code>](#Author)
+### manga.artists : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
 Artists attributed to this manga
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+mainCover"></a>
 
-### manga.mainCover : [<code>Cover</code>](#Cover)
+### manga.mainCover : [<code>Relationship</code>](#Relationship)
 This manga's main cover. Use 'getCovers' to retrive other covers
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
@@ -1245,15 +1233,15 @@ Returns all covers for this manga
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 <a name="Manga+getFeed"></a>
 
-### manga.getFeed([parameterObject]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
+### manga.getFeed([parameterObject], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 Returns a feed of this manga's chapters.
-The the value of 'manga' for each chapter instance will not be filled since this method is called from that very manga instance
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [parameterObject] | <code>FeedParameterObject</code> \| <code>Number</code> | Either a parameter object or a number representing the limit |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [parameterObject] | <code>FeedParameterObject</code> \| <code>Number</code> |  | Either a parameter object or a number representing the limit |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Manga+addToList"></a>
 
@@ -1269,15 +1257,13 @@ Adds this manga to a list
 <a name="Manga+getReadingStatus"></a>
 
 ### manga.getReadingStatus() ⇒ <code>Promise.&lt;(&#x27;reading&#x27;\|&#x27;on\_hold&#x27;\|&#x27;plan\_to\_read&#x27;\|&#x27;dropped&#x27;\|&#x27;re\_reading&#x27;\|&#x27;completed&#x27;)&gt;</code>
-Retrieves the logged in user's reading status for this manga.
-If there is no status, null is returned
+Retrieves the logged in user's reading status for this manga.If there is no status, null is returned
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 <a name="Manga+setReadingStatus"></a>
 
 ### manga.setReadingStatus([status]) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
-Sets the logged in user's reading status for this manga. 
-Call without arguments to clear the reading status
+Sets the logged in user's reading status for this manga. Call without arguments to clear the reading status
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 
@@ -1302,11 +1288,10 @@ Makes the logged in user either follow or unfollow this manga
 Returns an array of every chapter that has been marked as read for this manga
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
-<a name="Manga+getAggregate"></a>when available through the base request
+<a name="Manga+getAggregate"></a>
 
 ### manga.getAggregate(...languages) ⇒ <code>Promise.&lt;Object&gt;</code>
-Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
-https://api.mangadex.org/docs.html#operation/post-manga
+Returns a summary of every chapter for this manga including each of their numbers and volumes they belong tohttps://api.mangadex.org/docs.html#operation/post-manga
 
 **Kind**: instance method of [<code>Manga</code>](#Manga)  
 
@@ -1317,15 +1302,14 @@ https://api.mangadex.org/docs.html#operation/post-manga
 <a name="Manga.search"></a>
 
 ### Manga.search([searchParameters], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Manga&gt;&gt;</code>
-Peforms a search and returns an array of manga.
-https://api.mangadex.org/docs.html#operation/get-search-manga
+Peforms a search and returns an array of manga.https://api.mangadex.org/docs.html#operation/get-search-manga
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [searchParameters] | <code>MangaParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the title |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Manga.getMultiple"></a>
 
@@ -1348,19 +1332,20 @@ Retrieves and returns a manga by its id
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | id | <code>String</code> |  | Mangadex id |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
-when available through the base request
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+
 <a name="Manga.getByQuery"></a>
 
-### Manga.getByQuery([searchParameters]) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
+### Manga.getByQuery([searchParameters], [includeSubObjects]) ⇒ [<code>Promise.&lt;Manga&gt;</code>](#Manga)
 Performs a search for one manga and returns that manga
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [searchParameters] | <code>MangaParameterObject</code> \| <code>String</code> | An object of offical search parameters, or a string representing the title |
-when available through the base request
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [searchParameters] | <code>MangaParameterObject</code> \| <code>String</code> |  | An object of offical search parameters, or a string representing the title |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+
 <a name="Manga.getFeed"></a>
 
 ### Manga.getFeed(id, [parameterObject], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
@@ -1372,7 +1357,7 @@ Returns a feed of chapters for a manga
 | --- | --- | --- | --- |
 | id | <code>String</code> |  |  |
 | [parameterObject] | <code>FeedParameterObject</code> \| <code>Number</code> |  | Either a parameter object or a number representing the limit |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Manga.getRandom"></a>
 
@@ -1383,7 +1368,7 @@ Returns one random manga
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Manga.getFollowedManga"></a>
 
@@ -1400,9 +1385,7 @@ Returns all manga followed by the logged in user
 <a name="Manga.getTag"></a>
 
 ### Manga.getTag(indentity) ⇒ [<code>Promise.&lt;Tag&gt;</code>](#Tag)
-Retrieves a tag object based on its id or name ('Oneshot', 'Thriller,' etc).
-The result of every available tag is cached, so subsequent tag requests will have no delay
-https://api.mangadex.org/docs.html#operation/get-manga-tag
+Retrieves a tag object based on its id or name ('Oneshot', 'Thriller,' etc).The result of every available tag is cached, so subsequent tag requests will have no delayhttps://api.mangadex.org/docs.html#operation/get-manga-tag
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
@@ -1413,18 +1396,15 @@ https://api.mangadex.org/docs.html#operation/get-manga-tag
 <a name="Manga.getAllTags"></a>
 
 ### Manga.getAllTags() ⇒ <code>Promise.&lt;Array.&lt;Tag&gt;&gt;</code>
-Returns an array of every tag available on Mangadex right now.
-The result is cached, so subsequent tag requests will have no delay
-https://api.mangadex.org/docs.html#operation/get-manga-tag
+Returns an array of every tag available on Mangadex right now.The result is cached, so subsequent tag requests will have no delayhttps://api.mangadex.org/docs.html#operation/get-manga-tag
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 <a name="Manga.getReadingStatus"></a>
 
 ### Manga.getReadingStatus(id) ⇒ <code>Promise.&lt;(&#x27;reading&#x27;\|&#x27;on\_hold&#x27;\|&#x27;plan\_to\_read&#x27;\|&#x27;dropped&#x27;\|&#x27;re\_reading&#x27;\|&#x27;completed&#x27;)&gt;</code>
-Retrieves the logged in user's reading status for a manga.
-If there is no status, null is returned
+Retrieves the logged in user's reading status for a manga.If there is no status, null is returned
 
-**Kind**: static method of [<code>Manga</code>](#Manga)  when available through the base request
+**Kind**: static method of [<code>Manga</code>](#Manga)  
 
 | Param | Type |
 | --- | --- |
@@ -1433,8 +1413,7 @@ If there is no status, null is returned
 <a name="Manga.setReadingStatus"></a>
 
 ### Manga.setReadingStatus(id, [status]) ⇒ <code>Promise.&lt;void&gt;</code>
-Sets the logged in user's reading status for this manga. 
-Call without arguments to clear the reading status
+Sets the logged in user's reading status for this manga. Call without arguments to clear the reading status
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
@@ -1453,7 +1432,7 @@ Gets the combined feed of every manga followed by the logged in user
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [parameterObject] | <code>FeedParameterObject</code> \| <code>Number</code> |  | Either a parameter object or a number representing the limit |
-| [includeSubObjects] | <code>Boolean</code> | <code>true</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="Manga.changeFollowship"></a>
 
@@ -1492,8 +1471,7 @@ Returns all covers for a manga
 <a name="Manga.getAggregate"></a>
 
 ### Manga.getAggregate(id, ...languages) ⇒ <code>Promise.&lt;Object&gt;</code>
-Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
-https://api.mangadex.org/docs.html#operation/post-manga
+Returns a summary of every chapter for a manga including each of their numbers and volumes they belong tohttps://api.mangadex.org/docs.html#operation/post-manga
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
 
@@ -1505,8 +1483,7 @@ https://api.mangadex.org/docs.html#operation/post-manga
 <a name="User"></a>
 
 ## User
-Represents an user
-https://api.mangadex.org/docs.html#tag/User
+Represents an userhttps://api.mangadex.org/docs.html#tag/User
 
 **Kind**: global class  
 
@@ -1599,8 +1576,7 @@ Makes the logged in user either follow or unfollow a user
 <a name="Links"></a>
 
 ## Links
-Represents the links that represent manga on different websites
-https://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
+Represents the links that represent manga on different websiteshttps://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
 
 **Kind**: global class  
 
@@ -1700,9 +1676,7 @@ All of the links that have valid values
 <a name="LocalizedString"></a>
 
 ## LocalizedString
-Represents a string, but in different languages.
-Generates properties for each language available 
-(ie you can index with language codes through localizedString['en'] or localizedString.jp)
+Represents a string, but in different languages.Generates properties for each language available (ie you can index with language codes through localizedString['en'] or localizedString.jp)
 
 **Kind**: global class  
 
@@ -1749,15 +1723,13 @@ The type of the object this is a relationship to
 <a name="Relationship+resolve"></a>
 
 ### relationship.resolve() ⇒ <code>Promise.&lt;(Manga\|Author\|Chapter\|User\|Group\|List\|Cover)&gt;</code>
-This function must be called to return the proper and complete object representation of this relationship.
-Essentially, it calls and returns Manga.get(), Author.get(), Cover.get(), etc.
+This function must be called to return the proper and complete object representation of this relationship.Essentially, it calls and returns Manga.get(), Author.get(), Cover.get(), etc.
 
 **Kind**: instance method of [<code>Relationship</code>](#Relationship)  
 <a name="APIRequestError"></a>
 
 ## APIRequestError
-This error respresents when the API responds with an error or invalid response.
-In other words, this error represents 400 and 500 status code responses.
+This error respresents when the API responds with an error or invalid response.In other words, this error represents 400 and 500 status code responses.
 
 **Kind**: global class  
 
@@ -1800,8 +1772,7 @@ In other words, this error represents 400 and 500 status code responses.
 <a name="APIRequestError+code"></a>
 
 ### apiRequestError.code : <code>Number</code>
-What type of error is this?
-AUTHORIZATION, INVALID_RESPONSE, etc.
+What type of error is this?AUTHORIZATION, INVALID_RESPONSE, etc.
 
 **Kind**: instance property of [<code>APIRequestError</code>](#APIRequestError)  
 <a name="APIRequestError+name"></a>
@@ -1873,9 +1844,7 @@ Description string based on global locale
 <a name="convertLegacyId"></a>
 
 ## convertLegacyId(type, ...ids) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>
-Converts old (pre v5, numeric ids) Mangadex ids to v5 ids.
-Any invalid legacy ids will be skipped by Mangadex when remapping, so
-call this function for each individual id if this is an issue.
+Converts old (pre v5, numeric ids) Mangadex ids to v5 ids.Any invalid legacy ids will be skipped by Mangadex when remapping, socall this function for each individual id if this is an issue.
 
 **Kind**: global function  
 
@@ -1887,8 +1856,7 @@ call this function for each individual id if this is an issue.
 <a name="setGlobalLocale"></a>
 
 ## setGlobalLocale(newLocale)
-Sets the global locaization for LocalizedStrings.
-Uses 2-letter Mangadex region codes.
+Sets the global locaization for LocalizedStrings.Uses 2-letter Mangadex region codes.
 
 **Kind**: global function  
 
@@ -1899,8 +1867,7 @@ Uses 2-letter Mangadex region codes.
 <a name="login"></a>
 
 ## login(username, password, [cacheLocation]) ⇒ <code>Promise.&lt;void&gt;</code>
-Required for authorization
-https://api.mangadex.org/docs.html#operation/post-auth-login
+Required for authorizationhttps://api.mangadex.org/docs.html#operation/post-auth-login
 
 **Kind**: global function  
 
@@ -1909,6 +1876,17 @@ https://api.mangadex.org/docs.html#operation/post-auth-login
 | username | <code>String</code> |  |
 | password | <code>String</code> |  |
 | [cacheLocation] | <code>String</code> | File location (or localStorage key for browsers) to store the persistent token IN PLAIN TEXT |
+
+<a name="resolveArray"></a>
+
+## resolveArray(relationshipArray) ⇒ <code>Promise</code>
+A shortcut for resolving all relationships in an array
+
+**Kind**: global function  
+
+| Param | Type |
+| --- | --- |
+| relationshipArray | [<code>Array.&lt;Relationship&gt;</code>](#Relationship) | 
 
 *Documentation created with [jsdoc2md](https://github.com/jsdoc2md/jsdoc-to-markdown)*
 

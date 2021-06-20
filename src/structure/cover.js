@@ -57,14 +57,14 @@ class Cover {
 
         /**
          * Manga this is a cover for
-         * @type {Manga}
+         * @type {Relationship}
          */
         this.manga = Relationship.convertType('manga', context.relationships, this).pop();
         if (!this.manga) this.manga = null;
 
         /**
          * The user who uploaded this cover
-         * @type {User}
+         * @type {Relationship}
          */
         this.uploader = Relationship.convertType('user', context.relationships, this).pop();
         if (!this.uploader) this.uploader = null;
@@ -91,10 +91,10 @@ class Cover {
     /**
      * Retrieves and returns a cover by its id
      * @param {String} id Mangadex id
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Cover>}
      */
-    static async get(id, includeSubObjects = true) {
+    static async get(id, includeSubObjects = false) {
         return new Cover(await Util.apiRequest(`/cover/${id}${includeSubObjects ? '?includes[]=user&includes[]=manga' : ''}`));
     }
 
@@ -116,10 +116,10 @@ class Cover {
      * Peforms a search and returns an array of covers.
      * https://api.mangadex.org/docs.html#operation/get-cover
      * @param {CoverParameterObject} [searchParameters]
-     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Cover[]>}
      */
-    static search(searchParameters = {}, includeSubObjects = true) {
+    static search(searchParameters = {}, includeSubObjects = false) {
         if (includeSubObjects) searchParameters.includes = ['user', 'manga'];
         return Util.apiCastedRequest('/cover', Cover, searchParameters);
     }

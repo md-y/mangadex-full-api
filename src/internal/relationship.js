@@ -49,7 +49,13 @@ class Relationship {
             return isType;
         });
         return dataArray.filter(elem => elem.type === type).map(elem => {
-            if ('attributes' in elem) return new classObject({ data: elem, relationships: relationshipArray });
+            if ('attributes' in elem) {
+                let obj = new classObject({ data: elem, relationships: relationshipArray });
+                obj.resolve = () => {
+                    return Promise.resolve(obj);
+                };
+                return obj;
+            }
             else return new Relationship(elem);
         });
     }
