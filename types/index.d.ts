@@ -23,6 +23,12 @@ declare module 'mangadex-full-api' {
 	 * @returns {Promise<void>}
 	 */
 	export function login(username: string, password: string, cacheLocation?: string): Promise<void>;
+	/**
+	 * A shortcut for resolving all relationships in an array
+	 * @param {Relationship[]} relationshipArray
+	 * @returns {Promise}
+	 */
+	export function resolveArray(relationshipArray: Relationship[]): Promise<any>;
 	
 	/**
 	 * Represents an author or artist
@@ -43,7 +49,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of a authors/artists.
 	     * https://api.mangadex.org/docs.html#operation/get-author
 	     * @param {AuthorParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Author[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -70,7 +76,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a author by its id
 	     * @param {String} id Mangadex id
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Author>}
 	     */
 	    static get(id: string, includeSubObjects?: boolean): Promise<Author>;
@@ -127,9 +133,9 @@ declare module 'mangadex-full-api' {
 	    updatedAt: Date;
 	    /**
 	     * Manga this author/artist has been attributed to
-	     * @type {Manga[]}
+	     * @type {Relationship[]}
 	     */
-	    manga: Manga[];
+	    manga: Relationship[];
 	}
 	
 	/**
@@ -164,7 +170,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of chapters.
 	     * https://api.mangadex.org/docs.html#operation/get-chapter
 	     * @param {ChapterParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -213,7 +219,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a chapter by its id
 	     * @param {String} id Mangadex id
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter>}
 	     */
 	    static get(id: string, includeSubObjects?: boolean): Promise<Chapter>;
@@ -324,19 +330,19 @@ declare module 'mangadex-full-api' {
 	    saverPageNames: string[];
 	    /**
 	     * The scanlation groups that are attributed to this chapter
-	     * @type {Group[]}
+	     * @type {Relationship[]}
 	     */
-	    groups: Group[];
+	    groups: Relationship[];
 	    /**
 	     * The manga this chapter belongs to
-	     * @type {Manga}
+	     * @type {Relationship}
 	     */
-	    manga: Manga;
+	    manga: Relationship;
 	    /**
 	     * The user who uploaded this chapter
-	     * @type {User}
+	     * @type {Relationship}
 	     */
-	    uploader: any;
+	    uploader: Relationship;
 	    /**
 	     * Retrieves URLs for actual images from Mangadex @ Home.
 	     * This only gives URLs, so it does not report the status of the server to Mangadex @ Home.
@@ -362,7 +368,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a cover by its id
 	     * @param {String} id Mangadex id
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Cover>}
 	     */
 	    static get(id: string, includeSubObjects?: boolean): Promise<Cover>;
@@ -383,7 +389,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of covers.
 	     * https://api.mangadex.org/docs.html#operation/get-cover
 	     * @param {CoverParameterObject} [searchParameters]
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Cover[]>}
 	     */
 	    static search(searchParameters?: {
@@ -479,14 +485,14 @@ declare module 'mangadex-full-api' {
 	    updatedAt: Date;
 	    /**
 	     * Manga this is a cover for
-	     * @type {Manga}
+	     * @type {Relationship}
 	     */
-	    manga: Manga;
+	    manga: Relationship;
 	    /**
 	     * The user who uploaded this cover
-	     * @type {User}
+	     * @type {Relationship}
 	     */
-	    uploader: User;
+	    uploader: Relationship;
 	    /**
 	     * URL to the source image of the cover
 	     * @type {String}
@@ -521,7 +527,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of groups.
 	     * https://api.mangadex.org/docs.html#operation/get-search-group
 	     * @param {GroupParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the name
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Group[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -545,7 +551,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a group by its id
 	     * @param {String} id Mangadex id
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Group>}
 	     */
 	    static get(id: string, includeSubObjects?: boolean): Promise<Group>;
@@ -627,7 +633,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a list by its id
 	     * @param {String} id Mangadex id
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<List>}
 	     */
 	    static get(id: string, includeSubObjects?: boolean): Promise<List>;
@@ -695,7 +701,7 @@ declare module 'mangadex-full-api' {
 	     * Returns a list of the most recent chapters from the manga in a list
 	     * @param {String} id Mangadex id of the list
 	     * @param {FeedParameterObject} parameterObject Information on which chapters to be returned
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static getFeed(id: string, parameterObject?: {
@@ -862,7 +868,7 @@ declare module 'mangadex-full-api' {
 	     * Peforms a search and returns an array of manga.
 	     * https://api.mangadex.org/docs.html#operation/get-search-manga
 	     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga[]>}
 	     */
 	    static search(searchParameters?: string | {
@@ -915,13 +921,14 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Retrieves and returns a manga by its id
 	     * @param {String} id Mangadex id
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga>}
 	     */
 	    static get(id: string, includeSubObjects?: boolean): Promise<Manga>;
 	    /**
 	     * Performs a search for one manga and returns that manga
 	     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga>}
 	     */
 	    static getByQuery(searchParameters?: string | {
@@ -964,7 +971,7 @@ declare module 'mangadex-full-api' {
 	         */
 	        limit?: number;
 	        offset?: number;
-	    }): Promise<Manga>;
+	    }, includeSubObjects?: boolean): Promise<Manga>;
 	    /**
 	     * @private
 	     * @typedef {Object} FeedParameterObject
@@ -984,7 +991,7 @@ declare module 'mangadex-full-api' {
 	     * Returns a feed of chapters for a manga
 	     * @param {String} id
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static getFeed(id: string, parameterObject?: number | {
@@ -1015,7 +1022,7 @@ declare module 'mangadex-full-api' {
 	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
 	     * Returns one random manga
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Manga>}
 	     */
 	    static getRandom(includeSubObjects?: boolean): Promise<Manga>;
@@ -1059,7 +1066,7 @@ declare module 'mangadex-full-api' {
 	    /**
 	     * Gets the combined feed of every manga followed by the logged in user
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
-	     * @param {Boolean} [includeSubObjects=true] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    static getFollowedFeed(parameterObject?: number | {
@@ -1195,19 +1202,19 @@ declare module 'mangadex-full-api' {
 	    updatedAt: Date;
 	    /**
 	     * Authors attributed to this manga
-	     * @type {Author[]}
+	     * @type {Relationship[]}
 	     */
-	    authors: Author[];
+	    authors: Relationship[];
 	    /**
 	     * Artists attributed to this manga
-	     * @type {Author[]}
+	     * @type {Relationship[]}
 	     */
-	    artists: Author[];
+	    artists: Relationship[];
 	    /**
 	     * This manga's main cover. Use 'getCovers' to retrive other covers
-	     * @type {Cover}
+	     * @type {Relationship}
 	     */
-	    mainCover: Cover;
+	    mainCover: Relationship;
 	    /**
 	     * Array of tags for this manga
 	     * @type {Tag[]}
@@ -1235,8 +1242,8 @@ declare module 'mangadex-full-api' {
 	    getCovers(): Promise<Cover[]>;
 	    /**
 	     * Returns a feed of this manga's chapters.
-	     * The the value of 'manga' for each chapter instance will not be filled since this method is called from that very manga instance
 	     * @param {FeedParameterObject|Number} [parameterObject] Either a parameter object or a number representing the limit
+	     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	     * @returns {Promise<Chapter[]>}
 	     */
 	    getFeed(parameterObject?: number | {
@@ -1264,7 +1271,7 @@ declare module 'mangadex-full-api' {
 	            createdAt: 'asc' | 'desc';
 	            updatedAt: 'asc' | 'desc';
 	        };
-	    }): Promise<Chapter[]>;
+	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
 	     * Adds this manga to a list
 	     * @param {List|String} list

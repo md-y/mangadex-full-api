@@ -6,7 +6,7 @@
   "types": "./types/index.d.ts",
   "scripts": {
     "test": "mocha",
-    "gen-types": "tsc"
+    "gen-types": "tsc && node ./types/compress-types.js"
   },
   "engines": {
     "node": ">=10.12.0"
