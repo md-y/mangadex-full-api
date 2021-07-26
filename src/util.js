@@ -3,6 +3,11 @@
 const HTTPS = require('https');
 const APIRequestError = require('./internal/requesterror.js');
 
+const MAX_REQUESTS_PER_SECOND = 5; // The global minimum limit for normal endpoints is 5 requests per second
+const MAX_POSSIBLE_LIMIT = 10000; // MD has a hard max of 10000 items for every endpoint
+var requestHeaders = {};
+var activeRequestCount = 0;
+
 /**
  * Being a browser only affects how tokens are stored, so localStorage's existance is the only thing checked
  * @returns {Boolean}
@@ -16,7 +21,6 @@ function isBrowser() {
 }
 exports.isBrowser = isBrowser;
 
-var requestHeaders = {};
 /**
  * Sets a specific header value to be used by every api request
  * @param {String} name Header key
@@ -40,10 +44,16 @@ if (!isBrowser()) {
  * @returns {Promise<Object>}
  */
 function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         if (endpoint === undefined || typeof endpoint !== 'string') reject(new Error('Invalid Argument(s)'));
         if (endpoint[0] !== '/') endpoint = `/${endpoint}`;
-        // console.log(endpoint, 'authorization' in requestHeaders);
+
+        activeRequestCount++;
+        if (activeRequestCount >= MAX_REQUESTS_PER_SECOND) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.floor(activeRequestCount / MAX_REQUESTS_PER_SECOND)));
+        }
+
+        // console.log(endpoint, 'authorization' in requestHeaders, activeRequestCount);
 
         const req = HTTPS.request({
             hostname: 'api.mangadex.org',
@@ -58,6 +68,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
             });
 
             res.on('end', () => {
+                activeRequestCount--;
                 if ('set-cookie' in res.headers && !isBrowser()) registerHeader('cookie', res.headers['set-cookie'].concat(requestHeaders['cookie']).join('; '));
                 if (res.headers['content-type'] !== undefined && res.headers['content-type'].includes('json')) {
                     try {
@@ -73,8 +84,9 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                         ), APIRequestError.INVALID_RESPONSE);
                     }
                 } else {
-                    if (res.statusCode === 429 || res.toLowerCase().includes('rate limited')) reject(new APIRequestError('You have been rate limited', APIRequestError.INVALID_RESPONSE));
+                    if (res.statusCode === 429) reject(new APIRequestError('You have been rate limited', APIRequestError.INVALID_RESPONSE));
                     else if (res.statusCode >= 400) reject(new APIRequestError(`Returned HTML error page ${res}`, APIRequestError.INVALID_RESPONSE));
+                    else if (res.statusCode >= 300) reject(new APIRequestError(`Bad/moved endpoint: ${endpoint}`, APIRequestError.INVALID_REQUEST));
                     else resolve(responsePayload);
                 }
             });
@@ -148,15 +160,29 @@ exports.apiParameterRequest = apiParameterRequest;
 async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, defaultLimit = 10) {
     if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
     let limit = 'limit' in parameterObject ? parameterObject.limit : defaultLimit;
-    if (limit <= 0) return [];
-    let res = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
-    let finalArray = res.results;
-    if (!(finalArray instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
-    if (limit > maxLimit && finalArray.length === maxLimit && res.offset + res.limit < res.total) {
-        parameterObject.limit = limit - maxLimit;
-        parameterObject.offset = ('offset' in parameterObject ? parameterObject.offset : 0) + maxLimit;
-        let newRes = await apiSearchRequest(baseEndpoint, parameterObject);
-        finalArray = finalArray.concat(newRes);
+    let initialOffset = 'offset' in parameterObject ? parameterObject.offset : 0;
+    if (limit > MAX_POSSIBLE_LIMIT) limit = MAX_POSSIBLE_LIMIT;
+    if (initialOffset > MAX_POSSIBLE_LIMIT - Math.min(maxLimit, limit)) limit = MAX_POSSIBLE_LIMIT - initialOffset;
+    if (limit <= 0 || initialOffset >= MAX_POSSIBLE_LIMIT) return [];
+
+    // Need at least one request to find the total items available:
+    let initialResponse = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
+    if (!(initialResponse.results instanceof Array) || typeof initialResponse.total !== 'number') {
+        throw new APIRequestError(`The API did not respond the correct structure for a search request:\n${initialResponse}`, APIRequestError.INVALID_RESPONSE);
+    }
+    // Return if only one request is needed (either the limit is low enough for one request or one request returned all available results)
+    if (limit <= maxLimit || initialResponse.total <= initialResponse.results.length + initialOffset) return initialResponse.results;
+
+    // Subsequent concurrent requests for the rest of the results:
+    limit = Math.min(initialResponse.total, limit);
+    let promises = [];
+    for (let offset = initialOffset + maxLimit; offset < limit; offset += maxLimit) {
+        promises.push(apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit - offset, maxLimit), offset: offset }));
+    }
+    let finalArray = initialResponse.results;
+    for (let elem of await Promise.all(promises)) {
+        if (!(elem.results instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+        finalArray = finalArray.concat(elem.results);
     }
     return finalArray;
 }
@@ -193,10 +219,12 @@ async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty =
     });
     let searchParameters = { limit: limit };
     let finalArray = [];
+    let promises = [];
     while (ids.length > 0) {
         searchParameters[searchProperty] = ids.splice(0, 100);
-        finalArray = finalArray.concat(await searchFunction(searchParameters));
+        promises.push(searchFunction(searchParameters));
     }
+    for (let i of await Promise.all(promises)) finalArray = finalArray.concat(i);
     return finalArray;
 }
 exports.getMultipleIds = getMultipleIds;
