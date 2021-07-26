@@ -23,9 +23,9 @@ describe('Chapter', function () {
             assert.strictEqual(chapter.id, targetId);
             assert.strictEqual(typeof chapter.title, 'string');
         });
-        it(`manga is a manga object`, async function () {
+        it(`manga relationship is cached`, async function () {
             let chapter = await MFA.Chapter.get(targetId, true);
-            assert.strictEqual(chapter.manga instanceof MFA.Manga, true);
+            assert.strictEqual(chapter.manga.cached, true);
         });
     });
     describe('getReadablePages()', function () {

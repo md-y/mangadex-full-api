@@ -64,16 +64,6 @@ function login(username, password, cacheLocation) {
 }
 exports.login = login;
 
-/**
- * A shortcut for resolving all relationships in an array
- * @param {Relationship[]} relationshipArray
- * @returns {Promise}
- */
-function resolveArray(relationshipArray) {
-    return Promise.all(relationshipArray.map(elem => elem.resolve()));
-}
-exports.resolveArray = resolveArray;
-
 // Register class types to bypass circular references
 const Relationship = require('./internal/relationship.js');
 Relationship.registerType('author', Author);
@@ -82,5 +72,17 @@ Relationship.registerType('manga', Manga);
 Relationship.registerType('chapter', Chapter);
 Relationship.registerType('scanlation_group', Group);
 Relationship.registerType('user', User);
+Relationship.registerType('leader', User);
+Relationship.registerType('member', User);
 Relationship.registerType('custom_list', List);
 Relationship.registerType('cover_art', Cover);
+
+/**
+ * A shortcut for resolving all relationships in an array
+ * @param {Relationship[]} relationshipArray
+ * @returns {Promise}
+ */
+ function resolveArray(relationshipArray) {
+    return Relationship.resolveAll(relationshipArray);
+}
+exports.resolveArray = resolveArray;

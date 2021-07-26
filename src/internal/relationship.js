@@ -18,6 +18,13 @@ class Relationship {
          * @type {String}
          */
         this.type = data.type;
+
+        /**
+         * True if this relationship will instantly return with an included object instead of sending a request
+         * when resolve() is called
+         * @type {Boolean}
+         */
+        this.cached = data.cached === true;
     }
 
     /**
@@ -51,10 +58,11 @@ class Relationship {
         return dataArray.filter(elem => elem.type === type).map(elem => {
             if ('attributes' in elem) {
                 let obj = new classObject({ data: elem, relationships: relationshipArray });
-                obj.resolve = () => {
+                let rel = new Relationship({ id: elem.id, type: type, cached: true });
+                rel.resolve = () => {
                     return Promise.resolve(obj);
                 };
-                return obj;
+                return rel;
             }
             else return new Relationship(elem);
         });
@@ -71,6 +79,19 @@ class Relationship {
         if (name in Relationship.types) return;
         if (!('get' in classObject)) throw new Error(`Attempted to register a class object with no 'get' method`);
         Relationship.types[name] = classObject;
+    }
+
+    /**
+     * Resolves an array of relationships
+     * @private
+     * @param {Relationship[]} relationshipArray
+     */
+    static resolveAll(relationshipArray) {
+        if (relationshipArray.length === 0) return [];
+        let classObject = Relationship.types[relationshipArray[0].type];
+        if (relationshipArray.some(elem => !elem.cached) && 'getMultiple' in classObject) {
+            return classObject.getMultiple(...relationshipArray.map(elem => elem.id));
+        } else return Promise.all(relationshipArray.map(elem => elem.resolve()));
     }
 }
 
