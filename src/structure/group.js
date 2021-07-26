@@ -49,16 +49,52 @@ class Group {
         this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
 
         /**
-         * This group's leader
-         * @type {User}
+         * Is this group locked?
+         * @type {Boolean}
          */
-        this.leader = context.data.attributes.leader ? new User({ data: context.data.attributes.leader }) : null;
+        this.locked = context.data.attributes.locked === true;
+
+        /**
+         * Website URL for this group
+         * @type {String}
+         */
+        this.website = context.data.attributes.website;
+
+        /**
+        * IRC Server for this group
+        * @type {String}
+        */
+        this.ircServer = context.data.attributes.ircServer;
+
+        /**
+        * IRC Channel for this group
+        * @type {String}
+        */
+        this.ircChannel = context.data.attributes.ircChannel;
+
+        /**
+        * Discord Invite Code for this group
+        * @type {String}
+        */
+        this.discord = context.data.attributes.discord;
+
+        /**
+         * The group's custom description
+         * @type {String}
+         */
+        this.description = context.data.attributes.description;
+
+        /**
+         * This group's leader
+         * @type {Relationship}
+         */
+        this.leader = Relationship.convertType('leader', context.relationships, this).pop();
 
         /**
          * Array of this group's members
-         * @type {User[]}
+         * @type {Relationship[]}
          */
-        this.members = (context.data.attributes.members || []).map(elem => new User({ data: elem }));
+        this.members = Relationship.convertType('member', context.relationships, this);
     }
 
     /**
@@ -99,7 +135,7 @@ class Group {
      * @returns {Promise<Group>}
      */
     static async get(id, includeSubObjects = false) {
-        return new Group(await Util.apiRequest(`/group/${id}${includeSubObjects ? '?includes[]=user' : ''}`));
+        return new Group(await Util.apiRequest(`/group/${id}${includeSubObjects ? '?includes[]=leader&includes[]=member' : ''}`));
     }
 
     /**
@@ -121,10 +157,10 @@ class Group {
      * @param {Number} [offset=0] How many groups to skip before returning
      * @returns {Promise<Group[]>}
      */
-    static async getFollowedGroups(limit = 100, offset = 10) {
+    static async getFollowedGroups(limit = 100, offset = 0) {
         await AuthUtil.validateTokens();
         return await Util.apiCastedRequest('/user/follows/group', Group, { limit: limit, offset: offset });
-        // Currently (6/16/21) MD does not support includes[]=user for this endpoint
+        // Currently (7/25/21) MD does not support includes[]=leader&includes[]=member for this endpoint
     }
 
     /**

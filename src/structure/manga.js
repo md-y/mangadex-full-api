@@ -59,7 +59,7 @@ class Manga {
          * Is this Manga locked?
          * @type {Boolean}
          */
-        this.isLocked = context.data.attributes.isLocked;
+        this.isLocked = context.data.attributes.isLocked === true;
 
         /**
          * Link object representing links to other websites about this manga
@@ -75,16 +75,16 @@ class Manga {
         this.originalLanguage = context.data.attributes.originalLanguage;
 
         /**
-         * Number this manga's last volume based on the default feed order
-         * @type {Number}
+         * This manga's last volume based on the default feed order
+         * @type {String}
          */
-        this.lastVolume = context.data.attributes.lastVolume !== null && !isNaN(context.data.attributes.lastVolume) ? parseFloat(context.data.attributes.lastVolume) : null;
+        this.lastVolume = context.data.attributes.lastVolume;
 
         /**
-         * Number of this manga's last chapter based on the default feed order
-         * @type {Number}
+         * This manga's last chapter based on the default feed order
+         * @type {String}
          */
-        this.lastChapter = context.data.attributes.lastChapter !== null && !isNaN(context.data.attributes.lastChapter) ? parseFloat(context.data.attributes.lastChapter) : null;
+        this.lastChapter = context.data.attributes.lastChapter;
 
         /**
          * Publication demographic of this manga
@@ -295,7 +295,7 @@ class Manga {
         await AuthUtil.validateTokens();
         let params = { limit: limit, offset: offset };
         return await Util.apiCastedRequest('/user/follows/manga', Manga, params);
-        // Currently (6/16/21) MD does not support includes[]=artist&includes[]=author&includes[]=cover_art for this endpoint
+        // Currently (7/25/21) MD does not support includes[]=artist&includes[]=author&includes[]=cover_art for this endpoint
     }
 
     /**
@@ -341,6 +341,17 @@ class Manga {
     static async setReadingStatus(id, status = null) {
         await AuthUtil.validateTokens();
         await Util.apiRequest(`/manga/${id}/status`, 'POST', { status: status });
+    }
+
+    /**
+     * Returns the reading status for every manga for this logged in user as an object with Manga ids as keys
+     * @returns {Object.<string, 'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'>}
+     */
+    static async getAllReadingStatuses() {
+        await AuthUtil.validateTokens();
+        let res = await Util.apiRequest(`/manga/status`);
+        if (!('statuses' in res)) throw new APIRequestError('The API did not respond with a statuses object when it was expected to', APIRequestError.INVALID_RESPONSE);
+        return res.statuses;
     }
 
     /**
@@ -391,11 +402,26 @@ class Manga {
     }
 
     /**
+     * @private
+     * @typedef {Object} AggregateChapter
+     * @property {String} AggregateChapter.chapter
+     * @property {Number} AggregateChapter.count
+     */
+
+    /**
+     * @private
+     * @typedef {Object} AggregateVolume
+     * @property {String} AggregateVolume.volume
+     * @property {Number} AggregateVolume.count
+     * @property {Object.<string, AggregateChapter>} AggregateVolume.chapters
+     */
+
+    /**
      * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
      * @param {String} id
      * @param {...String} languages 
-     * @returns {Promise<Object>}
+     * @returns {Promise<Object.<string, AggregateVolume>>}
      */
     static async getAggregate(id, ...languages) {
         if (languages[0] instanceof Array) languages = languages[0];

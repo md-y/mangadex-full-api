@@ -33,9 +33,9 @@ class Cover {
 
         /**
          * Manga volume this is a cover for
-         * @type {Number}
+         * @type {String}
          */
-        this.volume = context.data.attributes.volume !== null && !isNaN(context.data.attributes.volume) ? parseFloat(context.data.attributes.volume) : null;
+        this.volume = context.data.attributes.volume;
 
         /**
          * Description of this cover

@@ -33,16 +33,16 @@ class Chapter {
         if (context.data.attributes === undefined) context.data.attributes = {};
 
         /**
-         * Number this chapter's volume
-         * @type {Number}
+         * This chapter's volume number/string
+         * @type {String}
          */
-        this.volume = context.data.attributes.volume !== null && !isNaN(context.data.attributes.volume) ? parseFloat(context.data.attributes.volume) : null;
+        this.volume = context.data.attributes.volume;
 
         /**
-         * Number of this chapter
-         * @type {Number}
+         * This chapter's number/string identifier
+         * @type {String}
          */
-        this.chapter = context.data.attributes.chapter !== null && !isNaN(context.data.attributes.chapter) ? parseFloat(context.data.attributes.chapter) : null;
+        this.chapter = context.data.attributes.chapter;
 
         /**
          * Title of this chapter

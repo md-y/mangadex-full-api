@@ -60,9 +60,9 @@ class List {
 
         /**
          * This list's owner
-         * @type {User}
+         * @type {Relationship}
          */
-        this.owner = context.data.attributes.owner ? new User({ data: context.data.attributes.owner }) : null;
+        this.owner = Relationship.convertType('user', context.relationships, this).pop();
     }
 
     /**
@@ -82,8 +82,7 @@ class List {
      */
     static async get(id, includeSubObjects = false) {
         if (AuthUtil.canAuth) await AuthUtil.validateTokens();
-        return new List(await Util.apiRequest(`/list/${id}${includeSubObjects ? '?includes[]=manga' : ''}`));
-        // Currently (6/16/21) MD allows includes[]=manga for this endpoint, but it does nothing
+        return new List(await Util.apiRequest(`/list/${id}${includeSubObjects ? '?includes[]=manga&includes[]=user' : ''}`));
     }
 
     /**
@@ -142,29 +141,33 @@ class List {
 
     /**
      * Returns all lists created by the logged in user.
-     * As of the MD v5 Beta, this returns an empty list.
      * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
      * @param {Number} [offset=0] How many lists to skip before returning
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<List[]>}
      */
-    static async getLoggedInUserLists(limit = 100, offset = 10) {
+    static async getLoggedInUserLists(limit = 100, offset = 0, includeSubObjects = false) {
         await AuthUtil.validateTokens();
-        return await Util.apiCastedRequest('/user/list', List, { limit: limit, offset: offset });
-        // Currently (6/16/21) MD does not support includes[]=manga for this endpoint
+        let res = await Util.apiSearchRequest('/user/list', { limit: limit, offset: offset });
+        return await Promise.all(res.map(elem => List.get((elem.id || elem.data.id), includeSubObjects)));
+        // Currently (7/25/21) this endpoint does not include relationships, so each list must be individually 
+        // requested (getMultipe does not exist for Lists either). includes[] also does not work natively
     }
 
     /**
      * Returns all public lists created by a user.
-     * As of the MD v5 Beta, this returns an empty list.
      * @param {String|User|Relationship} user
      * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
      * @param {Number} [offset=0] How many lists to skip before returning
+     * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<List[]>}
      */
-    static async getUserLists(user, limit = 100, offset = 10) {
+    static async getUserLists(user, limit = 100, offset = 0, includeSubObjects = false) {
         if (typeof user !== 'string') user = user.id;
-        return await Util.apiCastedRequest(`/user/${user}/list`, List, { limit: limit, offset: offset });
-        // Currently (6/16/21) MD does not support includes[]=manga for this endpoint
+        let res = await Util.apiSearchRequest(`/user/${user}/list`, { limit: limit, offset: offset });
+        return await Promise.all(res.map(elem => List.get((elem.id || elem.data.id), includeSubObjects)));
+        // Currently (7/25/21) this endpoint does not include relationships, so each list must be individually 
+        // requested (getMultipe does not exist for Lists either). includes[] also does not work natively
     }
 
     /**
@@ -194,7 +197,6 @@ class List {
         if (AuthUtil.canAuth) await AuthUtil.validateTokens();
         if (includeSubObjects) parameterObject.includes = ['scanlation_group', 'manga', 'user'];
         return await Util.apiCastedRequest(`/list/${id}/feed`, Chapter, parameterObject, 500, 100);
-        // Currently (6/16/21) MD allows includes[]=manga&includes[]=scanlation_group&includes[]=user for this endpoint, but it does nothing
     }
 
     /**
