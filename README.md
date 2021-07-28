@@ -49,11 +49,9 @@ MFA.login('username', 'password123', './bin/.md_cache').then(async () => {
 
     // Get who uploaded the chapter:
     let uploader = await chapter.uploader.resolve();
-    // It is recommended that any property that COULD be a Relationship is resolved like above since even if the endpoint resolves sub-objects (like getFeed(..., true)),
-    // if there is an error, MD returns a normal Relationship object. If the object is valid, however, it returns an instantly-resolving promise with the valid data.
 
     // Get the names of the groups who scanlated the chapter:
-    let resolvedGroups = await MFA.resolveArray(chapter.groups) // You can also resolve Relationship arrays with this shortcut, or do it yourself with Promise.all()
+    let resolvedGroups = await MFA.resolveArray(chapter.groups) // You can resolve Relationship arrays with this shortcut
     let groupNames = resolvedGroups.map(elem => elem.name);
 
     console.log(`Manga "${manga.title}" has a chapter titled "${chapter.title}" that was uploaded by ${uploader.username} and scanlated by ${groupNames.join('and')}.`);
@@ -267,8 +265,8 @@ Represents a chapter with readable pageshttps://api.mangadex.org/docs.html#tag/
     * [new Chapter(context)](#new_Chapter_new)
     * _instance_
         * [.id](#Chapter+id) : <code>String</code>
-        * [.volume](#Chapter+volume) : <code>Number</code>
-        * [.chapter](#Chapter+chapter) : <code>Number</code>
+        * [.volume](#Chapter+volume) : <code>String</code>
+        * [.chapter](#Chapter+chapter) : <code>String</code>
         * [.title](#Chapter+title) : <code>String</code>
         * [.translatedLanguage](#Chapter+translatedLanguage) : <code>String</code>
         * [.hash](#Chapter+hash) : <code>String</code>
@@ -307,14 +305,14 @@ Mangadex id for this object
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+volume"></a>
 
-### chapter.volume : <code>Number</code>
-Number this chapter's volume
+### chapter.volume : <code>String</code>
+This chapter's volume number/string
 
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+chapter"></a>
 
-### chapter.chapter : <code>Number</code>
-Number of this chapter
+### chapter.chapter : <code>String</code>
+This chapter's number/string identifier
 
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+title"></a>
@@ -474,7 +472,7 @@ Represents the cover art of a manga volumehttps://api.mangadex.org/docs.html#ta
     * [new Cover(context)](#new_Cover_new)
     * _instance_
         * [.id](#Cover+id) : <code>String</code>
-        * [.volume](#Cover+volume) : <code>Number</code>
+        * [.volume](#Cover+volume) : <code>String</code>
         * [.description](#Cover+description) : <code>String</code>
         * [.createdAt](#Cover+createdAt) : <code>Date</code>
         * [.updatedAt](#Cover+updatedAt) : <code>Date</code>
@@ -508,7 +506,7 @@ Mangadex id for this object
 **Kind**: instance property of [<code>Cover</code>](#Cover)  
 <a name="Cover+volume"></a>
 
-### cover.volume : <code>Number</code>
+### cover.volume : <code>String</code>
 Manga volume this is a cover for
 
 **Kind**: instance property of [<code>Cover</code>](#Cover)  
@@ -631,8 +629,14 @@ Represents a scanlation grouphttps://api.mangadex.org/docs.html#tag/Group
         * [.name](#Group+name) : <code>String</code>
         * [.createdAt](#Group+createdAt) : <code>Date</code>
         * [.updatedAt](#Group+updatedAt) : <code>Date</code>
-        * [.leader](#Group+leader) : [<code>User</code>](#User)
-        * [.members](#Group+members) : [<code>Array.&lt;User&gt;</code>](#User)
+        * [.locked](#Group+locked) : <code>Boolean</code>
+        * [.website](#Group+website) : <code>String</code>
+        * [.ircServer](#Group+ircServer) : <code>String</code>
+        * [.ircChannel](#Group+ircChannel) : <code>String</code>
+        * [.discord](#Group+discord) : <code>String</code>
+        * [.description](#Group+description) : <code>String</code>
+        * [.leader](#Group+leader) : [<code>Relationship</code>](#Relationship)
+        * [.members](#Group+members) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.changeFollowship([follow])](#Group+changeFollowship) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
     * _static_
         * [.search([searchParameters], [includeSubObjects])](#Group.search) ⇒ <code>Promise.&lt;Array.&lt;Group&gt;&gt;</code>
@@ -676,15 +680,51 @@ The date of this group's creation
 The date the group was last updated
 
 **Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+locked"></a>
+
+### group.locked : <code>Boolean</code>
+Is this group locked?
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+website"></a>
+
+### group.website : <code>String</code>
+Website URL for this group
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+ircServer"></a>
+
+### group.ircServer : <code>String</code>
+IRC Server for this group
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+ircChannel"></a>
+
+### group.ircChannel : <code>String</code>
+IRC Channel for this group
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+discord"></a>
+
+### group.discord : <code>String</code>
+Discord Invite Code for this group
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+description"></a>
+
+### group.description : <code>String</code>
+The group's custom description
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
 <a name="Group+leader"></a>
 
-### group.leader : [<code>User</code>](#User)
+### group.leader : [<code>Relationship</code>](#Relationship)
 This group's leader
 
 **Kind**: instance property of [<code>Group</code>](#Group)  
 <a name="Group+members"></a>
 
-### group.members : [<code>Array.&lt;User&gt;</code>](#User)
+### group.members : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
 Array of this group's members
 
 **Kind**: instance property of [<code>Group</code>](#Group)  
@@ -784,7 +824,7 @@ Represents a custom, user-created list of mangahttps://api.mangadex.org/docs.ht
         * [.version](#List+version) : <code>String</code>
         * [.visibility](#List+visibility) : <code>&#x27;public&#x27;</code> \| <code>&#x27;private&#x27;</code>
         * [.manga](#List+manga) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
-        * [.owner](#List+owner) : [<code>User</code>](#User)
+        * [.owner](#List+owner) : [<code>Relationship</code>](#Relationship)
         * [.public](#List+public) : <code>Boolean</code>
         * [.getFeed([parameterObject])](#List+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.delete()](#List+delete) ⇒ <code>Promise.&lt;void&gt;</code>
@@ -799,8 +839,8 @@ Represents a custom, user-created list of mangahttps://api.mangadex.org/docs.ht
         * [.delete(id)](#List.delete) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.addManga(listId, manga)](#List.addManga) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.removeManga(listId, manga)](#List.removeManga) ⇒ <code>Promise.&lt;void&gt;</code>
-        * [.getLoggedInUserLists([limit], [offset])](#List.getLoggedInUserLists) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
-        * [.getUserLists(user, [limit], [offset])](#List.getUserLists) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+        * [.getLoggedInUserLists([limit], [offset], [includeSubObjects])](#List.getLoggedInUserLists) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+        * [.getUserLists(user, [limit], [offset], [includeSubObjects])](#List.getUserLists) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
         * [.getFeed(id, parameterObject, [includeSubObjects])](#List.getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
 
 <a name="new_List_new"></a>
@@ -845,7 +885,7 @@ Relationships to all of the manga in this custom list
 **Kind**: instance property of [<code>List</code>](#List)  
 <a name="List+owner"></a>
 
-### list.owner : [<code>User</code>](#User)
+### list.owner : [<code>Relationship</code>](#Relationship)
 This list's owner
 
 **Kind**: instance property of [<code>List</code>](#List)  
@@ -989,8 +1029,8 @@ Removes a manga from a custom list. Must be logged in
 
 <a name="List.getLoggedInUserLists"></a>
 
-### List.getLoggedInUserLists([limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
-Returns all lists created by the logged in user.As of the MD v5 Beta, this returns an empty list.
+### List.getLoggedInUserLists([limit], [offset], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+Returns all lists created by the logged in user.
 
 **Kind**: static method of [<code>List</code>](#List)  
 
@@ -998,11 +1038,12 @@ Returns all lists created by the logged in user.As of the MD v5 Beta, this retu
 | --- | --- | --- | --- |
 | [limit] | <code>Number</code> | <code>100</code> | Amount of lists to return (0 to Infinity) |
 | [offset] | <code>Number</code> | <code>0</code> | How many lists to skip before returning |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="List.getUserLists"></a>
 
-### List.getUserLists(user, [limit], [offset]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
-Returns all public lists created by a user.As of the MD v5 Beta, this returns an empty list.
+### List.getUserLists(user, [limit], [offset], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;List&gt;&gt;</code>
+Returns all public lists created by a user.
 
 **Kind**: static method of [<code>List</code>](#List)  
 
@@ -1011,6 +1052,7 @@ Returns all public lists created by a user.As of the MD v5 Beta, this returns a
 | user | <code>String</code> \| [<code>User</code>](#User) \| [<code>Relationship</code>](#Relationship) |  |  |
 | [limit] | <code>Number</code> | <code>100</code> | Amount of lists to return (0 to Infinity) |
 | [offset] | <code>Number</code> | <code>0</code> | How many lists to skip before returning |
+| [includeSubObjects] | <code>Boolean</code> | <code>false</code> | Attempt to resolve sub objects (eg author, artists, etc) when available through the base request |
 
 <a name="List.getFeed"></a>
 
@@ -1042,8 +1084,8 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.isLocked](#Manga+isLocked) : <code>Boolean</code>
         * [.links](#Manga+links) : [<code>Links</code>](#Links)
         * [.originalLanguage](#Manga+originalLanguage) : <code>String</code>
-        * [.lastVolume](#Manga+lastVolume) : <code>Number</code>
-        * [.lastChapter](#Manga+lastChapter) : <code>Number</code>
+        * [.lastVolume](#Manga+lastVolume) : <code>String</code>
+        * [.lastChapter](#Manga+lastChapter) : <code>String</code>
         * [.publicationDemographic](#Manga+publicationDemographic) : <code>&#x27;shounen&#x27;</code> \| <code>&#x27;shoujo&#x27;</code> \| <code>&#x27;josei&#x27;</code> \| <code>&#x27;seinen&#x27;</code>
         * [.status](#Manga+status) : <code>&#x27;ongoing&#x27;</code> \| <code>&#x27;completed&#x27;</code> \| <code>&#x27;hiatus&#x27;</code> \| <code>&#x27;cancelled&#x27;</code>
         * [.year](#Manga+year) : <code>Number</code>
@@ -1077,11 +1119,12 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.getAllTags()](#Manga.getAllTags) ⇒ <code>Promise.&lt;Array.&lt;Tag&gt;&gt;</code>
         * [.getReadingStatus(id)](#Manga.getReadingStatus) ⇒ <code>Promise.&lt;(&#x27;reading&#x27;\|&#x27;on\_hold&#x27;\|&#x27;plan\_to\_read&#x27;\|&#x27;dropped&#x27;\|&#x27;re\_reading&#x27;\|&#x27;completed&#x27;)&gt;</code>
         * [.setReadingStatus(id, [status])](#Manga.setReadingStatus) ⇒ <code>Promise.&lt;void&gt;</code>
+        * [.getAllReadingStatuses()](#Manga.getAllReadingStatuses) ⇒ <code>Object.&lt;string, (&#x27;reading&#x27;\|&#x27;on\_hold&#x27;\|&#x27;plan\_to\_read&#x27;\|&#x27;dropped&#x27;\|&#x27;re\_reading&#x27;\|&#x27;completed&#x27;)&gt;</code>
         * [.getFollowedFeed([parameterObject], [includeSubObjects])](#Manga.getFollowedFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.changeFollowship(id, [follow])](#Manga.changeFollowship) ⇒ <code>Promise.&lt;void&gt;</code>
         * [.getReadChapters(...ids)](#Manga.getReadChapters) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.getCovers(...id)](#Manga.getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
-        * [.getAggregate(id, ...languages)](#Manga.getAggregate) ⇒ <code>Promise.&lt;Object&gt;</code>
+        * [.getAggregate(id, ...languages)](#Manga.getAggregate) ⇒ <code>Promise.&lt;Object.&lt;string, AggregateVolume&gt;&gt;</code>
 
 <a name="new_Manga_new"></a>
 
@@ -1137,14 +1180,14 @@ Link object representing links to other websites about this mangahttps://api.ma
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+lastVolume"></a>
 
-### manga.lastVolume : <code>Number</code>
-Number this manga's last volume based on the default feed order
+### manga.lastVolume : <code>String</code>
+This manga's last volume based on the default feed order
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+lastChapter"></a>
 
-### manga.lastChapter : <code>Number</code>
-Number of this manga's last chapter based on the default feed order
+### manga.lastChapter : <code>String</code>
+This manga's last chapter based on the default feed order
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
 <a name="Manga+publicationDemographic"></a>
@@ -1422,6 +1465,12 @@ Sets the logged in user's reading status for this manga. Call without arguments
 | id | <code>String</code> |  | 
 | [status] | <code>&#x27;reading&#x27;</code> \| <code>&#x27;on\_hold&#x27;</code> \| <code>&#x27;plan\_to\_read&#x27;</code> \| <code>&#x27;dropped&#x27;</code> \| <code>&#x27;re\_reading&#x27;</code> \| <code>&#x27;completed&#x27;</code> | <code></code> | 
 
+<a name="Manga.getAllReadingStatuses"></a>
+
+### Manga.getAllReadingStatuses() ⇒ <code>Object.&lt;string, (&#x27;reading&#x27;\|&#x27;on\_hold&#x27;\|&#x27;plan\_to\_read&#x27;\|&#x27;dropped&#x27;\|&#x27;re\_reading&#x27;\|&#x27;completed&#x27;)&gt;</code>
+Returns the reading status for every manga for this logged in user as an object with Manga ids as keys
+
+**Kind**: static method of [<code>Manga</code>](#Manga)  
 <a name="Manga.getFollowedFeed"></a>
 
 ### Manga.getFollowedFeed([parameterObject], [includeSubObjects]) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
@@ -1470,7 +1519,7 @@ Returns all covers for a manga
 
 <a name="Manga.getAggregate"></a>
 
-### Manga.getAggregate(id, ...languages) ⇒ <code>Promise.&lt;Object&gt;</code>
+### Manga.getAggregate(id, ...languages) ⇒ <code>Promise.&lt;Object.&lt;string, AggregateVolume&gt;&gt;</code>
 Returns a summary of every chapter for a manga including each of their numbers and volumes they belong tohttps://api.mangadex.org/docs.html#operation/post-manga
 
 **Kind**: static method of [<code>Manga</code>](#Manga)  
@@ -1706,6 +1755,7 @@ Represents a relationship from one Mangadex object to another such as a manga, a
 * [Relationship](#Relationship)
     * [.id](#Relationship+id) : <code>String</code>
     * [.type](#Relationship+type) : <code>String</code>
+    * [.cached](#Relationship+cached) : <code>Boolean</code>
     * [.resolve()](#Relationship+resolve) ⇒ <code>Promise.&lt;(Manga\|Author\|Chapter\|User\|Group\|List\|Cover)&gt;</code>
 
 <a name="Relationship+id"></a>
@@ -1718,6 +1768,12 @@ Id of the object this is a relationship to
 
 ### relationship.type : <code>String</code>
 The type of the object this is a relationship to
+
+**Kind**: instance property of [<code>Relationship</code>](#Relationship)  
+<a name="Relationship+cached"></a>
+
+### relationship.cached : <code>Boolean</code>
+True if this relationship will instantly return with an included object instead of sending a requestwhen resolve() is called
 
 **Kind**: instance property of [<code>Relationship</code>](#Relationship)  
 <a name="Relationship+resolve"></a>
