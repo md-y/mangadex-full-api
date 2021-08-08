@@ -93,6 +93,22 @@ class Chapter {
         this.saverPageNames = context.data.attributes.dataSaver;
 
         /**
+         * Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
+         * @type {Boolean}
+         */
+        this.isExternal = 'externalUrl' in context.data.attributes;
+        if (this.isExternal) {
+            this.pageNames = [];
+            this.saverPageNames = [];
+        }
+
+        /**
+         * The external URL to this chapter if it is not hosted on MD. Null if it is hosted on MD
+         * @type {String}
+         */
+        this.externalUrl = this.isExternal ? context.data.attributes.externalUrl : null;
+
+        /**
          * The scanlation groups that are attributed to this chapter
          * @type {Relationship[]}
          */
@@ -201,6 +217,7 @@ class Chapter {
      * @returns {Promise<String[]>}
      */
     async getReadablePages(saver = false) {
+        if (this.isExternal) throw new Error('Cannot get readable pages for an external chapter.');
         let res = await Util.apiRequest(`/at-home/server/${this.id}`);
         return (saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`);
     }
