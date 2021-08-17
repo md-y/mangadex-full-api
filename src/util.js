@@ -5,6 +5,7 @@ const APIRequestError = require('./internal/requesterror.js');
 
 const MAX_REQUESTS_PER_SECOND = 5; // The global minimum limit for normal endpoints is 5 requests per second
 const MAX_POSSIBLE_LIMIT = 10000; // MD has a hard max of 10000 items for every endpoint
+const MULTIPART_BOUNDARY = `mfa-boundary-${Date.now().toString(16)}`;
 var requestHeaders = {};
 var activeRequestCount = 0;
 
@@ -40,7 +41,7 @@ if (!isBrowser()) {
  * Sends a HTTPS request to a specified endpoint
  * @param {String} endpoint API endpoint (ex: /ping)
  * @param {'GET'|'POST'|'PUT'|'DELETE'} [method='GET'] GET, POST, PUT, or DELETE. (Default: GET)
- * @param {Object} [requestPayload] Payload used for POST and DELETE requests
+ * @param {Object|String|Buffer} [requestPayload] Payload used for POST and DELETE requests
  * @returns {Promise<Object>}
  */
 function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
@@ -55,11 +56,18 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
 
         // console.log(endpoint, 'authorization' in requestHeaders, activeRequestCount);
 
+        let localHeaders = { ...requestHeaders };
+        if (method !== 'GET') {
+            if (typeof requestPayload !== 'object') localHeaders['Content-Type'] = `text/plain`;
+            else if (requestPayload instanceof Buffer) localHeaders['Content-Type'] = `multipart/form-data; boundary=${MULTIPART_BOUNDARY}`;
+            else localHeaders['Content-Type'] = 'application/json';
+        }
+
         const req = HTTPS.request({
             hostname: 'api.mangadex.org',
             path: endpoint,
             method: method,
-            headers: method === 'GET' ? requestHeaders : { ...requestHeaders, 'content-type': 'application/json' }
+            headers: localHeaders
         }, (res) => {
             let responsePayload = '';
 
@@ -99,7 +107,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
         });
 
         if (method !== 'GET') {
-            if (typeof requestPayload !== 'string') {
+            if (localHeaders['Content-Type'] === 'application/json') {
                 try {
                     req.write(JSON.stringify(requestPayload));
                 } catch (err) {
@@ -228,3 +236,25 @@ async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty =
     return finalArray;
 }
 exports.getMultipleIds = getMultipleIds;
+
+/**
+ * Returns a buffer to be sent with a multipart POST request
+ * @param {Object[]} files
+ * @returns {Buffer}
+ */
+function createMultipartPayload(files) {
+    let dataArray = [];
+    files.forEach((file, i) => {
+        dataArray.push(
+            `--${MULTIPART_BOUNDARY}\r\nContent-Disposition: form-data; name="file${i}"; filename="${file.name}"\r\nContent-Type: ${file.type}\r\n\r\n`
+        );
+        dataArray.push(file.data);
+        dataArray.push(`\r\n`);
+    });
+    dataArray.push(`--${MULTIPART_BOUNDARY}--\r\n`);
+    return Buffer.concat(dataArray.map(elem => {
+        if (typeof elem === 'string') return Buffer.from(elem, 'utf8');
+        return Buffer.from(elem);
+    }));
+}
+exports.createMultipartPayload = createMultipartPayload;

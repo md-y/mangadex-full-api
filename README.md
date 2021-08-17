@@ -60,6 +60,47 @@ MFA.login('username', 'password123', './bin/.md_cache').then(async () => {
 
 ```
 
+```javascript
+/*
+    Upload a chapter with node modules:
+*/
+const MFA = require('mangadex-full-api');
+const fs = require('fs');
+const path = require('path');
+
+MFA.login('username', 'password123', './bin/.md_cache').then(async () => {
+    let currentSession = await MFA.Manga.getCurrentUploadSession();
+    if (currentSession) {
+        await currentSession.close();
+        console.log('Closed existing session.');
+    }
+
+    let mangaId = 'f9c33607-9180-4ba6-b85c-e4b5faee7192'; // Official test manga
+    let session = await MFA.Manga.createUploadSession(mangaId); 
+    console.log('Created new upload session.');
+
+    let chapterDir = './chapter'; // Directory to retrieve page images
+    let files = fs.readdirSync(chapterDir)
+    await session.uploadPages(files.map(name => {
+        return {
+            data: fs.readFileSync(path.join(chapterDir, name)), // Buffer-like data
+            name: name // The name of this image
+        };
+    }));
+    console.log('Uploaded pages.');
+
+    let chapter = await session.commit({
+        chapter: '0', // Change chapter number
+        volume: null, // Change volume number
+        title: 'New Chapter', // Change chapter name
+        translatedLanguage: 'en'
+    });
+
+    console.log(`Uploaded new chapter at: https://mangadex.org/chapter/${chapter.id}`);
+}).catch(console.error);
+
+```
+
 ## Classes
 
 <dl>
@@ -109,6 +150,10 @@ In other words, this error represents 400 and 500 status code responses.</p>
 </dd>
 <dt><a href="#Tag">Tag</a></dt>
 <dd><p>Represents a manga tag</p>
+</dd>
+<dt><a href="#UploadSession">UploadSession</a></dt>
+<dd><p>Represents a chapter upload session
+<a href="https://api.mangadex.org/docs.html#tag/Upload">https://api.mangadex.org/docs.html#tag/Upload</a></p>
 </dd>
 </dl>
 
@@ -275,6 +320,8 @@ Represents a chapter with readable pageshttps://api.mangadex.org/docs.html#tag/
         * [.publishAt](#Chapter+publishAt) : <code>Date</code>
         * [.pageNames](#Chapter+pageNames) : <code>Array.&lt;String&gt;</code>
         * [.saverPageNames](#Chapter+saverPageNames) : <code>Array.&lt;String&gt;</code>
+        * [.isExternal](#Chapter+isExternal) : <code>Boolean</code>
+        * [.externalUrl](#Chapter+externalUrl) : <code>String</code>
         * [.groups](#Chapter+groups) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.manga](#Chapter+manga) : [<code>Relationship</code>](#Relationship)
         * [.uploader](#Chapter+uploader) : [<code>Relationship</code>](#Relationship)
@@ -361,6 +408,18 @@ Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve
 
 ### chapter.saverPageNames : <code>Array.&lt;String&gt;</code>
 Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
+
+**Kind**: instance property of [<code>Chapter</code>](#Chapter)  
+<a name="Chapter+isExternal"></a>
+
+### chapter.isExternal : <code>Boolean</code>
+Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
+
+**Kind**: instance property of [<code>Chapter</code>](#Chapter)  
+<a name="Chapter+externalUrl"></a>
+
+### chapter.externalUrl : <code>String</code>
+The external URL to this chapter if it is not hosted on MD. Null if it is hosted on MD
 
 **Kind**: instance property of [<code>Chapter</code>](#Chapter)  
 <a name="Chapter+groups"></a>
@@ -1099,6 +1158,7 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.title](#Manga+title) : <code>String</code>
         * [.altTitles](#Manga+altTitles) : <code>Array.&lt;String&gt;</code>
         * [.description](#Manga+description) : <code>String</code>
+        * [.createUploadSession([...groups])](#Manga+createUploadSession) ⇒ [<code>Promise.&lt;UploadSession&gt;</code>](#UploadSession)
         * [.getCovers()](#Manga+getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
         * [.getFeed([parameterObject], [includeSubObjects])](#Manga+getFeed) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.addToList(list)](#Manga+addToList) ⇒ <code>Promise.&lt;void&gt;</code>
@@ -1125,6 +1185,8 @@ Represents a manga objecthttps://api.mangadex.org/docs.html#tag/Manga
         * [.getReadChapters(...ids)](#Manga.getReadChapters) ⇒ <code>Promise.&lt;Array.&lt;Chapter&gt;&gt;</code>
         * [.getCovers(...id)](#Manga.getCovers) ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
         * [.getAggregate(id, ...languages)](#Manga.getAggregate) ⇒ <code>Promise.&lt;Object.&lt;string, AggregateVolume&gt;&gt;</code>
+        * [.createUploadSession(id, [...groups])](#Manga.createUploadSession) ⇒ [<code>Promise.&lt;UploadSession&gt;</code>](#UploadSession)
+        * [.getCurrentUploadSession()](#Manga.getCurrentUploadSession) ⇒ [<code>Promise.&lt;UploadSession&gt;</code>](#UploadSession)
 
 <a name="new_Manga_new"></a>
 
@@ -1268,6 +1330,17 @@ Alt titles array based on global locale
 Description string based on global locale
 
 **Kind**: instance property of [<code>Manga</code>](#Manga)  
+<a name="Manga+createUploadSession"></a>
+
+### manga.createUploadSession([...groups]) ⇒ [<code>Promise.&lt;UploadSession&gt;</code>](#UploadSession)
+Creates a new upload session with this manga as the target
+
+**Kind**: instance method of [<code>Manga</code>](#Manga)  
+
+| Param | Type |
+| --- | --- |
+| [...groups] | <code>String</code> \| [<code>Group</code>](#Group) | 
+
 <a name="Manga+getCovers"></a>
 
 ### manga.getCovers() ⇒ <code>Promise.&lt;Array.&lt;Cover&gt;&gt;</code>
@@ -1529,6 +1602,24 @@ Returns a summary of every chapter for a manga including each of their numbers a
 | id | <code>String</code> | 
 | ...languages | <code>String</code> | 
 
+<a name="Manga.createUploadSession"></a>
+
+### Manga.createUploadSession(id, [...groups]) ⇒ [<code>Promise.&lt;UploadSession&gt;</code>](#UploadSession)
+Creates a new upload session with a manga as the target
+
+**Kind**: static method of [<code>Manga</code>](#Manga)  
+
+| Param | Type |
+| --- | --- |
+| id | <code>String</code> | 
+| [...groups] | <code>String</code> \| [<code>Group</code>](#Group) | 
+
+<a name="Manga.getCurrentUploadSession"></a>
+
+### Manga.getCurrentUploadSession() ⇒ [<code>Promise.&lt;UploadSession&gt;</code>](#UploadSession)
+Returns the currently open upload session for the logged in user.Returns null if there is no current session
+
+**Kind**: static method of [<code>Manga</code>](#Manga)  
 <a name="User"></a>
 
 ## User
@@ -1897,6 +1988,155 @@ Name string based on global locale
 Description string based on global locale
 
 **Kind**: instance property of [<code>Tag</code>](#Tag)  
+<a name="UploadSession"></a>
+
+## UploadSession
+Represents a chapter upload sessionhttps://api.mangadex.org/docs.html#tag/Upload
+
+**Kind**: global class  
+
+* [UploadSession](#UploadSession)
+    * [new UploadSession(res)](#new_UploadSession_new)
+    * _instance_
+        * [.id](#UploadSession+id) : <code>String</code>
+        * [.manga](#UploadSession+manga) : [<code>Relationship</code>](#Relationship)
+        * [.groups](#UploadSession+groups) : [<code>Relationship</code>](#Relationship)
+        * [.uploader](#UploadSession+uploader) : [<code>Relationship</code>](#Relationship)
+        * [.isCommitted](#UploadSession+isCommitted) : <code>Boolean</code>
+        * [.isProcessed](#UploadSession+isProcessed) : <code>Boolean</code>
+        * [.isDeleted](#UploadSession+isDeleted) : <code>Boolean</code>
+        * [.open](#UploadSession+open) : <code>Boolean</code>
+        * [.pages](#UploadSession+pages) : <code>Array.&lt;String&gt;</code>
+        * [.uploadPages(pages)](#UploadSession+uploadPages) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>
+        * [.close()](#UploadSession+close) ⇒ <code>Promise.&lt;void&gt;</code>
+        * [.commit(chapterDraft, pageOrder)](#UploadSession+commit) ⇒ [<code>Promise.&lt;Chapter&gt;</code>](#Chapter)
+        * [.deletePage(...page)](#UploadSession+deletePage) ⇒ <code>Promise.&lt;void&gt;</code>
+    * _static_
+        * [.open(manga, [...groups])](#UploadSession.open) ⇒ [<code>UploadSession</code>](#UploadSession)
+        * [.getCurrentSession()](#UploadSession.getCurrentSession) ⇒ [<code>UploadSession</code>](#UploadSession) \| <code>null</code>
+
+<a name="new_UploadSession_new"></a>
+
+### new UploadSession(res)
+There is no reason to directly create an upload session object. Use static methods, ie 'open()'.
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| res | <code>Object</code> | API response |
+
+<a name="UploadSession+id"></a>
+
+### uploadSession.id : <code>String</code>
+Id of this upload session
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+manga"></a>
+
+### uploadSession.manga : [<code>Relationship</code>](#Relationship)
+Relationship of the target manga
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+groups"></a>
+
+### uploadSession.groups : [<code>Relationship</code>](#Relationship)
+Relationships to the groups attributed to this chapter
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+uploader"></a>
+
+### uploadSession.uploader : [<code>Relationship</code>](#Relationship)
+Relationship to the uploader (the current user)
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+isCommitted"></a>
+
+### uploadSession.isCommitted : <code>Boolean</code>
+Is this session commited?
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+isProcessed"></a>
+
+### uploadSession.isProcessed : <code>Boolean</code>
+Is this session processed?
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+isDeleted"></a>
+
+### uploadSession.isDeleted : <code>Boolean</code>
+Is this session deleted?
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+open"></a>
+
+### uploadSession.open : <code>Boolean</code>
+Is this session open for uploading pages?
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+pages"></a>
+
+### uploadSession.pages : <code>Array.&lt;String&gt;</code>
+The ids of every page uploaded THIS session
+
+**Kind**: instance property of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+uploadPages"></a>
+
+### uploadSession.uploadPages(pages) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>
+Uploads pages through this upload session
+
+**Kind**: instance method of [<code>UploadSession</code>](#UploadSession)  
+**Returns**: <code>Promise.&lt;Array.&lt;String&gt;&gt;</code> - Returns the ids of every newly uploaded file  
+
+| Param | Type |
+| --- | --- |
+| pages | <code>Array.&lt;PageFileObject&gt;</code> | 
+
+<a name="UploadSession+close"></a>
+
+### uploadSession.close() ⇒ <code>Promise.&lt;void&gt;</code>
+Closes this upload session
+
+**Kind**: instance method of [<code>UploadSession</code>](#UploadSession)  
+<a name="UploadSession+commit"></a>
+
+### uploadSession.commit(chapterDraft, pageOrder) ⇒ [<code>Promise.&lt;Chapter&gt;</code>](#Chapter)
+**Kind**: instance method of [<code>UploadSession</code>](#UploadSession)  
+**Returns**: [<code>Promise.&lt;Chapter&gt;</code>](#Chapter) - Returns the new chapter  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chapterDraft | <code>ChapterDraftObject</code> |  |
+| pageOrder | <code>Array.&lt;String&gt;</code> | Array of file ids sorted by their proper order. Default is the upload order |
+
+<a name="UploadSession+deletePage"></a>
+
+### uploadSession.deletePage(...page) ⇒ <code>Promise.&lt;void&gt;</code>
+Deletes an uploaded page via its upload file id.
+
+**Kind**: instance method of [<code>UploadSession</code>](#UploadSession)  
+
+| Param | Type |
+| --- | --- |
+| ...page | <code>String</code> | 
+
+<a name="UploadSession.open"></a>
+
+### UploadSession.open(manga, [...groups]) ⇒ [<code>UploadSession</code>](#UploadSession)
+Requests MD to start an upload session
+
+**Kind**: static method of [<code>UploadSession</code>](#UploadSession)  
+
+| Param | Type |
+| --- | --- |
+| manga | <code>String</code> \| [<code>Manga</code>](#Manga) | 
+| [...groups] | <code>String</code> \| [<code>Group</code>](#Group) \| [<code>Relationship</code>](#Relationship) | 
+
+<a name="UploadSession.getCurrentSession"></a>
+
+### UploadSession.getCurrentSession() ⇒ [<code>UploadSession</code>](#UploadSession) \| <code>null</code>
+Returns the currently open upload session for the logged in user.Returns null if there is no current session
+
+**Kind**: static method of [<code>UploadSession</code>](#UploadSession)  
 <a name="convertLegacyId"></a>
 
 ## convertLegacyId(type, ...ids) ⇒ <code>Promise.&lt;Array.&lt;String&gt;&gt;</code>

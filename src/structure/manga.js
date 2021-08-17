@@ -11,6 +11,8 @@ const Cover = require('./cover.js');
 const Author = require('./author.js');
 const List = require('./list.js');
 const APIRequestError = require('../internal/requesterror.js');
+const UploadSession = require('../internal/uploadsession.js');
+const Group = require('./group.js');
 
 /**
  * Represents a manga object
@@ -428,6 +430,34 @@ class Manga {
         let res = await Util.apiParameterRequest(`/manga/${id}/aggregate`, { translatedLanguage: languages });
         if (!('volumes' in res)) throw new APIRequestError('The API did not respond with the appropriate aggregate structure', APIRequestError.INVALID_RESPONSE);
         return res.volumes;
+    }
+
+    /**
+     * Creates a new upload session with a manga as the target
+     * @param {String} id
+     * @param {...String|Group} [groups]
+     * @returns {Promise<UploadSession>}
+     */
+    static createUploadSession(id, ...groups) {
+        return UploadSession.open(id, ...groups);
+    }
+
+    /**
+     * Returns the currently open upload session for the logged in user.
+     * Returns null if there is no current session
+     * @returns {Promise<UploadSession>}
+     */
+    static getCurrentUploadSession() {
+        return UploadSession.getCurrentSession();
+    }
+
+    /**
+     * Creates a new upload session with this manga as the target
+     * @param {...String|Group} [groups]
+     * @returns {Promise<UploadSession>}
+     */
+    createUploadSession(...groups) {
+        return Manga.createUploadSession(this.id, ...groups);
     }
 
     /**

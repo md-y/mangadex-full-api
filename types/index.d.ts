@@ -329,6 +329,16 @@ declare module 'mangadex-full-api' {
 	     */
 	    saverPageNames: string[];
 	    /**
+	     * Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
+	     * @type {Boolean}
+	     */
+	    isExternal: boolean;
+	    /**
+	     * The external URL to this chapter if it is not hosted on MD. Null if it is hosted on MD
+	     * @type {String}
+	     */
+	    externalUrl: string;
+	    /**
 	     * The scanlation groups that are attributed to this chapter
 	     * @type {Relationship[]}
 	     */
@@ -1184,6 +1194,19 @@ declare module 'mangadex-full-api' {
 	        };
 	    }>;
 	    /**
+	     * Creates a new upload session with a manga as the target
+	     * @param {String} id
+	     * @param {...String|Group} [groups]
+	     * @returns {Promise<UploadSession>}
+	     */
+	    static createUploadSession(id: string, ...groups?: (string | Group)[]): Promise<UploadSession>;
+	    /**
+	     * Returns the currently open upload session for the logged in user.
+	     * Returns null if there is no current session
+	     * @returns {Promise<UploadSession>}
+	     */
+	    static getCurrentUploadSession(): Promise<UploadSession>;
+	    /**
 	     * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
 	     * @param {Object|String} context Either an API response or Mangadex id
 	     */
@@ -1296,6 +1319,12 @@ declare module 'mangadex-full-api' {
 	     * @type {String}
 	     */
 	    get description(): string;
+	    /**
+	     * Creates a new upload session with this manga as the target
+	     * @param {...String|Group} [groups]
+	     * @returns {Promise<UploadSession>}
+	     */
+	    createUploadSession(...groups?: (string | Group)[]): Promise<UploadSession>;
 	    /**
 	     * Returns all covers for this manga
 	     * @returns {Promise<Cover[]>}
@@ -1644,4 +1673,121 @@ declare class Tag {
      * @type {String}
      */
     get description(): string;
+}
+
+/**
+ * Represents a chapter upload session
+ * https://api.mangadex.org/docs.html#tag/Upload
+ */
+declare class UploadSession {
+    /**
+     * Requests MD to start an upload session
+     * @param {String|Manga} manga
+     * @param  {...String|Group|Relationship} [groups]
+     * @returns {UploadSession}
+     */
+    static open(manga: string | any, ...groups?: (string | any | Relationship)[]): UploadSession;
+    /**
+     * Returns the currently open upload session for the logged in user.
+     * Returns null if there is no current session
+     * @returns {UploadSession|null}
+     */
+    static getCurrentSession(): UploadSession | null;
+    /**
+     * There is no reason to directly create an upload session object. Use static methods, ie 'open()'.
+     * @param {Object} res API response
+     */
+    constructor(res: any);
+    /**
+     * Id of this upload session
+     * @type {String}
+     */
+    id: string;
+    /**
+     * Relationship of the target manga
+     * @type {Relationship}
+     */
+    manga: Relationship;
+    /**
+     * Relationships to the groups attributed to this chapter
+     * @type {Relationship}
+     */
+    groups: Relationship;
+    /**
+     * Relationship to the uploader (the current user)
+     * @type {Relationship}
+     */
+    uploader: Relationship;
+    /**
+     * Is this session commited?
+     * @type {Boolean}
+     */
+    isCommitted: boolean;
+    /**
+     * Is this session processed?
+     * @type {Boolean}
+     */
+    isProcessed: boolean;
+    /**
+    * Is this session deleted?
+    * @type {Boolean}
+    */
+    isDeleted: boolean;
+    /**
+     * Is this session open for uploading pages?
+     * @type {Boolean}
+     */
+    open: boolean;
+    /**
+     * The ids of every page uploaded THIS session
+     * @type {String[]}
+     */
+    pages: string[];
+    /**
+     * @private
+     * @typedef {Object} PageFileObject
+     * @property {Buffer} PageFileObject.data
+     * @property {'jpeg'|'png'|'gif'} [PageFileObject.type]
+     * @property {String} PageFileObject.name
+     */
+    /**
+     * Uploads pages through this upload session
+     * @param {PageFileObject[]} pages
+     * @returns {Promise<String[]>} Returns the ids of every newly uploaded file
+     */
+    uploadPages(pages: {
+        data: any;
+        type?: 'jpeg' | 'png' | 'gif';
+        name: string;
+    }[]): Promise<string[]>;
+    /**
+     * Closes this upload session
+     * @returns {Promise<void>}
+     */
+    close(): Promise<void>;
+    /**
+     * @private
+     * @typedef {Object} ChapterDraftObject
+     * @property {String} ChapterDraftObject.volume
+     * @property {String} ChapterDraftObject.chapter
+     * @property {String} ChapterDraftObject.title
+     * @property {String} ChapterDraftObject.translatedLanguage
+     */
+    /**
+     * @param {ChapterDraftObject} chapterDraft
+     * @param {String[]} pageOrder Array of file ids sorted by their proper order. Default is the upload order
+     * @returns {Promise<Chapter>} Returns the new chapter
+     */
+    commit(chapterDraft: {
+        volume: string;
+        chapter: string;
+        title: string;
+        translatedLanguage: string;
+    }, pageOrder?: string[]): Promise<Chapter>;
+    /**
+     * Deletes an uploaded page via its upload file id.
+     * @param {...String} page
+     * @returns {Promise<void>}
+     */
+    deletePage(page: string[]): Promise<void>;
 }
