@@ -1,8 +1,11 @@
 'use strict';
 
 const Util = require('./util.js');
-const fs = require('fs'); // Only needed when ran in node
-const Path = require('path'); // Only needed when ran in node
+var fs, Path;
+if (!Util.isBrowser()) {
+    fs = require('fs');
+    Path = require('path');
+}
 const APIRequestError = require('./internal/requesterror.js');
 
 /**
