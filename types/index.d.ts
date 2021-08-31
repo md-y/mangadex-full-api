@@ -157,13 +157,16 @@ declare module 'mangadex-full-api' {
 	     * @property {'asc'|'desc'} [ChapterParameterObject.order.volume]
 	     * @property {'asc'|'desc'} [ChapterParameterObject.order.chapter]
 	     * @property {String[]} [ChapterParameterObject.translatedLanguage]
+	     * @property {String[]} [ChapterParameterObject.originalLanguage]
+	     * @property {String[]} [ChapterParameterObject.excludedOriginalLanguage]
+	     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [ChapterParameterObject.contentRating]
 	     * @property {String[]} [ChapterParameterObject.ids] Max of 100 per request
 	     * @property {Number} [ChapterParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	     * @property {Number} [ChapterParameterObject.offset]
 	     * @property {String[]|Group[]} [ChapterParameterObject.groups]
 	     * @property {String|User|Relationship} [ChapterParameterObject.uploader]
 	     * @property {String|Manga|Relationship} [ChapterParameterObject.manga]
-	     * @property {String} [ChapterParameterObject.volume]
+	     * @property {String[]} [ChapterParameterObject.volume]
 	     * @property {String} [ChapterParameterObject.chapter]
 	     */
 	    /**
@@ -195,6 +198,9 @@ declare module 'mangadex-full-api' {
 	            chapter: 'asc' | 'desc';
 	        };
 	        translatedLanguage?: string[];
+	        originalLanguage?: string[];
+	        excludedOriginalLanguage?: string[];
+	        contentRating?: Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>;
 	        /**
 	         * Max of 100 per request
 	         */
@@ -207,7 +213,7 @@ declare module 'mangadex-full-api' {
 	        groups?: string[] | Group[];
 	        uploader?: string | any | Relationship;
 	        manga?: string | Manga | Relationship;
-	        volume?: string;
+	        volume?: string[];
 	        chapter?: string;
 	    }, includeSubObjects?: boolean): Promise<Chapter[]>;
 	    /**
@@ -250,6 +256,9 @@ declare module 'mangadex-full-api' {
 	            chapter: 'asc' | 'desc';
 	        };
 	        translatedLanguage?: string[];
+	        originalLanguage?: string[];
+	        excludedOriginalLanguage?: string[];
+	        contentRating?: Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>;
 	        /**
 	         * Max of 100 per request
 	         */
@@ -262,7 +271,7 @@ declare module 'mangadex-full-api' {
 	        groups?: string[] | Group[];
 	        uploader?: string | any | Relationship;
 	        manga?: string | Manga | Relationship;
-	        volume?: string;
+	        volume?: string[];
 	        chapter?: string;
 	    }): Promise<Chapter>;
 	    /**
@@ -648,6 +657,16 @@ declare module 'mangadex-full-api' {
 	     */
 	    description: string;
 	    /**
+	     * Is this group an official publisher?
+	     * @type {Boolean}
+	     */
+	    official: boolean;
+	    /**
+	     * Is this group managed by an official publisher?
+	     * @type {Boolean}
+	     */
+	    verified: boolean;
+	    /**
 	     * This group's leader
 	     * @type {Relationship}
 	     */
@@ -898,6 +917,8 @@ declare module 'mangadex-full-api' {
 	     * @property {String[]|Tag[]} [MangaParameterObject.excludedTags]
 	     * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} [MangaParameterObject.status]
 	     * @property {String[]} [MangaParameterObject.originalLanguage]
+	     * @property {String[]} [MangaParameterObject.excludedOriginalLanguage]
+	     * @property {String[]} [MangaParameterObject.availableTranslatedLanguage]
 	     * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} [MangaParameterObject.publicationDemographic]
 	     * @property {String[]} [MangaParameterObject.ids] Max of 100 per request
 	     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [MangaParameterObject.contentRating]
@@ -940,6 +961,8 @@ declare module 'mangadex-full-api' {
 	        excludedTags?: string[] | Tag[];
 	        status?: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
 	        originalLanguage?: string[];
+	        excludedOriginalLanguage?: string[];
+	        availableTranslatedLanguage?: string[];
 	        publicationDemographic?: Array<'shounen' | 'shoujo' | 'josei' | 'seinen' | 'none'>;
 	        /**
 	         * Max of 100 per request
@@ -1000,6 +1023,8 @@ declare module 'mangadex-full-api' {
 	        excludedTags?: string[] | Tag[];
 	        status?: Array<'ongoing' | 'completed' | 'hiatus' | 'cancelled'>;
 	        originalLanguage?: string[];
+	        excludedOriginalLanguage?: string[];
+	        availableTranslatedLanguage?: string[];
 	        publicationDemographic?: Array<'shounen' | 'shoujo' | 'josei' | 'seinen' | 'none'>;
 	        /**
 	         * Max of 100 per request

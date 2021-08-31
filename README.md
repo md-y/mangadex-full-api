@@ -694,6 +694,8 @@ Represents a scanlation grouphttps://api.mangadex.org/docs.html#tag/Group
         * [.ircChannel](#Group+ircChannel) : <code>String</code>
         * [.discord](#Group+discord) : <code>String</code>
         * [.description](#Group+description) : <code>String</code>
+        * [.official](#Group+official) : <code>Boolean</code>
+        * [.verified](#Group+verified) : <code>Boolean</code>
         * [.leader](#Group+leader) : [<code>Relationship</code>](#Relationship)
         * [.members](#Group+members) : [<code>Array.&lt;Relationship&gt;</code>](#Relationship)
         * [.changeFollowship([follow])](#Group+changeFollowship) ⇒ [<code>Promise.&lt;Group&gt;</code>](#Group)
@@ -773,6 +775,18 @@ Discord Invite Code for this group
 
 ### group.description : <code>String</code>
 The group's custom description
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+official"></a>
+
+### group.official : <code>Boolean</code>
+Is this group an official publisher?
+
+**Kind**: instance property of [<code>Group</code>](#Group)  
+<a name="Group+verified"></a>
+
+### group.verified : <code>Boolean</code>
+Is this group managed by an official publisher?
 
 **Kind**: instance property of [<code>Group</code>](#Group)  
 <a name="Group+leader"></a>
