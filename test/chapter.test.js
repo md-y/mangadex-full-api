@@ -14,7 +14,7 @@ describe('Chapter', function () {
             });
             validateResultsArray(results);
             assert.strictEqual(results.length, 1);
-            targetId = results[0].id;
+            if (!results[0].isExternal) targetId = results[0].id;
         });
     });
     describe('get()', function () {
