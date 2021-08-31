@@ -57,7 +57,7 @@ class Relationship {
         });
         return dataArray.filter(elem => elem.type === type).map(elem => {
             if ('attributes' in elem) {
-                let obj = new classObject({ data: elem, relationships: relationshipArray });
+                let obj = new classObject({ data: { ...elem, relationships: relationshipArray } });
                 let rel = new Relationship({ id: elem.id, type: type, cached: true });
                 rel.resolve = () => {
                     return Promise.resolve(obj);

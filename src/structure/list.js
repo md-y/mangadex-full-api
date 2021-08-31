@@ -56,13 +56,13 @@ class List {
          * Relationships to all of the manga in this custom list
          * @type {Relationship[]}
          */
-        this.manga = Relationship.convertType('manga', context.relationships, this);
+        this.manga = Relationship.convertType('manga', context.data.relationships, this);
 
         /**
          * This list's owner
          * @type {Relationship}
          */
-        this.owner = Relationship.convertType('user', context.relationships, this).pop();
+        this.owner = Relationship.convertType('user', context.data.relationships, this).pop();
     }
 
     /**
@@ -149,9 +149,7 @@ class List {
     static async getLoggedInUserLists(limit = 100, offset = 0, includeSubObjects = false) {
         await AuthUtil.validateTokens();
         let res = await Util.apiSearchRequest('/user/list', { limit: limit, offset: offset });
-        return await Promise.all(res.map(elem => List.get((elem.id || elem.data.id), includeSubObjects)));
-        // Currently (7/25/21) this endpoint does not include relationships, so each list must be individually 
-        // requested (getMultipe does not exist for Lists either). includes[] also does not work natively
+        return res.map(elem => new List({ data: elem }));
     }
 
     /**
@@ -165,9 +163,7 @@ class List {
     static async getUserLists(user, limit = 100, offset = 0, includeSubObjects = false) {
         if (typeof user !== 'string') user = user.id;
         let res = await Util.apiSearchRequest(`/user/${user}/list`, { limit: limit, offset: offset });
-        return await Promise.all(res.map(elem => List.get((elem.id || elem.data.id), includeSubObjects)));
-        // Currently (7/25/21) this endpoint does not include relationships, so each list must be individually 
-        // requested (getMultipe does not exist for Lists either). includes[] also does not work natively
+        return res.map(elem => new List({ data: elem }));
     }
 
     /**
@@ -255,7 +251,7 @@ class List {
         let idList = newList.map(elem => typeof elem === 'string' ? elem : elem.id);
         await AuthUtil.validateTokens();
         let res = await Util.apiRequest(`/list/${this.id}`, 'PUT', { manga: idList, version: this.version });
-        this.manga = Relationship.convertType('manga', res.relationships, this);
+        this.manga = Relationship.convertType('manga', res.data.relationships, this);
         return this;
     }
 

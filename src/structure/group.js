@@ -85,16 +85,28 @@ class Group {
         this.description = context.data.attributes.description;
 
         /**
+         * Is this group an official publisher?
+         * @type {Boolean}
+         */
+        this.official = context.data.attributes.official;
+
+        /**
+         * Is this group managed by an official publisher?
+         * @type {Boolean}
+         */
+        this.verified = context.data.attributes.verified;
+
+        /**
          * This group's leader
          * @type {Relationship}
          */
-        this.leader = Relationship.convertType('leader', context.relationships, this).pop();
+        this.leader = Relationship.convertType('leader', context.data.relationships, this).pop();
 
         /**
          * Array of this group's members
          * @type {Relationship[]}
          */
-        this.members = Relationship.convertType('member', context.relationships, this);
+        this.members = Relationship.convertType('member', context.data.relationships, this);
     }
 
     /**
@@ -160,7 +172,7 @@ class Group {
     static async getFollowedGroups(limit = 100, offset = 0) {
         await AuthUtil.validateTokens();
         return await Util.apiCastedRequest('/user/follows/group', Group, { limit: limit, offset: offset });
-        // Currently (7/25/21) MD does not support includes[]=leader&includes[]=member for this endpoint
+        // Currently (8/30/21) MD does not support includes[]=leader&includes[]=member for this endpoint
     }
 
     /**

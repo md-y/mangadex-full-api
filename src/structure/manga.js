@@ -129,19 +129,19 @@ class Manga {
          * Authors attributed to this manga
          * @type {Relationship[]}
          */
-        this.authors = Relationship.convertType('author', context.relationships, this);
+        this.authors = Relationship.convertType('author', context.data.relationships, this);
 
         /**
          * Artists attributed to this manga
          * @type {Relationship[]}
          */
-        this.artists = Relationship.convertType('artist', context.relationships, this);
+        this.artists = Relationship.convertType('artist', context.data.relationships, this);
 
         /**
          * This manga's main cover. Use 'getCovers' to retrive other covers
          * @type {Relationship}
          */
-        this.mainCover = Relationship.convertType('cover_art', context.relationships, this).pop();
+        this.mainCover = Relationship.convertType('cover_art', context.data.relationships, this).pop();
         if (!this.mainCover) this.mainCover = null;
 
         /**
@@ -196,6 +196,8 @@ class Manga {
      * @property {String[]|Tag[]} [MangaParameterObject.excludedTags]
      * @property {Array<'ongoing'|'completed'|'hiatus'|'cancelled'>} [MangaParameterObject.status]
      * @property {String[]} [MangaParameterObject.originalLanguage]
+     * @property {String[]} [MangaParameterObject.excludedOriginalLanguage]
+     * @property {String[]} [MangaParameterObject.availableTranslatedLanguage]
      * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} [MangaParameterObject.publicationDemographic]
      * @property {String[]} [MangaParameterObject.ids] Max of 100 per request
      * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [MangaParameterObject.contentRating]
@@ -297,7 +299,7 @@ class Manga {
         await AuthUtil.validateTokens();
         let params = { limit: limit, offset: offset };
         return await Util.apiCastedRequest('/user/follows/manga', Manga, params);
-        // Currently (7/25/21) MD does not support includes[]=artist&includes[]=author&includes[]=cover_art for this endpoint
+        // Currently (8/30/21) MD does not support includes[]=artist&includes[]=author&includes[]=cover_art for this endpoint
     }
 
     /**

@@ -16,7 +16,7 @@ class UploadSession {
      * @param {Object} res API response 
      */
     constructor(res) {
-        if (!('data' in res) || !('id' in res.data) || !('relationships' in res))
+        if (!('data' in res) || !('id' in res.data))
             throw new APIRequestError('The API did not respond with a session object when it was expected to', APIRequestError.INVALID_RESPONSE);
 
         /**
@@ -29,19 +29,19 @@ class UploadSession {
          * Relationship of the target manga
          * @type {Relationship}
          */
-        this.manga = Relationship.convertType('manga', res.relationships, this).pop();
+        this.manga = Relationship.convertType('manga', res.data.relationships, this).pop();
 
         /**
          * Relationships to the groups attributed to this chapter
          * @type {Relationship}
          */
-        this.groups = Relationship.convertType('group', res.relationships, this);
+        this.groups = Relationship.convertType('group', res.data.relationships, this);
 
         /**
          * Relationship to the uploader (the current user)
          * @type {Relationship}
          */
-        this.uploader = Relationship.convertType('user', res.relationships, this).pop();
+        this.uploader = Relationship.convertType('user', res.data.relationships, this).pop();
 
         /**
          * Is this session commited?

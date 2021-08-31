@@ -63,7 +63,7 @@ class Author {
          * Manga this author/artist has been attributed to
          * @type {Relationship[]}
          */
-        this.manga = Relationship.convertType('manga', context.relationships, this);
+        this.manga = Relationship.convertType('manga', context.data.relationships, this);
     }
 
     /**

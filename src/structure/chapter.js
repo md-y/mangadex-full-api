@@ -96,7 +96,7 @@ class Chapter {
          * Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
          * @type {Boolean}
          */
-        this.isExternal = 'externalUrl' in context.data.attributes;
+        this.isExternal = 'externalUrl' in context.data.attributes && context.data.attributes.externalUrl !== null;
         if (this.isExternal) {
             this.pageNames = [];
             this.saverPageNames = [];
@@ -112,19 +112,19 @@ class Chapter {
          * The scanlation groups that are attributed to this chapter
          * @type {Relationship[]}
          */
-        this.groups = Relationship.convertType('scanlation_group', context.relationships, this);
+        this.groups = Relationship.convertType('scanlation_group', context.data.relationships, this);
 
         /**
          * The manga this chapter belongs to
          * @type {Relationship}
          */
-        this.manga = Relationship.convertType('manga', context.relationships, this).pop();
+        this.manga = Relationship.convertType('manga', context.data.relationships, this).pop();
 
         /**
          * The user who uploaded this chapter
          * @type {Relationship}
          */
-        this.uploader = Relationship.convertType('user', context.relationships, this).pop();
+        this.uploader = Relationship.convertType('user', context.data.relationships, this).pop();
     }
 
     /**
@@ -141,13 +141,16 @@ class Chapter {
      * @property {'asc'|'desc'} [ChapterParameterObject.order.volume]
      * @property {'asc'|'desc'} [ChapterParameterObject.order.chapter]
      * @property {String[]} [ChapterParameterObject.translatedLanguage]
+     * @property {String[]} [ChapterParameterObject.originalLanguage]
+     * @property {String[]} [ChapterParameterObject.excludedOriginalLanguage]
+     * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [ChapterParameterObject.contentRating]
      * @property {String[]} [ChapterParameterObject.ids] Max of 100 per request
      * @property {Number} [ChapterParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} [ChapterParameterObject.offset]
      * @property {String[]|Group[]} [ChapterParameterObject.groups]
      * @property {String|User|Relationship} [ChapterParameterObject.uploader]
      * @property {String|Manga|Relationship} [ChapterParameterObject.manga]
-     * @property {String} [ChapterParameterObject.volume]
+     * @property {String[]} [ChapterParameterObject.volume]
      * @property {String} [ChapterParameterObject.chapter]
      */
 

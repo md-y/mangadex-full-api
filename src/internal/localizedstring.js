@@ -19,7 +19,7 @@ class LocalizedString {
             return;
         }
 
-        for (let i in stringObject) if (i.length == 2) this[i] = stringObject[i];
+        for (let i in stringObject) if (typeof stringObject[i] === 'string') this[i] = stringObject[i];
 
         /**
          * Array with all locales with values in this object

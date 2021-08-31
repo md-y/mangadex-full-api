@@ -59,14 +59,14 @@ class Cover {
          * Manga this is a cover for
          * @type {Relationship}
          */
-        this.manga = Relationship.convertType('manga', context.relationships, this).pop();
+        this.manga = Relationship.convertType('manga', context.data.relationships, this).pop();
         if (!this.manga) this.manga = null;
 
         /**
          * The user who uploaded this cover
          * @type {Relationship}
          */
-        this.uploader = Relationship.convertType('user', context.relationships, this).pop();
+        this.uploader = Relationship.convertType('user', context.data.relationships, this).pop();
         if (!this.uploader) this.uploader = null;
 
         /**
