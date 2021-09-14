@@ -175,11 +175,11 @@ async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, d
 
     // Need at least one request to find the total items available:
     let initialResponse = await apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit, maxLimit) });
-    if (!(initialResponse.results instanceof Array) || typeof initialResponse.total !== 'number') {
-        throw new APIRequestError(`The API did not respond the correct structure for a search request:\n${initialResponse}`, APIRequestError.INVALID_RESPONSE);
+    if (!(initialResponse.data instanceof Array) || typeof initialResponse.total !== 'number') {
+        throw new APIRequestError(`The API did not respond the correct structure for a search request:\n${JSON.stringify(initialResponse)}`, APIRequestError.INVALID_RESPONSE);
     }
     // Return if only one request is needed (either the limit is low enough for one request or one request returned all available results)
-    if (limit <= maxLimit || initialResponse.total <= initialResponse.results.length + initialOffset) return initialResponse.results;
+    if (limit <= maxLimit || initialResponse.total <= initialResponse.data.length + initialOffset) return initialResponse.data.map(elem => { return { data: elem }; });
 
     // Subsequent concurrent requests for the rest of the results:
     limit = Math.min(initialResponse.total, limit);
@@ -187,12 +187,14 @@ async function apiSearchRequest(baseEndpoint, parameterObject, maxLimit = 100, d
     for (let offset = initialOffset + maxLimit; offset < limit; offset += maxLimit) {
         promises.push(apiParameterRequest(baseEndpoint, { ...parameterObject, limit: Math.min(limit - offset, maxLimit), offset: offset }));
     }
-    let finalArray = initialResponse.results;
+    let finalArray = initialResponse.data;
     for (let elem of await Promise.all(promises)) {
-        if (!(elem.results instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
-        finalArray = finalArray.concat(elem.results);
+        if (!(elem.data instanceof Array)) {
+            throw new APIRequestError(`The API did not respond the correct structure for a search request:\n${JSON.stringify(elem)}`, APIRequestError.INVALID_RESPONSE);
+        }
+        finalArray = finalArray.concat(elem.data);
     }
-    return finalArray;
+    return finalArray.map(elem => { return { data: elem }; }); // Emulate an array of standard manga objects from the /manga/<id> endpoint
 }
 exports.apiSearchRequest = apiSearchRequest;
 

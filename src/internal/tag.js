@@ -67,9 +67,9 @@ class Tag {
     static async getAllTags() {
         if (Tag.cache.length === 0) {
             let res = await Util.apiRequest('/manga/tag');
-            if (!(res instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
-            if (res.length === 0) throw new APIRequestError('The API returned an empty array of tags.', APIRequestError.INVALID_RESPONSE);
-            Tag.cache = res.map(elem => new Tag(elem.data));
+            if (!(res.data instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
+            if (res.data.length === 0) throw new APIRequestError('The API returned an empty array of tags.', APIRequestError.INVALID_RESPONSE);
+            Tag.cache = res.data.map(elem => new Tag(elem));
         }
         return Tag.cache;
     }
