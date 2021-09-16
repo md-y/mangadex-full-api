@@ -2,6 +2,7 @@
 
 const Util = require('../util.js');
 const AuthUtil = require('../auth.js');
+const Relationship = require('../internal/relationship.js');
 
 /**
  * Represents an user
@@ -33,6 +34,50 @@ class User {
          * @type {String}
          */
         this.username = context.data.attributes.username;
+
+        /**
+         * The roles of this user such as "ROLE_MD_AT_HOME" and "ROLE_ADMIN"
+         * @type {String[]}
+         */
+        this.roles = context.data.attributes.roles;
+
+        /**
+         * Groups this user is a part of
+         * @type {Relationship<import('../index').Group>[]}
+         */
+        this.groups = Relationship.convertType('scanlation_group', context.data.relationships, this);
+    }
+
+    /**
+     * @ignore
+     * @typedef {Object} UserParameterObject
+     * @property {String} [UserParameterObject.username]
+     * @property {String[]} [UserParameterObject.ids] Max of 100 per request
+     * @property {Number} [UserParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [UserParameterObject.offset]
+     * @property {Object} [UserParameterObject.order] 
+     * @property {'asc'|'desc'} [UserParameterObject.order.username]
+     */
+
+    /**
+     * Peforms a search and returns an array of users. Requires authorization
+     * https://api.mangadex.org/docs.html#operation/get-user
+     * @param {UserParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the username
+     * @returns {Promise<User[]>}
+     */
+    static search(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { username: searchParameters };
+        return Util.apiCastedRequest('/user', User, searchParameters);
+        // Currently (9/14/21) MD does not support includes[]=scanlation_group for any user endpoint
+    }
+
+    /**
+     * Gets multiple users
+     * @param {...String|Relationship<User>} ids
+     * @returns {Promise<User[]>}
+     */
+    static getMultiple(...ids) {
+        return Util.getMultipleIds(User.search, ids);
     }
 
     /**
