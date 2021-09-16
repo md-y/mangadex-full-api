@@ -171,7 +171,7 @@ class Cache {
      */
     write(obj) {
         let str = this.parse(obj);
-        if (str !== null) fs.writeFileSync(this.location, str); // Will throw error if the file cannot be written
+        if (str !== null && this.location !== undefined) fs.writeFileSync(this.location, str); // Will throw error if the file cannot be written
     }
 }
 
@@ -194,7 +194,7 @@ class BrowserCache extends Cache {
      */
     write(obj) {
         let str = this.parse(obj);
-        if (str !== null) window.localStorage.setItem(this.location, str);
+        if (str !== null && this.location !== undefined) window.localStorage.setItem(this.location, str);
     }
 }
 
