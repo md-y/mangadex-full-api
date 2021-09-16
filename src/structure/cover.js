@@ -101,15 +101,15 @@ class Cover {
     /**
      * @private
      * @typedef {Object} CoverParameterObject
-     * @property {Number} CoverParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-     * @property {Number} CoverParameterObject.offset
-     * @property {String[]|Manga[]} CoverParameterObject.manga Manga ids (limited to 100 per request)
-     * @property {String[]|Cover[]} CoverParameterObject.ids Covers ids (limited to 100 per request)
-     * @property {String[]|User[]} CoverParameterObject.uploaders User ids (limited to 100 per request)
-     * @property {Object} CoverParameterObject.order
-     * @property {'asc'|'desc'} CoverParameterObject.order.createdAt
-     * @property {'asc'|'desc'} CoverParameterObject.order.updatedAt
-     * @property {'asc'|'desc'} CoverParameterObject.order.volume
+     * @property {Number} [CoverParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [CoverParameterObject.offset]
+     * @property {String[]|Manga[]} [CoverParameterObject.manga] Manga ids (limited to 100 per request)
+     * @property {String[]|Cover[]} [CoverParameterObject.ids] Covers ids (limited to 100 per request)
+     * @property {String[]|User[]} [CoverParameterObject.uploaders] User ids (limited to 100 per request)
+     * @property {Object} [CoverParameterObject.order]
+     * @property {'asc'|'desc'} [CoverParameterObject.order.createdAt]
+     * @property {'asc'|'desc'} [CoverParameterObject.order.updatedAt]
+     * @property {'asc'|'desc'} [CoverParameterObject.order.volume]
      */
 
     /**

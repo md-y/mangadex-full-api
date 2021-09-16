@@ -69,12 +69,12 @@ class Author {
     /**
      * @private
      * @typedef {Object} AuthorParameterObject
-     * @property {String} AuthorParameterObject.name
-     * @property {String[]} AuthorParameterObject.ids Max of 100 per request
-     * @property {Number} AuthorParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-     * @property {Number} AuthorParameterObject.offset
-     * @property {Object} AuthorParameterObject.order 
-     * @property {'asc'|'desc'} AuthorParameterObject.order.name
+     * @property {String} [AuthorParameterObject.name]
+     * @property {String[]} [AuthorParameterObject.ids] Max of 100 per request
+     * @property {Number} [AuthorParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [AuthorParameterObject.offset]
+     * @property {Object} [AuthorParameterObject.order] 
+     * @property {'asc'|'desc'} [AuthorParameterObject.order.name]
      */
 
     /**

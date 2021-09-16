@@ -190,6 +190,11 @@ class Manga {
      * @property {Object} [MangaParameterObject.order]
      * @property {'asc'|'desc'} [MangaParameterObject.order.createdAt]
      * @property {'asc'|'desc'} [MangaParameterObject.order.updatedAt]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.title]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.latestUploadedChapter]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.followedCount]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.relevance]
+     * @property {'asc'|'desc'} [MangaParameterObject.order.year]
      * @property {String[]|Author[]} [MangaParameterObject.authors] Array of author ids
      * @property {String[]|Author[]} [MangaParameterObject.artists] Array of artist ids
      * @property {String[]|Tag[]} [MangaParameterObject.includedTags]
@@ -254,17 +259,18 @@ class Manga {
     /**
      * @private
      * @typedef {Object} FeedParameterObject
-     * @property {Number} FeedParameterObject.limit Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
-     * @property {Number} FeedParameterObject.offset
-     * @property {String[]} FeedParameterObject.translatedLanguage
-     * @property {String} FeedParameterObject.createdAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {String} FeedParameterObject.updatedAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {String} FeedParameterObject.publishAtSince DateTime string with following format: YYYY-MM-DDTHH:MM:SS
-     * @property {Object} FeedParameterObject.order
-     * @property {'asc'|'desc'} FeedParameterObject.order.volume
-     * @property {'asc'|'desc'} FeedParameterObject.order.chapter
-     * @property {'asc'|'desc'} FeedParameterObject.order.createdAt
-     * @property {'asc'|'desc'} FeedParameterObject.order.updatedAt
+     * @property {Number} [FeedParameterObject.limit] Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [FeedParameterObject.offset]
+     * @property {String[]} [FeedParameterObject.translatedLanguage]
+     * @property {String} [FeedParameterObject.createdAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} [FeedParameterObject.updatedAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {String} [FeedParameterObject.publishAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+     * @property {Object} [FeedParameterObject.order]
+     * @property {'asc'|'desc'} [FeedParameterObject.order.volume]
+     * @property {'asc'|'desc'} [FeedParameterObject.order.chapter]
+     * @property {'asc'|'desc'} [FeedParameterObject.order.createdAt]
+     * @property {'asc'|'desc'} [FeedParameterObject.order.updatedAt]
+     * @property {'asc'|'desc'} [FeedParameterObject.order.publishAt]
      */
 
     /**

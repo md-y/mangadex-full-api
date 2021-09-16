@@ -112,10 +112,10 @@ class Group {
     /**
      * @private
      * @typedef {Object} GroupParameterObject
-     * @property {String} GroupParameterObject.name
-     * @property {String[]} GroupParameterObject.ids Max of 100 per request
-     * @property {Number} GroupParameterObject.limit Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
-     * @property {Number} GroupParameterObject.offset
+     * @property {String} [GroupParameterObject.name]
+     * @property {String[]} [GroupParameterObject.ids] Max of 100 per request
+     * @property {Number} [GroupParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+     * @property {Number} [GroupParameterObject.offset]
      */
 
     /**
