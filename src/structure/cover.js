@@ -2,8 +2,6 @@
 
 const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
-const Manga = require('./manga.js');
-const User = require('./user.js');
 
 /**
  * Represents the cover art of a manga volume
@@ -57,14 +55,14 @@ class Cover {
 
         /**
          * Manga this is a cover for
-         * @type {Relationship}
+         * @type {Relationship<import('../index').Manga>}
          */
         this.manga = Relationship.convertType('manga', context.data.relationships, this).pop();
         if (!this.manga) this.manga = null;
 
         /**
          * The user who uploaded this cover
-         * @type {Relationship}
+         * @type {Relationship<import('../index').User>}
          */
         this.uploader = Relationship.convertType('user', context.data.relationships, this).pop();
         if (!this.uploader) this.uploader = null;
@@ -99,13 +97,13 @@ class Cover {
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} CoverParameterObject
      * @property {Number} [CoverParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} [CoverParameterObject.offset]
-     * @property {String[]|Manga[]} [CoverParameterObject.manga] Manga ids (limited to 100 per request)
+     * @property {String[]|import('../index').Manga[]} [CoverParameterObject.manga] Manga ids (limited to 100 per request)
      * @property {String[]|Cover[]} [CoverParameterObject.ids] Covers ids (limited to 100 per request)
-     * @property {String[]|User[]} [CoverParameterObject.uploaders] User ids (limited to 100 per request)
+     * @property {String[]|import('../index').User[]} [CoverParameterObject.uploaders] User ids (limited to 100 per request)
      * @property {Object} [CoverParameterObject.order]
      * @property {'asc'|'desc'} [CoverParameterObject.order.createdAt]
      * @property {'asc'|'desc'} [CoverParameterObject.order.updatedAt]
@@ -126,7 +124,7 @@ class Cover {
 
     /**
      * Gets multiple covers
-     * @param {...String|Cover|Relationship} ids
+     * @param {...String|Cover|Relationship<Cover>} ids
      * @returns {Promise<Cover[]>}
      */
     static getMultiple(...ids) {
@@ -147,7 +145,7 @@ class Cover {
 
     /**
      * Get an array of manga's covers
-     * @param {...String|Manga|Relationship} manga
+     * @param {...String|import('../index').Manga|Relationship<import('../index').Manga>} manga
      * @returns {Promise<Cover[]>}
      */
     static getMangaCovers(...manga) {

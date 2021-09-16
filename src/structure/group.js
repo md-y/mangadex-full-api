@@ -3,7 +3,6 @@
 const Util = require('../util.js');
 const AuthUtil = require('../auth.js');
 const Relationship = require('../internal/relationship.js');
-const User = require('./user.js');
 
 /**
  * Represents a scanlation group
@@ -98,19 +97,19 @@ class Group {
 
         /**
          * This group's leader
-         * @type {Relationship}
+         * @type {Relationship<import('../index').User>}
          */
         this.leader = Relationship.convertType('leader', context.data.relationships, this).pop();
 
         /**
          * Array of this group's members
-         * @type {Relationship[]}
+         * @type {Relationship<import('../index').User>[]}
          */
         this.members = Relationship.convertType('member', context.data.relationships, this);
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} GroupParameterObject
      * @property {String} [GroupParameterObject.name]
      * @property {String[]} [GroupParameterObject.ids] Max of 100 per request
@@ -133,7 +132,7 @@ class Group {
 
     /**
      * Gets multiple groups
-     * @param {...String|Group|Relationship} ids
+     * @param {...String|Group|Relationship<Group>} ids
      * @returns {Promise<Group[]>}
      */
     static getMultiple(...ids) {

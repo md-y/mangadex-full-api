@@ -27,19 +27,19 @@ class UploadSession {
 
         /**
          * Relationship of the target manga
-         * @type {Relationship}
+         * @type {Relationship<import('../index').Manga>}
          */
         this.manga = Relationship.convertType('manga', res.data.relationships, this).pop();
 
         /**
          * Relationships to the groups attributed to this chapter
-         * @type {Relationship}
+         * @type {Relationship<import('../index').Group>}
          */
         this.groups = Relationship.convertType('group', res.data.relationships, this);
 
         /**
          * Relationship to the uploader (the current user)
-         * @type {Relationship}
+         * @type {Relationship<import('../index').User>}
          */
         this.uploader = Relationship.convertType('user', res.data.relationships, this).pop();
 
@@ -78,7 +78,7 @@ class UploadSession {
     /**
      * Requests MD to start an upload session
      * @param {String|Manga} manga 
-     * @param  {...String|Group|Relationship} groups 
+     * @param  {...String|import('../index').Group|Relationship<import('../index').Group>} groups
      * @returns {UploadSession}
      */
     static async open(manga, ...groups) {
@@ -111,7 +111,7 @@ class UploadSession {
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} PageFileObject
      * @property {Buffer} PageFileObject.data 
      * @property {'jpeg'|'png'|'gif'} [PageFileObject.type]
@@ -158,7 +158,7 @@ class UploadSession {
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} ChapterDraftObject
      * @property {String} ChapterDraftObject.volume
      * @property {String} ChapterDraftObject.chapter

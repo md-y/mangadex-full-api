@@ -1,11 +1,8 @@
 'use strict';
 
-const Manga = require('./manga.js');
 const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
 const AuthUtil = require('../auth.js');
-const Chapter = require('./chapter.js');
-const User = require('./user.js');
 
 /**
  * Represents a custom, user-created list of manga
@@ -54,13 +51,13 @@ class List {
 
         /**
          * Relationships to all of the manga in this custom list
-         * @type {Relationship[]}
+         * @type {Relationship<import('../index').Manga>[]}
          */
         this.manga = Relationship.convertType('manga', context.data.relationships, this);
 
         /**
          * This list's owner
-         * @type {Relationship}
+         * @type {Relationship<import('../index').User>}
          */
         this.owner = Relationship.convertType('user', context.data.relationships, this).pop();
     }
@@ -88,7 +85,7 @@ class List {
     /**
      * Create a new custom list. Must be logged in
      * @param {String} name
-     * @param {Manga[]|String[]} manga
+     * @param {import('../index').Manga[]|String[]} manga
      * @param {'public'|'private'} [visibility='private'] 
      * @returns {Promise<List>}
      */
@@ -116,7 +113,7 @@ class List {
     /**
      * Adds a manga to a custom list. Must be logged in
      * @param {String} listId
-     * @param {Manga|String} manga
+     * @param {import('../index').Manga|String} manga
      * @returns {Promise<void>}
      */
     static async addManga(listId, manga) {
@@ -129,7 +126,7 @@ class List {
     /**
      * Removes a manga from a custom list. Must be logged in
      * @param {String} listId
-     * @param {Manga|String} manga
+     * @param {import('../index').Manga|String} manga
      * @returns {Promise<void>}
      */
     static async removeManga(listId, manga) {
@@ -154,7 +151,7 @@ class List {
 
     /**
      * Returns all public lists created by a user.
-     * @param {String|User|Relationship} user
+     * @param {String|import('../index').User|Relationship<import('../index').User>} user
      * @param {Number} [limit=100] Amount of lists to return (0 to Infinity)
      * @param {Number} [offset=0] How many lists to skip before returning
      * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
@@ -167,7 +164,7 @@ class List {
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} FeedParameterObject
      * @property {Number} [FeedParameterObject.limit] Not limited by API limits (more than 500). Use Infinity for maximum results (use at your own risk)
      * @property {Number} [FeedParameterObject.offset]
@@ -243,7 +240,7 @@ class List {
 
     /**
      * Changes the manga in a custom list. Must be logged in
-     * @param {Manga[]|String[]} newList
+     * @param {import('../index').Manga[]|String[]} newList
      * @returns {Promise<List>}
      */
     async updateMangaList(newList) {
@@ -257,7 +254,7 @@ class List {
 
     /**
      * Adds a manga to this list
-     * @param {Manga|String} manga
+     * @param {import('../index').Manga|String} manga
      * @returns {Promise<List>}
      */
     async addManga(manga) {
@@ -270,7 +267,7 @@ class List {
 
     /**
      * Removes a manga from this list
-     * @param {Manga|String} manga
+     * @param {import('../index').Manga|String} manga
      * @returns {Promise<List>}
      */
     async removeManga(manga) {

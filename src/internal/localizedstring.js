@@ -8,11 +8,14 @@
 class LocalizedString {
     /**
      * Global locale setting
-     * @private
+     * @ignore
      * @type {String}
      */
     static locale = 'en';
 
+    /**
+     * @param {Object.<string, string>} stringObject 
+     */
     constructor(stringObject) {
         if (!stringObject) {
             this.availableLocales = [];

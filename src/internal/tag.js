@@ -61,7 +61,7 @@ class Tag {
     }
 
     /**
-     * @private
+     * @ignore
      * @returns {Promise<Tag[]>}
      */
     static async getAllTags() {
@@ -75,7 +75,7 @@ class Tag {
     }
 
     /**
-     * @private
+     * @ignore
      * @param {String} indentity
      * @returns {Promise<Tag>}
      */

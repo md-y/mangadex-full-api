@@ -5,6 +5,9 @@
  * https://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
  */
 class Links {
+    /**
+     * @param {Object.<string, string>} linksObject 
+     */
     constructor(linksObject) {
         if (!linksObject) {
             this.availableLinks = [];

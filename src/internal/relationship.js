@@ -2,6 +2,7 @@
 
 /**
  * Represents a relationship from one Mangadex object to another such as a manga, author, etc via its id.
+ * @template ResolveType
  */
 class Relationship {
     static types = {};
@@ -30,7 +31,7 @@ class Relationship {
     /**
      * This function must be called to return the proper and complete object representation of this relationship.
      * Essentially, it calls and returns Manga.get(), Author.get(), Cover.get(), etc.
-     * @returns {Promise<Manga|Author|Chapter|User|Group|List|Cover>}
+     * @returns {Promise<ResolveType>}
      */
     resolve() {
         if (this.id === undefined || this.type === undefined) throw new Error('Invalid Relationship object');
@@ -40,11 +41,11 @@ class Relationship {
 
     /**
      * Returns an array of converted objects from a Mangadex Relationships Array
-     * @private
+     * @ignore
      * @param {String} type 
      * @param {Object[]} dataArray 
      * @param {Object} caller
-     * @returns {Object[]}
+     * @returns {Relationship<ResolveType>}
      */
     static convertType(type, dataArray, caller) {
         if (!(dataArray instanceof Array)) return [];
@@ -71,7 +72,7 @@ class Relationship {
     /**
      * Provides a constructor for a relationship type at run-time.
      * Should only be called in index.js
-     * @private
+     * @ignore
      * @param {String} name 
      * @param {Object} classObject 
      */
@@ -83,8 +84,10 @@ class Relationship {
 
     /**
      * Resolves an array of relationships
-     * @private
-     * @param {Relationship[]} relationshipArray
+     * @ignore
+     * @template T
+     * @param {Relationship<T>[]} relationshipArray
+     * @returns {Promise<T[]>}
      */
     static resolveAll(relationshipArray) {
         if (relationshipArray.length === 0) return [];

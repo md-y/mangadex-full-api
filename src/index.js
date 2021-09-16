@@ -79,10 +79,11 @@ Relationship.registerType('cover_art', Cover);
 
 /**
  * A shortcut for resolving all relationships in an array
- * @param {Relationship[]} relationshipArray
- * @returns {Promise}
+ * @template T
+ * @param {Relationship<T>[]} relationshipArray
+ * @returns {Promise<T[]>}
  */
- function resolveArray(relationshipArray) {
+function resolveArray(relationshipArray) {
     return Relationship.resolveAll(relationshipArray);
 }
 exports.resolveArray = resolveArray;

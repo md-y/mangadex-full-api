@@ -2,7 +2,6 @@
 
 const Util = require('../util.js');
 const Relationship = require('../internal/relationship.js');
-const Manga = require('./manga.js');
 
 /**
  * Represents an author or artist
@@ -61,13 +60,13 @@ class Author {
 
         /**
          * Manga this author/artist has been attributed to
-         * @type {Relationship[]}
+         * @type {Relationship<import('../index').Manga>[]}
          */
         this.manga = Relationship.convertType('manga', context.data.relationships, this);
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} AuthorParameterObject
      * @property {String} [AuthorParameterObject.name]
      * @property {String[]} [AuthorParameterObject.ids] Max of 100 per request
@@ -92,7 +91,7 @@ class Author {
 
     /**
      * Gets multiple authors
-     * @param {...String|Author|Relationship} ids
+     * @param {...String|Author|Relationship<Author>} ids
      * @returns {Promise<Author[]>}
      */
     static getMultiple(...ids) {

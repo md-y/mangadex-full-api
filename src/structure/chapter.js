@@ -3,8 +3,6 @@
 const Util = require('../util.js');
 const AuthUtil = require('../auth.js');
 const Relationship = require('../internal/relationship.js');
-const Group = require('./group.js');
-const Manga = require('./manga.js');
 
 /**
  * Represents a chapter with readable pages
@@ -110,25 +108,25 @@ class Chapter {
 
         /**
          * The scanlation groups that are attributed to this chapter
-         * @type {Relationship[]}
+         * @type {Relationship<import('../index').Group>[]}
          */
         this.groups = Relationship.convertType('scanlation_group', context.data.relationships, this);
 
         /**
          * The manga this chapter belongs to
-         * @type {Relationship}
+         * @type {Relationship<import('../index').Manga>}
          */
         this.manga = Relationship.convertType('manga', context.data.relationships, this).pop();
 
         /**
          * The user who uploaded this chapter
-         * @type {Relationship}
+         * @type {Relationship<import('../index').User>}
          */
         this.uploader = Relationship.convertType('user', context.data.relationships, this).pop();
     }
 
     /**
-     * @private
+     * @ignore
      * @typedef {Object} ChapterParameterObject
      * @property {String} [ChapterParameterObject.title]
      * @property {String} [ChapterParameterObject.createdAtSince] DateTime string with following format: YYYY-MM-DDTHH:MM:SS
@@ -147,9 +145,9 @@ class Chapter {
      * @property {String[]} [ChapterParameterObject.ids] Max of 100 per request
      * @property {Number} [ChapterParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} [ChapterParameterObject.offset]
-     * @property {String[]|Group[]} [ChapterParameterObject.groups]
-     * @property {String|User|Relationship} [ChapterParameterObject.uploader]
-     * @property {String|Manga|Relationship} [ChapterParameterObject.manga]
+     * @property {String[]|import('../index').Group[]} [ChapterParameterObject.groups]
+     * @property {String|import('../index').User|Relationship<import('../index').User>} [ChapterParameterObject.uploader]
+     * @property {String|import('../index').Manga|Relationship<import('../index').Manga>} [ChapterParameterObject.manga]
      * @property {String[]} [ChapterParameterObject.volume]
      * @property {String} [ChapterParameterObject.chapter]
      */
@@ -162,14 +160,14 @@ class Chapter {
      * @returns {Promise<Chapter[]>}
      */
     static search(searchParameters = {}, includeSubObjects = false) {
-        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters, groups };
         if (includeSubObjects) searchParameters.includes = ['scanlation_group', 'manga', 'user'];
         return Util.apiCastedRequest('/chapter', Chapter, searchParameters);
     }
 
     /**
      * Gets multiple chapters
-     * @param {...String|Chapter|Relationship} ids
+     * @param {...String|Chapter|Relationship<Chapter>} ids
      * @returns {Promise<Chapter[]>}
      */
     static getMultiple(...ids) {
