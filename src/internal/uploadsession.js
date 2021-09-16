@@ -78,7 +78,7 @@ class UploadSession {
     /**
      * Requests MD to start an upload session
      * @param {String|Manga} manga 
-     * @param  {...String|Group|Relationship} [groups] 
+     * @param  {...String|Group|Relationship} groups 
      * @returns {UploadSession}
      */
     static async open(manga, ...groups) {

@@ -443,7 +443,7 @@ class Manga {
     /**
      * Creates a new upload session with a manga as the target
      * @param {String} id
-     * @param {...String|Group} [groups]
+     * @param {...String|Group} groups
      * @returns {Promise<UploadSession>}
      */
     static createUploadSession(id, ...groups) {
@@ -461,7 +461,7 @@ class Manga {
 
     /**
      * Creates a new upload session with this manga as the target
-     * @param {...String|Group} [groups]
+     * @param {...String|Group} groups
      * @returns {Promise<UploadSession>}
      */
     createUploadSession(...groups) {
