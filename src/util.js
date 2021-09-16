@@ -129,29 +129,14 @@ exports.apiRequest = apiRequest;
  */
 async function apiParameterRequest(baseEndpoint, parameterObject) {
     if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
-    let cleanParameters = {};
-    for (let i in parameterObject) {
-        if (parameterObject[i] instanceof Array) cleanParameters[i] = parameterObject[i].map(elem => {
-            // Arrays are kept in their arrays because the query name is repeated and cannot be represented as pairs (?key[]=1&key[]=2)
-            if (typeof elem === 'string') return elem;
-            if (typeof elem === 'object' && 'id' in elem) return elem.id;
-            return elem.toString();
-        });
-        else if (typeof parameterObject[i] === 'object') {
-            if ('id' in parameterObject[i]) cleanParameters[i] = parameterObject[i].id;
-            else Object.keys(parameterObject[i]).forEach(elem => cleanParameters[`${i}[${elem}]`] = parameterObject[i][elem]);
-            // Objects are represented as new properties with a key of 'object[property]'
-        }
-        else if (typeof parameterObject[i] !== 'string') cleanParameters[i] = parameterObject[i].toString();
-        else cleanParameters[i] = parameterObject[i];
+    let params = new URLSearchParams();
+    for (let [key, value] of Object.entries(parameterObject)) {
+        if (value instanceof Array) value.forEach(elem => params.append(`${key}[]`, elem));
+        else if (typeof value === 'object') Object.entries(value).forEach(([k, v]) => params.set(`${key}[${k}]`, v));
+        else params.set(key, value);
     }
-
-    let endpoint = `${baseEndpoint}?`;
-    for (let i in cleanParameters) {
-        if (cleanParameters[i] instanceof Array) cleanParameters[i].forEach(e => endpoint += `${i}[]=${e}&`);
-        else endpoint += `${i}=${cleanParameters[i]}&`;
-    }
-    return await apiRequest(encodeURI(endpoint.slice(0, -1))); // Remove last char because its an extra & or ?
+    let paramsString = params.toString();
+    return await apiRequest(baseEndpoint + (paramsString.length > 0 ? '?' + paramsString : paramsString));
 }
 exports.apiParameterRequest = apiParameterRequest;
 
@@ -221,21 +206,18 @@ exports.apiCastedRequest = apiCastedRequest;
  * @returns {Promise<Array>}
  */
 async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty = 'ids') {
-    if (ids[0] instanceof Array) ids = ids[0];
-    ids = ids.map(elem => {
+    let newIds = ids.map(elem => {
         if (typeof elem === 'string') return elem;
         else if (typeof elem === 'object' && 'id' in elem) return elem.id;
         else return elem.toString();
     });
-    let searchParameters = { limit: limit };
-    let finalArray = [];
+    let finalArray = new Array(newIds.length);
     let promises = [];
-    while (ids.length > 0) {
-        searchParameters[searchProperty] = ids.splice(0, 100);
-        promises.push(searchFunction(searchParameters));
-    }
-    for (let i of await Promise.all(promises)) finalArray = finalArray.concat(i);
-    return finalArray;
+    // Create new search reqeusts with a 100 ids (max allowed) at a time
+    while (newIds.length > 0) promises.push(searchFunction({ limit: limit, [searchProperty]: newIds.splice(0, limit) }));
+    // Perform all search requests, then insert every result in the same spot it is in the ids array
+    for (let res of await Promise.all(promises)) for (let elem of res) finalArray.splice(ids.indexOf(elem.id), 1, elem);
+    return finalArray.filter(elem => elem !== undefined);
 }
 exports.getMultipleIds = getMultipleIds;
 
