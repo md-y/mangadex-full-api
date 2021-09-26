@@ -211,13 +211,10 @@ async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty =
         else if (typeof elem === 'object' && 'id' in elem) return elem.id;
         else return elem.toString();
     });
-    let finalArray = new Array(newIds.length);
     let promises = [];
-    // Create new search reqeusts with a 100 ids (max allowed) at a time
+    // Create new search requests with a 100 ids (max allowed) at a time
     while (newIds.length > 0) promises.push(searchFunction({ limit: limit, [searchProperty]: newIds.splice(0, limit) }));
-    // Perform all search requests, then insert every result in the same spot it is in the ids array
-    for (let res of await Promise.all(promises)) for (let elem of res) finalArray.splice(ids.indexOf(elem.id), 1, elem);
-    return finalArray.filter(elem => elem !== undefined);
+    return (await Promise.all(promises)).flat();
 }
 exports.getMultipleIds = getMultipleIds;
 
