@@ -147,6 +147,35 @@ class Manga {
          * @type {Tag[]}
          */
         this.tags = (context.data.attributes.tags || []).map(elem => new Tag(elem));
+
+        /**
+         * @ignore
+         * @typedef {Object} RelatedMangaObject
+		 * @property {Manga[]} RelatedMangaObject.monochrome
+		 * @property {Manga[]} RelatedMangaObject.main_story
+		 * @property {Manga[]} RelatedMangaObject.adapted_from
+		 * @property {Manga[]} RelatedMangaObject.based_on
+		 * @property {Manga[]} RelatedMangaObject.prequel
+		 * @property {Manga[]} RelatedMangaObject.side_story
+		 * @property {Manga[]} RelatedMangaObject.doujinshi
+		 * @property {Manga[]} RelatedMangaObject.same_franchise
+		 * @property {Manga[]} RelatedMangaObject.shared_universe
+		 * @property {Manga[]} RelatedMangaObject.sequel
+		 * @property {Manga[]} RelatedMangaObject.spin_off
+		 * @property {Manga[]} RelatedMangaObject.alternate_story
+		 * @property {Manga[]} RelatedMangaObject.preserialization
+		 * @property {Manga[]} RelatedMangaObject.colored
+		 * @property {Manga[]} RelatedMangaObject.serialization
+         */
+
+        /**
+         * @type {RelatedMangaObject}
+         */
+        this.relatedManga = Object.fromEntries([
+            'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel', 
+            'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel', 
+            'spin_off', 'alternate_story', 'preserialization', 'colored', 'serialization'
+        ].map(k => [k, Relationship.convertType('manga', context.data.relationships.filter(r => r.related === k))]));
     }
 
     /**
@@ -428,11 +457,11 @@ class Manga {
      * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
      * @param {String} id
-     * @param {...String} languages 
+     * @param {...String|String[]} languages 
      * @returns {Promise<Object.<string, AggregateVolume>>}
      */
     static async getAggregate(id, ...languages) {
-        if (languages[0] instanceof Array) languages = languages[0];
+        languages = languages.flat();
         let res = await Util.apiParameterRequest(`/manga/${id}/aggregate`, { translatedLanguage: languages });
         if (!('volumes' in res)) throw new APIRequestError('The API did not respond with the appropriate aggregate structure', APIRequestError.INVALID_RESPONSE);
         return res.volumes;
