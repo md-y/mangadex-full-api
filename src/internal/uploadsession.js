@@ -83,7 +83,7 @@ class UploadSession {
      */
     static async open(manga, ...groups) {
         if (typeof manga !== 'string') manga = manga.id;
-        groups = groups.map(elem => typeof elem === 'string' ? elem : elem.id);
+        groups = groups.flat().map(elem => typeof elem === 'string' ? elem : elem.id);
         if (!manga || groups.some(elem => !elem)) throw new Error('Invalid Argument(s)');
         await AuthUtil.validateTokens();
         let res = await Util.apiRequest('/upload/begin', 'POST', {
@@ -181,7 +181,7 @@ class UploadSession {
 
     /**
      * Deletes an uploaded page via its upload file id.
-     * @param {...String} page
+     * @param {String} page
      * @returns {Promise<void>}
      */
     async deletePage(page) {
