@@ -686,10 +686,10 @@ declare class UploadSession {
 	}, pageOrder?: string[]): Promise<Chapter>;
 	/**
 	 * Deletes an uploaded page via its upload file id.
-	 * @param {...String} page
+	 * @param {String} page
 	 * @returns {Promise<void>}
 	 */
-	deletePage(page: string[]): Promise<void>;
+	deletePage(page: string): Promise<void>;
 }
 /**
  * Represents a custom, user-created list of manga
@@ -1227,10 +1227,10 @@ export declare class Manga {
 	 * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
 	 * https://api.mangadex.org/docs.html#operation/post-manga
 	 * @param {String} id
-	 * @param {...String} languages
+	 * @param {...String|String[]} languages
 	 * @returns {Promise<Object.<string, AggregateVolume>>}
 	 */
-	static getAggregate(id: string, ...languages: string[]): Promise<{
+	static getAggregate(id: string, ...languages: (string | string[])[]): Promise<{
 		[x: string]: {
 			volume: string;
 			count: number;
@@ -1353,6 +1353,45 @@ export declare class Manga {
 	 * @type {Tag[]}
 	 */
 	tags: Tag[];
+	/**
+	 * @ignore
+	 * @typedef {Object} RelatedMangaObject
+	 * @property {Manga[]} RelatedMangaObject.monochrome
+	 * @property {Manga[]} RelatedMangaObject.main_story
+	 * @property {Manga[]} RelatedMangaObject.adapted_from
+	 * @property {Manga[]} RelatedMangaObject.based_on
+	 * @property {Manga[]} RelatedMangaObject.prequel
+	 * @property {Manga[]} RelatedMangaObject.side_story
+	 * @property {Manga[]} RelatedMangaObject.doujinshi
+	 * @property {Manga[]} RelatedMangaObject.same_franchise
+	 * @property {Manga[]} RelatedMangaObject.shared_universe
+	 * @property {Manga[]} RelatedMangaObject.sequel
+	 * @property {Manga[]} RelatedMangaObject.spin_off
+	 * @property {Manga[]} RelatedMangaObject.alternate_story
+	 * @property {Manga[]} RelatedMangaObject.preserialization
+	 * @property {Manga[]} RelatedMangaObject.colored
+	 * @property {Manga[]} RelatedMangaObject.serialization
+	 */
+	/**
+	 * @type {RelatedMangaObject}
+	 */
+	relatedManga: {
+		monochrome: Manga[];
+		main_story: Manga[];
+		adapted_from: Manga[];
+		based_on: Manga[];
+		prequel: Manga[];
+		side_story: Manga[];
+		doujinshi: Manga[];
+		same_franchise: Manga[];
+		shared_universe: Manga[];
+		sequel: Manga[];
+		spin_off: Manga[];
+		alternate_story: Manga[];
+		preserialization: Manga[];
+		colored: Manga[];
+		serialization: Manga[];
+	};
 	/**
 	 * Main title string based on global locale
 	 * @type {String}
