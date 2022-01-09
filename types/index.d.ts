@@ -509,11 +509,6 @@ export declare class Chapter {
 	 */
 	translatedLanguage: string;
 	/**
-	 * Hash id of this chapter
-	 * @type {String}
-	 */
-	hash: string;
-	/**
 	 * The date of this chapter's creation
 	 * @type {Date}
 	 */
@@ -529,20 +524,17 @@ export declare class Chapter {
 	 */
 	publishAt: Date;
 	/**
-	 * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-	 * @type {String[]}
+	 * Page count
+	 * @type {Number}
 	 */
-	pageNames: string[];
-	/**
-	 * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-	 * @type {String[]}
-	 */
-	saverPageNames: string[];
+	pages: number;
 	/**
 	 * Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
 	 * @type {Boolean}
 	 */
 	isExternal: boolean;
+	pageNames: any[];
+	saverPageNames: any[];
 	/**
 	 * The external URL to this chapter if it is not hosted on MD. Null if it is hosted on MD
 	 * @type {String}
@@ -569,9 +561,10 @@ export declare class Chapter {
 	 * Therefore applications that download image data pleaese report failures as stated here:
 	 * https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
 	 * @param {Boolean} [saver=false] Use data saver images?
+	 * @param {Boolean} [forcePort=false] Force the final URLs to use port 443
 	 * @returns {Promise<String[]>}
 	 */
-	getReadablePages(saver?: boolean): Promise<string[]>;
+	getReadablePages(saver?: boolean, forcePort?: boolean): Promise<string[]>;
 	/**
 	 * Marks this chapter as either read or unread
 	 * @param {Boolean} [read=true] True to mark as read, false to mark unread
@@ -933,6 +926,8 @@ export declare class Manga {
 	 * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} [MangaParameterObject.publicationDemographic]
 	 * @property {String[]} [MangaParameterObject.ids] Max of 100 per request
 	 * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [MangaParameterObject.contentRating]
+	 * @property {Boolean} [MangaParameterObject.hasAvailableChapters]
+	 * @property {String} [MangaParameterObject.group] Group id
 	 * @property {Number} [MangaParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	 * @property {Number} [MangaParameterObject.offset]
 	 */
@@ -985,6 +980,11 @@ export declare class Manga {
 		 */
 		ids?: string[];
 		contentRating?: Array<"safe" | "suggestive" | "erotica" | "pornographic">;
+		hasAvailableChapters?: boolean;
+		/**
+		 * Group id
+		 */
+		group?: string;
 		/**
 		 * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 		 */
@@ -1052,6 +1052,11 @@ export declare class Manga {
 		 */
 		ids?: string[];
 		contentRating?: Array<"safe" | "suggestive" | "erotica" | "pornographic">;
+		hasAvailableChapters?: boolean;
+		/**
+		 * Group id
+		 */
+		group?: string;
 		/**
 		 * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 		 */
@@ -1215,6 +1220,8 @@ export declare class Manga {
 	 * @typedef {Object} AggregateChapter
 	 * @property {String} AggregateChapter.chapter
 	 * @property {Number} AggregateChapter.count
+	 * @property {String} AggregateChapter.id
+	 * @property {String[]} AggregateChapter.others
 	 */
 	/**
 	 * @ignore
@@ -1238,6 +1245,8 @@ export declare class Manga {
 				[x: string]: {
 					chapter: string;
 					count: number;
+					id: string;
+					others: string[];
 				};
 			};
 		};
@@ -1255,6 +1264,28 @@ export declare class Manga {
 	 * @returns {Promise<UploadSession>}
 	 */
 	static getCurrentUploadSession(): Promise<UploadSession>;
+	/**
+	 * @ignore
+	 * @typedef {Object} Statistics
+	 * @property {Number} Statistics.follows
+	 * @property {Object} Statistics.rating
+	 * @property {Number} Statistics.rating.average
+	 * @property {Object.<string, number>} Statistics.rating.distribution
+	 */
+	/**
+	 * Returns the rating and follow count of a manga
+	 * @param {String} id
+	 * @returns {Statistics}
+	 */
+	static getStatistics(id: string): {
+		follows: number;
+		rating: {
+			average: number;
+			distribution: {
+				[x: string]: number;
+			};
+		};
+	};
 	/**
 	 * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
 	 * @param {Object|String} context Either an API response or Mangadex id
@@ -1407,6 +1438,15 @@ export declare class Manga {
 	 * @type {String}
 	 */
 	get description(): string;
+	getStatistics(): {
+		follows: number;
+		rating: {
+			average: number;
+			distribution: {
+				[x: string]: number;
+			};
+		};
+	};
 	/**
 	 * Creates a new upload session with this manga as the target
 	 * @param {...String|import('../index').Group} groups
@@ -1495,6 +1535,8 @@ export declare class Manga {
 				[x: string]: {
 					chapter: string;
 					count: number;
+					id: string;
+					others: string[];
 				};
 			};
 		};
@@ -1616,6 +1658,14 @@ export declare class Group {
 	 * @ignore
 	 * @typedef {Object} GroupParameterObject
 	 * @property {String} [GroupParameterObject.name]
+	 * @property {String} [GroupParameterObject.name]
+	 * @property {String} [GroupParameterObject.focusedLanguage]
+	 * @property {Object} [GroupParameterObject.order]
+	 * @property {'asc'|'desc'} [GroupParameterObject.order.createdAt]
+	 * @property {'asc'|'desc'} [GroupParameterObject.order.updatedAt]
+	 * @property {'asc'|'desc'} [GroupParameterObject.order.name]
+	 * @property {'asc'|'desc'} [GroupParameterObject.order.followedCount]
+	 * @property {'asc'|'desc'} [GroupParameterObject.order.relevance]
 	 * @property {String[]} [GroupParameterObject.ids] Max of 100 per request
 	 * @property {Number} [GroupParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
 	 * @property {Number} [GroupParameterObject.offset]
@@ -1629,6 +1679,14 @@ export declare class Group {
 	 */
 	static search(searchParameters?: string | {
 		name?: string;
+		focusedLanguage?: string;
+		order?: {
+			createdAt: "asc" | "desc";
+			updatedAt: "asc" | "desc";
+			name: "asc" | "desc";
+			followedCount: "asc" | "desc";
+			relevance: "asc" | "desc";
+		};
 		/**
 		 * Max of 100 per request
 		 */
@@ -1659,6 +1717,14 @@ export declare class Group {
 	 */
 	static getByQuery(searchParameters?: string | {
 		name?: string;
+		focusedLanguage?: string;
+		order?: {
+			createdAt: "asc" | "desc";
+			updatedAt: "asc" | "desc";
+			name: "asc" | "desc";
+			followedCount: "asc" | "desc";
+			relevance: "asc" | "desc";
+		};
 		/**
 		 * Max of 100 per request
 		 */
@@ -1729,6 +1795,31 @@ export declare class Group {
 	* @type {String}
 	*/
 	discord: string;
+	/**
+	 * Email for this group
+	 * @type {String}
+	 */
+	contactEmail: string;
+	/**
+	 * This group's twitter
+	 * @type {String}
+	 */
+	twitter: string;
+	/**
+	 * This group's focused languages
+	 * @type {String[]}
+	 */
+	focusedLanguages: string[];
+	/**
+	 * This group's publish delay
+	 * @type {Number}
+	 */
+	publishDelay: number;
+	/**
+	 * Is this group inactive?
+	 * @type {Boolean}
+	 */
+	inactive: boolean;
 	/**
 	 * The group's custom description
 	 * @type {String}
