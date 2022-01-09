@@ -73,6 +73,12 @@ class Chapter {
         this.publishAt = context.data.attributes.publishAt ? new Date(context.data.attributes.publishAt) : null;
 
         /**
+         * Page count
+         * @type {Number}
+         */
+        this.pages = context.data.attributes.pages;
+
+        /**
          * Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
          * @type {Boolean}
          */

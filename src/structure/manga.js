@@ -233,6 +233,8 @@ class Manga {
      * @property {Array<'shounen'|'shoujo'|'josei'|'seinen'|'none'>} [MangaParameterObject.publicationDemographic]
      * @property {String[]} [MangaParameterObject.ids] Max of 100 per request
      * @property {Array<'safe'|'suggestive'|'erotica'|'pornographic'>} [MangaParameterObject.contentRating]
+     * @property {Boolean} [MangaParameterObject.hasAvailableChapters]
+     * @property {String} [MangaParameterObject.group] Group id
      * @property {Number} [MangaParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} [MangaParameterObject.offset]
      */
@@ -443,6 +445,8 @@ class Manga {
      * @typedef {Object} AggregateChapter
      * @property {String} AggregateChapter.chapter
      * @property {Number} AggregateChapter.count
+     * @property {String} AggregateChapter.id
+     * @property {String[]} AggregateChapter.others
      */
 
     /**
@@ -484,6 +488,33 @@ class Manga {
      */
     static getCurrentUploadSession() {
         return UploadSession.getCurrentSession();
+    }
+
+    /**
+     * @ignore
+     * @typedef {Object} Statistics
+     * @property {Number} Statistics.follows
+     * @property {Object} Statistics.rating
+     * @property {Number} Statistics.rating.average
+     * @property {Object.<string, number>} Statistics.rating.distribution
+     */
+
+    /**
+     * Returns the rating and follow count of a manga
+     * @param {String} id 
+     * @returns {Statistics}
+     */
+    static async getStatistics(id) {
+        if (id === undefined) throw new Error('Invalid Argument(s)');
+        let res = await Util.apiRequest(`statistics/manga/${id}`);
+        if (!res.statistics || Object.values(res.statistics).length === 0) {
+            throw new APIRequestError('The API did not respond with any statistics', APIRequestError.INVALID_RESPONSE);
+        }
+        return Object.values(res.statistics)[0];
+    }
+
+    getStatistics() {
+        return Manga.getStatistics(this.id);
     }
 
     /**

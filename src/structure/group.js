@@ -78,6 +78,36 @@ class Group {
         this.discord = context.data.attributes.discord;
 
         /**
+         * Email for this group
+         * @type {String}
+         */
+        this.contactEmail = context.data.attributes.contactEmail;
+
+        /**
+         * This group's twitter
+         * @type {String}
+         */
+        this.twitter = context.data.attributes.twitter;
+
+        /**
+         * This group's focused languages
+         * @type {String[]}
+         */
+        this.focusedLanguages = context.data.attributes.focusedLanguages;
+
+        /**
+         * This group's publish delay
+         * @type {Number}
+         */
+        this.publishDelay = context.data.attributes.publishDelay;
+
+        /**
+         * Is this group inactive?
+         * @type {Boolean}
+         */
+        this.inactive = context.data.attributes.inactive;
+
+        /**
          * The group's custom description
          * @type {String}
          */
@@ -112,6 +142,14 @@ class Group {
      * @ignore
      * @typedef {Object} GroupParameterObject
      * @property {String} [GroupParameterObject.name]
+     * @property {String} [GroupParameterObject.name]
+     * @property {String} [GroupParameterObject.focusedLanguage]
+     * @property {Object} [GroupParameterObject.order]
+     * @property {'asc'|'desc'} [GroupParameterObject.order.createdAt]
+     * @property {'asc'|'desc'} [GroupParameterObject.order.updatedAt]
+     * @property {'asc'|'desc'} [GroupParameterObject.order.name]
+     * @property {'asc'|'desc'} [GroupParameterObject.order.followedCount]
+     * @property {'asc'|'desc'} [GroupParameterObject.order.relevance]
      * @property {String[]} [GroupParameterObject.ids] Max of 100 per request
      * @property {Number} [GroupParameterObject.limit] Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
      * @property {Number} [GroupParameterObject.offset]
