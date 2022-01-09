@@ -19,7 +19,7 @@ class User {
             return;
         } else if (!context) return;
 
-        if (context.data === undefined) context.data = {};
+        if (!context.data) context.data = {};
 
         /**
          * Mangadex id for this object
