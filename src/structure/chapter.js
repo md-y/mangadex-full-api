@@ -55,12 +55,6 @@ class Chapter {
         this.translatedLanguage = context.data.attributes.translatedLanguage;
 
         /**
-         * Hash id of this chapter
-         * @type {String}
-         */
-        this.hash = context.data.attributes.hash;
-
-        /**
          * The date of this chapter's creation
          * @type {Date}
          */
@@ -77,18 +71,6 @@ class Chapter {
          * @type {Date}
          */
         this.publishAt = context.data.attributes.publishAt ? new Date(context.data.attributes.publishAt) : null;
-
-        /**
-         * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-         * @type {String[]}
-         */
-        this.pageNames = context.data.attributes.data;
-
-        /**
-         * Dont Use. This is an array of partial URLs. Use 'getReadablePages()' to retrieve full urls.
-         * @type {String[]}
-         */
-        this.saverPageNames = context.data.attributes.dataSaver;
 
         /**
          * Is this chapter only a link to another website (eg Mangaplus) instead of being hosted on MD?
@@ -215,12 +197,16 @@ class Chapter {
      * Therefore applications that download image data pleaese report failures as stated here:
      * https://api.mangadex.org/docs.html#section/Reading-a-chapter-using-the-API/Report
      * @param {Boolean} [saver=false] Use data saver images?
+     * @param {Boolean} [forcePort=false] Force the final URLs to use port 443
      * @returns {Promise<String[]>}
      */
-    async getReadablePages(saver = false) {
+    async getReadablePages(saver = false, forcePort = false) {
         if (this.isExternal) throw new Error('Cannot get readable pages for an external chapter.');
-        let res = await Util.apiRequest(`/at-home/server/${this.id}`);
-        return (saver ? this.saverPageNames : this.pageNames).map(name => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${this.hash}/${name}`);
+        let res = await Util.apiParameterRequest(`/at-home/server/${this.id}`, { forcePort443: forcePort });
+        if (!res.baseUrl || !res.chapter.hash || !res.chapter.hash) {
+            throw new APIRequestError(`The API did not respond the correct structure for a MD@H chapter request:\n${JSON.stringify(res)}`, APIRequestError.INVALID_RESPONSE);
+        }
+        return res.chapter[saver ? 'dataSaver' : 'data'].map(file => `${res.baseUrl}/${saver ? 'data-saver' : 'data'}/${res.chapter.hash}/${file}`);
     }
 
     /**
