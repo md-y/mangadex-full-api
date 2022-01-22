@@ -1588,6 +1588,7 @@ export declare class Author {
 			name: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Author[]>;
+	static create(name: string, options?: Object): Promise<Author>;
 	/**
 	 * Gets multiple authors
 	 * @param {...String|Author|Relationship<Author>} ids
