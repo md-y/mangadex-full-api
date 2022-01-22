@@ -197,6 +197,14 @@ export declare class Cover {
 			volume: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Cover[]>;
+    static create(mangaId: string, file: {
+        name: string,
+        data: Buffer,
+        type: 'jpeg' | 'png' | 'gif'
+    }, options?: {
+        volume?: string | null,
+        description?: string
+    }): Promise<Cover>;
 	/**
 	 * Gets multiple covers
 	 * @param {...String|Cover|Relationship<Cover>} ids
@@ -991,6 +999,7 @@ export declare class Manga {
 		limit?: number;
 		offset?: number;
 	}, includeSubObjects?: boolean): Promise<Manga[]>;
+    static create(title: LocalizedString, originalLanguage: string, status: 'ongoing'|'completed'|'hiatus'|'cancelled', contentRating: 'safe'|'suggestive'|'erotica'|'pornographic', options?: Object): Promise<Manga>;
 	/**
 	 * Gets multiple manga
 	 * @param {...String|Relationship<Manga>} ids
