@@ -19,7 +19,7 @@ const UploadSession = require('../internal/uploadsession.js');
 class Manga {
     /**
      * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
-     * @param {Object|String} context Either an API response or Mangadex id 
+     * @param {Object|String} context Either an API response or Mangadex id
      */
     constructor(context) {
         if (typeof context === 'string') {
@@ -172,8 +172,8 @@ class Manga {
          * @type {RelatedMangaObject}
          */
         this.relatedManga = Object.fromEntries([
-            'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel', 
-            'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel', 
+            'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel',
+            'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel',
             'spin_off', 'alternate_story', 'preserialization', 'colored', 'serialization'
         ].map(k => [k, Relationship.convertType('manga', context.data.relationships.filter(r => r.related === k))]));
     }
@@ -250,6 +250,25 @@ class Manga {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
         if (includeSubObjects) searchParameters.includes = ['artist', 'author', 'cover_art'];
         return Util.apiCastedRequest('/manga', Manga, searchParameters);
+    }
+
+    /**
+     * Creates a manga.
+     * @param {LocalizedString} [title] The title of the manga.
+     * @param {string} [originalLanguage] The original language of the manga.
+     * @param {'ongoing'|'completed'|'hiatus'|'cancelled'} [status] The status of the manga.
+     * @param {'safe'|'suggestive'|'erotica'|'pornographic'} [contentRating] The content rating of the manga.
+     * @param {Object | undefined} [options] Additional options for creating the manga.
+     * @returns {Promise<Manga>}
+     */
+    static async create(title, originalLanguage, status, contentRating, options){
+        return new Manga(await Util.apiRequest('/manga', 'POST', {
+            title,
+            originalLanguage,
+            status,
+            contentRating,
+            ...options
+        }));
     }
 
     /**
@@ -371,7 +390,7 @@ class Manga {
     }
 
     /**
-     * Sets the logged in user's reading status for this manga. 
+     * Sets the logged in user's reading status for this manga.
      * Call without arguments to clear the reading status
      * @param {String} id
      * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
@@ -408,7 +427,7 @@ class Manga {
 
     /**
      * Makes the logged in user either follow or unfollow a manga
-     * @param {String} id 
+     * @param {String} id
      * @param {Boolean} [follow=true] True to follow, false to unfollow
      * @returns {Promise<void>}
      */
@@ -420,7 +439,7 @@ class Manga {
     /**
      * Retrieves the read chapters for multiple manga
      * @param  {...String|Manga|Relationship<Manga>} ids
-     * @returns {Promise<Chapter[]>} 
+     * @returns {Promise<Chapter[]>}
      */
     static async getReadChapters(...ids) {
         if (ids.length === 0) throw new Error('Invalid Argument(s)');
@@ -461,7 +480,7 @@ class Manga {
      * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
      * @param {String} id
-     * @param {...String|String[]} languages 
+     * @param {...String|String[]} languages
      * @returns {Promise<Object.<string, AggregateVolume>>}
      */
     static async getAggregate(id, ...languages) {
@@ -501,7 +520,7 @@ class Manga {
 
     /**
      * Returns the rating and follow count of a manga
-     * @param {String} id 
+     * @param {String} id
      * @returns {Statistics}
      */
     static async getStatistics(id) {
@@ -564,7 +583,7 @@ class Manga {
     }
 
     /**
-     * Sets the logged in user's reading status for this manga. 
+     * Sets the logged in user's reading status for this manga.
      * Call without arguments to clear the reading status
      * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
      * @returns {Promise<Manga>}
@@ -595,7 +614,7 @@ class Manga {
     /**
      * Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
-     * @param {...String} languages 
+     * @param {...String} languages
      * @returns {Promise<Object.<string, AggregateVolume>>}
      */
     getAggregate(...languages) {
