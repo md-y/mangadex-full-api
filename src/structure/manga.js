@@ -263,7 +263,7 @@ class Manga {
      */
     static async create(title, originalLanguage, status, contentRating, options){
         return new Manga(await Util.apiRequest('/manga', 'POST', {
-            title,
+            title: title.data,
             originalLanguage,
             status,
             contentRating,

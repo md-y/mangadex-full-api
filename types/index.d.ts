@@ -19,6 +19,7 @@ declare class LocalizedString {
 	 * @returns {String}
 	 */
 	get localString(): string;
+	get data(): { [locale: string]: string };
 }
 declare class Links {
 	/**
