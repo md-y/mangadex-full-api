@@ -906,7 +906,7 @@ export declare class List {
  * Represents a manga object
  * https://api.mangadex.org/docs.html#tag/Manga
  */
-export declare class Manga {
+export declare class Manga {Manga
 	/**
 	 * @ignore
 	 * @typedef {Object} MangaParameterObject
@@ -999,7 +999,7 @@ export declare class Manga {
 		 */
 		limit?: number;
 		offset?: number;
-	}, includeSubObjects?: boolean): Promise<Manga[]>;
+	}, includeSubObjects?: boolean): Promise<[]>;
     static create(title: LocalizedString | Object, originalLanguage: string, status: 'ongoing'|'completed'|'hiatus'|'cancelled', contentRating: 'safe'|'suggestive'|'erotica'|'pornographic', options?: Object): Promise<Manga>;
 	/**
 	 * Gets multiple manga
@@ -1296,12 +1296,14 @@ export declare class Manga {
 			};
 		};
 	};
+	update(): Promise<Manga>;
 	/**
 	 * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
 	 * @param {Object|String} context Either an API response or Mangadex id
 	 */
 	constructor(context: any | string);
 	id: string;
+	version: number;
 	/**
 	 * Main title with different localization options
 	 * @type {LocalizedString}
