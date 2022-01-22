@@ -1000,7 +1000,7 @@ export declare class Manga {
 		limit?: number;
 		offset?: number;
 	}, includeSubObjects?: boolean): Promise<Manga[]>;
-    static create(title: LocalizedString, originalLanguage: string, status: 'ongoing'|'completed'|'hiatus'|'cancelled', contentRating: 'safe'|'suggestive'|'erotica'|'pornographic', options?: Object): Promise<Manga>;
+    static create(title: LocalizedString | Object, originalLanguage: string, status: 'ongoing'|'completed'|'hiatus'|'cancelled', contentRating: 'safe'|'suggestive'|'erotica'|'pornographic', options?: Object): Promise<Manga>;
 	/**
 	 * Gets multiple manga
 	 * @param {...String|Relationship<Manga>} ids

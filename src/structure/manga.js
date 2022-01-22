@@ -254,7 +254,7 @@ class Manga {
 
     /**
      * Creates a manga.
-     * @param {LocalizedString} [title] The title of the manga.
+     * @param {LocalizedString | Object} [title] The title of the manga.
      * @param {string} [originalLanguage] The original language of the manga.
      * @param {'ongoing'|'completed'|'hiatus'|'cancelled'} [status] The status of the manga.
      * @param {'safe'|'suggestive'|'erotica'|'pornographic'} [contentRating] The content rating of the manga.
@@ -263,7 +263,7 @@ class Manga {
      */
     static async create(title, originalLanguage, status, contentRating, options){
         return new Manga(await Util.apiRequest('/manga', 'POST', {
-            title: title.data,
+            title: title.data ?? title,
             originalLanguage,
             status,
             contentRating,
