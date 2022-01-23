@@ -25,6 +25,164 @@ class Manga {
         this._parse(context);
     }
 
+    _parse(context){
+        if (typeof context === 'string') {
+            this.id = context;
+            return;
+        } else if (!context) return;
+
+        if (!context.data) context.data = {};
+
+        /**
+         * Mangadex id for this object
+         * @type {String}
+         */
+        this.id = context.data.id;
+
+
+        if (context.data.attributes === undefined) context.data.attributes = {};
+        /**
+         * Main title with different localization options
+         * @type {LocalizedString}
+         */
+        this.localizedTitle = new LocalizedString(context.data.attributes.title);
+
+        /**
+         * Alt titles with different localization options
+         * @type {LocalizedString[]}
+         */
+        this.localizedAltTitles = (context.data.attributes.altTitles || []).map(i => new LocalizedString(i));
+
+        /**
+         * Description with different localization options
+         * @type {LocalizedString}
+         */
+        this.localizedDescription = new LocalizedString(context.data.attributes.description);
+
+        /**
+         * Is this Manga locked?
+         * @type {Boolean}
+         */
+        this.isLocked = context.data.attributes.isLocked === true;
+
+        /**
+         * Link object representing links to other websites about this manga
+         * https://api.mangadex.org/docs.html#section/Static-data/Manga-links-data
+         * @type {Links}
+         */
+        this.links = new Links(context.data.attributes.links);
+
+        /**
+         * 2-letter code for the original language of this manga
+         * @type {String}
+         */
+        this.originalLanguage = context.data.attributes.originalLanguage;
+
+        /**
+         * This manga's last volume based on the default feed order
+         * @type {String}
+         */
+        this.lastVolume = context.data.attributes.lastVolume;
+
+        /**
+         * This manga's last chapter based on the default feed order
+         * @type {String}
+         */
+        this.lastChapter = context.data.attributes.lastChapter;
+
+        /**
+         * Publication demographic of this manga
+         * https://api.mangadex.org/docs.html#section/Static-data/Manga-publication-demographic
+         * @type {'shounen'|'shoujo'|'josei'|'seinen'}
+         */
+        this.publicationDemographic = context.data.attributes.publicationDemographic;
+
+        /**
+         * Publication/Scanlation status of this manga
+         * @type {'ongoing'|'completed'|'hiatus'|'cancelled'}
+         */
+        this.status = context.data.attributes.status;
+
+        /**
+         * Year of this manga's publication
+         * @type {Number}
+         */
+        this.year = context.data.attributes.year !== null && !isNaN(context.data.attributes.year) ? parseFloat(context.data.attributes.year) : null;
+
+        /**
+         * The content rating of this manga
+         * @type {'safe'|'suggestive'|'erotica'|'pornographic'}
+         */
+        this.contentRating = context.data.attributes.contentRating;
+
+        /**
+         * The date of this manga's page creation
+         * @type {Date}
+         */
+        this.createdAt = context.data.attributes.createdAt ? new Date(context.data.attributes.createdAt) : null;
+
+        /**
+         * The date the manga was last updated
+         * @type {Date}
+         */
+        this.updatedAt = context.data.attributes.updatedAt ? new Date(context.data.attributes.updatedAt) : null;
+
+        /**
+         * Authors attributed to this manga
+         * @type {Relationship<import('../index').Author>[]}
+         */
+        this.authors = Relationship.convertType('author', context.data.relationships, this);
+
+        /**
+         * Artists attributed to this manga
+         * @type {Relationship<import('../index').Author>[]}
+         */
+        this.artists = Relationship.convertType('artist', context.data.relationships, this);
+
+        /**
+         * This manga's main cover. Use 'getCovers' to retrive other covers
+         * @type {Relationship<Cover>}
+         */
+        this.mainCover = Relationship.convertType('cover_art', context.data.relationships, this).pop();
+        if (!this.mainCover) this.mainCover = null;
+
+        /**
+         * Array of tags for this manga
+         * @type {Tag[]}
+         */
+        this.tags = (context.data.attributes.tags || []).map(elem => new Tag(elem));
+
+        /**
+         * @ignore
+         * @typedef {Object} RelatedMangaObject
+         * @property {Manga[]} RelatedMangaObject.monochrome
+         * @property {Manga[]} RelatedMangaObject.main_story
+         * @property {Manga[]} RelatedMangaObject.adapted_from
+         * @property {Manga[]} RelatedMangaObject.based_on
+         * @property {Manga[]} RelatedMangaObject.prequel
+         * @property {Manga[]} RelatedMangaObject.side_story
+         * @property {Manga[]} RelatedMangaObject.doujinshi
+         * @property {Manga[]} RelatedMangaObject.same_franchise
+         * @property {Manga[]} RelatedMangaObject.shared_universe
+         * @property {Manga[]} RelatedMangaObject.sequel
+         * @property {Manga[]} RelatedMangaObject.spin_off
+         * @property {Manga[]} RelatedMangaObject.alternate_story
+         * @property {Manga[]} RelatedMangaObject.preserialization
+         * @property {Manga[]} RelatedMangaObject.colored
+         * @property {Manga[]} RelatedMangaObject.serialization
+         */
+
+        /**
+         * @type {RelatedMangaObject}
+         */
+        this.relatedManga = Object.fromEntries([
+            'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel',
+            'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel',
+            'spin_off', 'alternate_story', 'preserialization', 'colored', 'serialization'
+        ].map(k => [k, Relationship.convertType('manga', context.data.relationships.filter(r => r.related === k))]));
+        this.version = context.data.attributes.version || 1;
+    }
+
     /**
      * Main title string based on global locale
      * @type {String}
