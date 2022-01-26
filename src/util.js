@@ -141,7 +141,7 @@ async function apiParameterRequest(baseEndpoint, parameterObject) {
 exports.apiParameterRequest = apiParameterRequest;
 
 /**
- * Same as apiParameterRequest, but optimized for search requests. 
+ * Same as apiParameterRequest, but optimized for search requests.
  * Allows for larger searches (more than the limit max, even to Infinity) through mutliple requests, and
  * this function always returns an array instead of the normal JSON object.
  * @param {String} baseEndpoint Endpoint with no parameters
@@ -199,7 +199,7 @@ exports.apiCastedRequest = apiCastedRequest;
 
 /**
  * Retrieves an unlimted amount of an object via a search function and id array
- * @param {Function} searchFunction 
+ * @param {Function} searchFunction
  * @param {String[]|String[][]} ids
  * @param {Number} [limit=100]
  * @param {String} [searchProperty='ids']
@@ -222,10 +222,18 @@ exports.getMultipleIds = getMultipleIds;
 /**
  * Returns a buffer to be sent with a multipart POST request
  * @param {Object[]} files
+ * @param {{[key: string]: string}} [extra] Additional key-value pairs
  * @returns {Buffer}
  */
-function createMultipartPayload(files) {
+function createMultipartPayload(files, extra) {
     let dataArray = [];
+    if (extra) {
+        Object.entries(extra).forEach(([key, value]) => {
+            dataArray.push(
+                `--${MULTIPART_BOUNDARY}\r\nContent-Disposition: form-data; name="${key}"\r\n\r\n${value}\r\n`
+            );
+        });
+    }
     files.forEach((file, i) => {
         dataArray.push(
             `--${MULTIPART_BOUNDARY}\r\nContent-Disposition: form-data; name="file${i}"; filename="${file.name}"\r\nContent-Type: ${file.type}\r\n\r\n`

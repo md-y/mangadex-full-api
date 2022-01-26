@@ -19,7 +19,7 @@ const UploadSession = require('../internal/uploadsession.js');
 class Manga {
     /**
      * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
-     * @param {Object|String} context Either an API response or Mangadex id 
+     * @param {Object|String} context Either an API response or Mangadex id
      */
     constructor(context) {
         if (typeof context === 'string') {
@@ -151,31 +151,37 @@ class Manga {
         /**
          * @ignore
          * @typedef {Object} RelatedMangaObject
-		 * @property {Manga[]} RelatedMangaObject.monochrome
-		 * @property {Manga[]} RelatedMangaObject.main_story
-		 * @property {Manga[]} RelatedMangaObject.adapted_from
-		 * @property {Manga[]} RelatedMangaObject.based_on
-		 * @property {Manga[]} RelatedMangaObject.prequel
-		 * @property {Manga[]} RelatedMangaObject.side_story
-		 * @property {Manga[]} RelatedMangaObject.doujinshi
-		 * @property {Manga[]} RelatedMangaObject.same_franchise
-		 * @property {Manga[]} RelatedMangaObject.shared_universe
-		 * @property {Manga[]} RelatedMangaObject.sequel
-		 * @property {Manga[]} RelatedMangaObject.spin_off
-		 * @property {Manga[]} RelatedMangaObject.alternate_story
-		 * @property {Manga[]} RelatedMangaObject.preserialization
-		 * @property {Manga[]} RelatedMangaObject.colored
-		 * @property {Manga[]} RelatedMangaObject.serialization
+         * @property {Manga[]} RelatedMangaObject.monochrome
+         * @property {Manga[]} RelatedMangaObject.main_story
+         * @property {Manga[]} RelatedMangaObject.adapted_from
+         * @property {Manga[]} RelatedMangaObject.based_on
+         * @property {Manga[]} RelatedMangaObject.prequel
+         * @property {Manga[]} RelatedMangaObject.side_story
+         * @property {Manga[]} RelatedMangaObject.doujinshi
+         * @property {Manga[]} RelatedMangaObject.same_franchise
+         * @property {Manga[]} RelatedMangaObject.shared_universe
+         * @property {Manga[]} RelatedMangaObject.sequel
+         * @property {Manga[]} RelatedMangaObject.spin_off
+         * @property {Manga[]} RelatedMangaObject.alternate_story
+         * @property {Manga[]} RelatedMangaObject.preserialization
+         * @property {Manga[]} RelatedMangaObject.colored
+         * @property {Manga[]} RelatedMangaObject.serialization
          */
 
         /**
          * @type {RelatedMangaObject}
          */
         this.relatedManga = Object.fromEntries([
-            'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel', 
-            'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel', 
+            'monochrome', 'main_story', 'adapted_from', 'based_on', 'prequel',
+            'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel',
             'spin_off', 'alternate_story', 'preserialization', 'colored', 'serialization'
         ].map(k => [k, Relationship.convertType('manga', context.data.relationships.filter(r => r.related === k))]));
+
+        /**
+         * The version of this manga (incremented by updating manga data)
+         * @type {Number}
+         */
+        this.version = context.data.attributes.version ?? 1;
     }
 
     /**
@@ -250,6 +256,25 @@ class Manga {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
         if (includeSubObjects) searchParameters.includes = ['artist', 'author', 'cover_art'];
         return Util.apiCastedRequest('/manga', Manga, searchParameters);
+    }
+
+    /**
+     * Creates a manga.
+     * @param {LocalizedString | Object} [title] The title of the manga.
+     * @param {string} [originalLanguage] The original language of the manga.
+     * @param {'ongoing'|'completed'|'hiatus'|'cancelled'} [status] The status of the manga.
+     * @param {'safe'|'suggestive'|'erotica'|'pornographic'} [contentRating] The content rating of the manga.
+     * @param {Object | undefined} [options] Additional options for creating the manga.
+     * @returns {Promise<Manga>}
+     */
+    static async create(title, originalLanguage, status, contentRating, options){
+        return new Manga(await Util.apiRequest('/manga', 'POST', {
+            title: title.data ?? title,
+            originalLanguage,
+            status,
+            contentRating,
+            ...options
+        }));
     }
 
     /**
@@ -371,7 +396,7 @@ class Manga {
     }
 
     /**
-     * Sets the logged in user's reading status for this manga. 
+     * Sets the logged in user's reading status for this manga.
      * Call without arguments to clear the reading status
      * @param {String} id
      * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
@@ -408,7 +433,7 @@ class Manga {
 
     /**
      * Makes the logged in user either follow or unfollow a manga
-     * @param {String} id 
+     * @param {String} id
      * @param {Boolean} [follow=true] True to follow, false to unfollow
      * @returns {Promise<void>}
      */
@@ -420,7 +445,7 @@ class Manga {
     /**
      * Retrieves the read chapters for multiple manga
      * @param  {...String|Manga|Relationship<Manga>} ids
-     * @returns {Promise<Chapter[]>} 
+     * @returns {Promise<Chapter[]>}
      */
     static async getReadChapters(...ids) {
         if (ids.length === 0) throw new Error('Invalid Argument(s)');
@@ -461,7 +486,7 @@ class Manga {
      * Returns a summary of every chapter for a manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
      * @param {String} id
-     * @param {...String|String[]} languages 
+     * @param {...String|String[]} languages
      * @returns {Promise<Object.<string, AggregateVolume>>}
      */
     static async getAggregate(id, ...languages) {
@@ -501,7 +526,7 @@ class Manga {
 
     /**
      * Returns the rating and follow count of a manga
-     * @param {String} id 
+     * @param {String} id
      * @returns {Statistics}
      */
     static async getStatistics(id) {
@@ -564,7 +589,7 @@ class Manga {
     }
 
     /**
-     * Sets the logged in user's reading status for this manga. 
+     * Sets the logged in user's reading status for this manga.
      * Call without arguments to clear the reading status
      * @param {'reading'|'on_hold'|'plan_to_read'|'dropped'|'re_reading'|'completed'} [status]
      * @returns {Promise<Manga>}
@@ -595,11 +620,40 @@ class Manga {
     /**
      * Returns a summary of every chapter for this manga including each of their numbers and volumes they belong to
      * https://api.mangadex.org/docs.html#operation/post-manga
-     * @param {...String} languages 
+     * @param {...String} languages
      * @returns {Promise<Object.<string, AggregateVolume>>}
      */
     getAggregate(...languages) {
         return Manga.getAggregate(this.id, ...languages);
+    }
+
+    /**
+     * Updates a manga's information using the information stored in the model and returns a new Manga.
+     * @returns {Promise<Manga>}
+     */
+    async update() {
+        const data = await Util.apiRequest(`manga/${this.id}`, 'PUT', {
+            title: this.localizedTitle.data,
+            altTitles: this.localizedAltTitles.map(altTitle => altTitle.data),
+            description: this.localizedDescription.data,
+            authors: this.authors.map(author => author.id),
+            artists: this.artists.map(artist => artist.id),
+            tags: this.tags.map(tag => tag.id),
+            links: this.links.availableLinks.reduce((prev, key) => {
+                prev[key] = this.links[key];
+                return prev;
+            }, {}),
+            originalLanguage: this.originalLanguage,
+            lastVolume: this.lastVolume,
+            lastChapter: this.lastChapter,
+            status: this.status,
+            publicationDemographic: this.publicationDemographic,
+            year: this.year,
+            contentRating: this.contentRating,
+            primaryCover: this.mainCover.id,
+            version: this.version
+        });
+        return new Manga(data)
     }
 }
 

@@ -2,7 +2,7 @@
 
 /**
  * Represents a string, but in different languages.
- * Generates properties for each language available 
+ * Generates properties for each language available
  * (ie you can index with language codes through localizedString['en'] or localizedString.jp)
  */
 class LocalizedString {
@@ -14,7 +14,7 @@ class LocalizedString {
     static locale = 'en';
 
     /**
-     * @param {Object.<string, string>} stringObject 
+     * @param {Object.<string, string>} stringObject
      */
     constructor(stringObject) {
         if (!stringObject) {
@@ -39,6 +39,17 @@ class LocalizedString {
         if (LocalizedString.locale in this) return this[LocalizedString.locale];
         for (let i of this.availableLocales) if (i in this) return this[i];
         return null;
+    }
+
+    /**
+     * Gets an object
+     * @returns {{[locale: string]: string}}
+     */
+    get data(){
+        return this.availableLocales.reduce((obj, locale) => {
+            obj[locale] = this[locale];
+            return obj;
+        }, {});
     }
 }
 
