@@ -22,10 +22,6 @@ class Manga {
      * @param {Object|String} context Either an API response or Mangadex id
      */
     constructor(context) {
-        this._parse(context);
-    }
-
-    _parse(context){
         if (typeof context === 'string') {
             this.id = context;
             return;
@@ -180,7 +176,12 @@ class Manga {
             'side_story', 'doujinshi', 'same_franchise', 'shared_universe', 'sequel',
             'spin_off', 'alternate_story', 'preserialization', 'colored', 'serialization'
         ].map(k => [k, Relationship.convertType('manga', context.data.relationships.filter(r => r.related === k))]));
-        this.version = context.data.attributes.version || 1;
+
+        /**
+         * The version of this manga (incremented by updating manga data)
+         * @type {Number}
+         */
+        this.version = context.data.attributes.version ?? 1;
     }
 
     /**

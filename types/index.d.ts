@@ -19,7 +19,13 @@ declare class LocalizedString {
 	 * @returns {String}
 	 */
 	get localString(): string;
-	get data(): { [locale: string]: string };
+	/**
+	 * Gets an object
+	 * @returns {{[locale: string]: string}}
+	 */
+	get data(): {
+		[locale: string]: string;
+	};
 }
 declare class Links {
 	/**
@@ -198,14 +204,40 @@ export declare class Cover {
 			volume: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Cover[]>;
-    static create(mangaId: string, file: {
-        name: string,
-        data: Buffer,
-        type: 'jpeg' | 'png' | 'gif'
-    }, options?: {
-        volume?: string | null,
-        description?: string
-    }): Promise<Cover>;
+	/**
+	 * @ignore
+	 * @typedef {Object} CoverUploadParameterObject
+	 * @property {string|null} [CoverUploadParameterObject.volume] Volume of the cover
+	 * @property {string} [CoverUploadParameterObject.description] Description of the cover
+	 */
+	/**
+	 * @ignore
+	 * @typedef {Object} CoverFileObject
+	 * @property {Buffer} CoverFileObject.data
+	 * @property {'jpeg'|'png'|'gif'} [CoverFileObject.type]
+	 * @property {String} CoverFileObject.name
+	 */
+	/**
+	 * Creates a new cover.
+	 * @param {string} [mangaId] The id of the manga that the cover is for.
+	 * @param {CoverFileObject} [file] The buffer containing the image data.
+	 * @param {CoverUploadParameterObject | undefined} [options] Additional options for the cover upload.
+	 * @returns {Promise<Cover>}
+	 */
+	static create(mangaId?: string, file?: {
+		data: Buffer;
+		type?: "jpeg" | "png" | "gif";
+		name: string;
+	}, options?: {
+		/**
+		 * Volume of the cover
+		 */
+		volume?: string | null;
+		/**
+		 * Description of the cover
+		 */
+		description?: string;
+	}): Promise<Cover>;
 	/**
 	 * Gets multiple covers
 	 * @param {...String|Cover|Relationship<Cover>} ids
@@ -906,7 +938,7 @@ export declare class List {
  * Represents a manga object
  * https://api.mangadex.org/docs.html#tag/Manga
  */
-export declare class Manga {Manga
+export declare class Manga {
 	/**
 	 * @ignore
 	 * @typedef {Object} MangaParameterObject
@@ -999,8 +1031,17 @@ export declare class Manga {Manga
 		 */
 		limit?: number;
 		offset?: number;
-	}, includeSubObjects?: boolean): Promise<[]>;
-    static create(title: LocalizedString | Object, originalLanguage: string, status: 'ongoing'|'completed'|'hiatus'|'cancelled', contentRating: 'safe'|'suggestive'|'erotica'|'pornographic', options?: Object): Promise<Manga>;
+	}, includeSubObjects?: boolean): Promise<Manga[]>;
+	/**
+	 * Creates a manga.
+	 * @param {LocalizedString | Object} [title] The title of the manga.
+	 * @param {string} [originalLanguage] The original language of the manga.
+	 * @param {'ongoing'|'completed'|'hiatus'|'cancelled'} [status] The status of the manga.
+	 * @param {'safe'|'suggestive'|'erotica'|'pornographic'} [contentRating] The content rating of the manga.
+	 * @param {Object | undefined} [options] Additional options for creating the manga.
+	 * @returns {Promise<Manga>}
+	 */
+	static create(title?: LocalizedString | any, originalLanguage?: string, status?: "ongoing" | "completed" | "hiatus" | "cancelled", contentRating?: "safe" | "suggestive" | "erotica" | "pornographic", options?: any | undefined): Promise<Manga>;
 	/**
 	 * Gets multiple manga
 	 * @param {...String|Relationship<Manga>} ids
@@ -1296,14 +1337,12 @@ export declare class Manga {Manga
 			};
 		};
 	};
-	update(): Promise<Manga>;
 	/**
 	 * There is no reason to directly create a manga object. Use static methods, ie 'get()'.
 	 * @param {Object|String} context Either an API response or Mangadex id
 	 */
 	constructor(context: any | string);
 	id: string;
-	version: number;
 	/**
 	 * Main title with different localization options
 	 * @type {LocalizedString}
@@ -1436,6 +1475,11 @@ export declare class Manga {Manga
 		serialization: Manga[];
 	};
 	/**
+	 * The version of this manga (incremented by updating manga data)
+	 * @type {Number}
+	 */
+	version: number;
+	/**
 	 * Main title string based on global locale
 	 * @type {String}
 	 */
@@ -1553,6 +1597,11 @@ export declare class Manga {Manga
 			};
 		};
 	}>;
+	/**
+	 * Updates a manga's information using the information stored in the model and returns a new Manga.
+	 * @returns {Promise<Manga>}
+	 */
+	update(): Promise<Manga>;
 }
 /**
  * Represents an author or artist
@@ -1591,7 +1640,13 @@ export declare class Author {
 			name: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Author[]>;
-	static create(name: string, options?: Object): Promise<Author>;
+	/**
+	 * Create a new Author.
+	 * @param {string} [name] The name of the author.
+	 * @param {Object | undefined} [options] Additional arguments to pass to the API.
+	 * @returns {Promise<Author>}
+	 */
+	static create(name?: string, options?: any | undefined): Promise<Author>;
 	/**
 	 * Gets multiple authors
 	 * @param {...String|Author|Relationship<Author>} ids
