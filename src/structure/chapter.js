@@ -84,10 +84,6 @@ class Chapter {
          * @type {Boolean}
          */
         this.isExternal = 'externalUrl' in context.data.attributes && context.data.attributes.externalUrl !== null;
-        if (this.isExternal) {
-            this.pageNames = [];
-            this.saverPageNames = [];
-        }
 
         /**
          * The external URL to this chapter if it is not hosted on MD. Null if it is hosted on MD
