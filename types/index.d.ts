@@ -102,12 +102,13 @@ declare class Relationship<ResolveType> {
 	/**
 	 * Returns an array of converted objects from a Mangadex Relationships Array
 	 * @ignore
+	 * @template T
 	 * @param {String} type
 	 * @param {Object[]} dataArray
 	 * @param {Object} caller
-	 * @returns {Relationship<ResolveType>}
+	 * @returns {Relationship<T>}
 	 */
-	static convertType(type: string, dataArray: any[], caller: any): Relationship<any>;
+	static convertType<T>(type: string, dataArray: any[], caller: any): Relationship<T>;
 	/**
 	 * Provides a constructor for a relationship type at run-time.
 	 * Should only be called in index.js
@@ -120,10 +121,10 @@ declare class Relationship<ResolveType> {
 	 * Resolves an array of relationships
 	 * @ignore
 	 * @template T
-	 * @param {Relationship<T>[]} relationshipArray
-	 * @returns {Promise<T[]>}
+	 * @param {Array<Relationship<T>>} relationshipArray
+	 * @returns {Promise<Array<T>>}
 	 */
-	static resolveAll<T>(relationshipArray: Relationship<T>[]): Promise<T[]>;
+	static resolveAll<T_1>(relationshipArray: Relationship<T_1>[]): Promise<T_1[]>;
 	constructor(data: any);
 	/**
 	 * Id of the object this is a relationship to
@@ -199,9 +200,9 @@ export declare class Cover {
 		 */
 		uploaders?: string[] | User[];
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			volume: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			volume?: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Cover[]>;
 	/**
@@ -268,9 +269,9 @@ export declare class Cover {
 		 */
 		uploaders?: string[] | User[];
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			volume: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			volume?: "asc" | "desc";
 		};
 	}): Promise<Cover>;
 	/**
@@ -433,11 +434,11 @@ export declare class Chapter {
 		 */
 		publishAtSince?: string;
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			publishAt: "asc" | "desc";
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			publishAt?: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
 		};
 		translatedLanguage?: string[];
 		originalLanguage?: string[];
@@ -491,11 +492,11 @@ export declare class Chapter {
 		 */
 		publishAtSince?: string;
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			publishAt: "asc" | "desc";
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			publishAt?: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
 		};
 		translatedLanguage?: string[];
 		originalLanguage?: string[];
@@ -574,8 +575,6 @@ export declare class Chapter {
 	 * @type {Boolean}
 	 */
 	isExternal: boolean;
-	pageNames: any[];
-	saverPageNames: any[];
 	/**
 	 * The external URL to this chapter if it is not hosted on MD. Null if it is hosted on MD
 	 * @type {String}
@@ -583,9 +582,9 @@ export declare class Chapter {
 	externalUrl: string;
 	/**
 	 * The scanlation groups that are attributed to this chapter
-	 * @type {Relationship<import('../index').Group>[]}
+	 * @type {Array<Relationship<import('../index').Group>>}
 	 */
-	groups: Relationship<Group>[];
+	groups: Array<Relationship<Group>>;
 	/**
 	 * The manga this chapter belongs to
 	 * @type {Relationship<import('../index').Manga>}
@@ -616,11 +615,11 @@ export declare class Chapter {
 declare class UploadSession {
 	/**
 	 * Requests MD to start an upload session
-	 * @param {String|Manga} manga
+	 * @param {String|import('../index').Manga} manga
 	 * @param  {...String|import('../index').Group|Relationship<import('../index').Group>} groups
 	 * @returns {UploadSession}
 	 */
-	static open(manga: string | any, ...groups: (string | Group | Relationship<Group>)[]): UploadSession;
+	static open(manga: string | Manga, ...groups: (string | Group | Relationship<Group>)[]): UploadSession;
 	/**
 	 * Returns the currently open upload session for the logged in user.
 	 * Returns null if there is no current session
@@ -824,12 +823,12 @@ export declare class List {
 		 */
 		publishAtSince?: string;
 		order?: {
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
 		};
-	}, includeSubObjects?: boolean): Promise<any[]>;
+	}, includeSubObjects?: boolean): Promise<Chapter[]>;
 	/**
 	 * There is no reason to directly create a custom list object. Use static methods, ie 'get()'.
 	 * @param {Object|String} context Either an API response or Mangadex id
@@ -853,9 +852,9 @@ export declare class List {
 	visibility: "public" | "private";
 	/**
 	 * Relationships to all of the manga in this custom list
-	 * @type {Relationship<import('../index').Manga>[]}
+	 * @type {Array<Relationship<import('../index').Manga>>}
 	 */
-	manga: Relationship<Manga>[];
+	manga: Array<Relationship<Manga>>;
 	/**
 	 * This list's owner
 	 * @type {Relationship<import('../index').User>}
@@ -892,12 +891,12 @@ export declare class List {
 		 */
 		publishAtSince?: string;
 		order?: {
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
 		};
-	}): Promise<any[]>;
+	}): Promise<Chapter[]>;
 	/**
 	 * Delete a custom list. Must be logged in
 	 * @returns {Promise<void>}
@@ -993,13 +992,13 @@ export declare class Manga {
 		 */
 		updatedAtSince?: string;
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			title: "asc" | "desc";
-			latestUploadedChapter: "asc" | "desc";
-			followedCount: "asc" | "desc";
-			relevance: "asc" | "desc";
-			year: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			title?: "asc" | "desc";
+			latestUploadedChapter?: "asc" | "desc";
+			followedCount?: "asc" | "desc";
+			relevance?: "asc" | "desc";
+			year?: "asc" | "desc";
 		};
 		/**
 		 * Array of author ids
@@ -1075,13 +1074,13 @@ export declare class Manga {
 		 */
 		updatedAtSince?: string;
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			title: "asc" | "desc";
-			latestUploadedChapter: "asc" | "desc";
-			followedCount: "asc" | "desc";
-			relevance: "asc" | "desc";
-			year: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			title?: "asc" | "desc";
+			latestUploadedChapter?: "asc" | "desc";
+			followedCount?: "asc" | "desc";
+			relevance?: "asc" | "desc";
+			year?: "asc" | "desc";
 		};
 		/**
 		 * Array of author ids
@@ -1157,11 +1156,11 @@ export declare class Manga {
 		 */
 		publishAtSince?: string;
 		order?: {
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			publishAt: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			publishAt?: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Chapter[]>;
 	/**
@@ -1240,11 +1239,11 @@ export declare class Manga {
 		 */
 		publishAtSince?: string;
 		order?: {
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			publishAt: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			publishAt?: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Chapter[]>;
 	/**
@@ -1417,14 +1416,14 @@ export declare class Manga {
 	updatedAt: Date;
 	/**
 	 * Authors attributed to this manga
-	 * @type {Relationship<import('../index').Author>[]}
+	 * @type {Array<Relationship<import('../index').Author>>}
 	 */
-	authors: Relationship<Author>[];
+	authors: Array<Relationship<Author>>;
 	/**
 	 * Artists attributed to this manga
-	 * @type {Relationship<import('../index').Author>[]}
+	 * @type {Array<Relationship<import('../index').Author>>}
 	 */
-	artists: Relationship<Author>[];
+	artists: Array<Relationship<Author>>;
 	/**
 	 * This manga's main cover. Use 'getCovers' to retrive other covers
 	 * @type {Relationship<Cover>}
@@ -1540,11 +1539,11 @@ export declare class Manga {
 		 */
 		publishAtSince?: string;
 		order?: {
-			volume: "asc" | "desc";
-			chapter: "asc" | "desc";
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			publishAt: "asc" | "desc";
+			volume?: "asc" | "desc";
+			chapter?: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			publishAt?: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Chapter[]>;
 	/**
@@ -1637,7 +1636,7 @@ export declare class Author {
 		limit?: number;
 		offset?: number;
 		order?: {
-			name: "asc" | "desc";
+			name?: "asc" | "desc";
 		};
 	}, includeSubObjects?: boolean): Promise<Author[]>;
 	/**
@@ -1677,7 +1676,7 @@ export declare class Author {
 		limit?: number;
 		offset?: number;
 		order?: {
-			name: "asc" | "desc";
+			name?: "asc" | "desc";
 		};
 	}): Promise<Author>;
 	/**
@@ -1713,9 +1712,9 @@ export declare class Author {
 	updatedAt: Date;
 	/**
 	 * Manga this author/artist has been attributed to
-	 * @type {Relationship<import('../index').Manga>[]}
+	 * @type {Array<Relationship<import('../index').Manga>>}
 	 */
-	manga: Relationship<Manga>[];
+	manga: Array<Relationship<Manga>>;
 }
 /**
  * Represents a scanlation group
@@ -1749,11 +1748,11 @@ export declare class Group {
 		name?: string;
 		focusedLanguage?: string;
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			name: "asc" | "desc";
-			followedCount: "asc" | "desc";
-			relevance: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			name?: "asc" | "desc";
+			followedCount?: "asc" | "desc";
+			relevance?: "asc" | "desc";
 		};
 		/**
 		 * Max of 100 per request
@@ -1787,11 +1786,11 @@ export declare class Group {
 		name?: string;
 		focusedLanguage?: string;
 		order?: {
-			createdAt: "asc" | "desc";
-			updatedAt: "asc" | "desc";
-			name: "asc" | "desc";
-			followedCount: "asc" | "desc";
-			relevance: "asc" | "desc";
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			name?: "asc" | "desc";
+			followedCount?: "asc" | "desc";
+			relevance?: "asc" | "desc";
 		};
 		/**
 		 * Max of 100 per request
@@ -1910,9 +1909,9 @@ export declare class Group {
 	leader: Relationship<User>;
 	/**
 	 * Array of this group's members
-	 * @type {Relationship<import('../index').User>[]}
+	 * @type {Array<Relationship<import('../index').User>>}
 	 */
-	members: Relationship<User>[];
+	members: Array<Relationship<User>>;
 	/**
 	 * Makes the logged in user either follow or unfollow this group
 	 * @param {Boolean} [follow=true] True to follow, false to unfollow
@@ -1953,7 +1952,7 @@ export declare class User {
 		limit?: number;
 		offset?: number;
 		order?: {
-			username: "asc" | "desc";
+			username?: "asc" | "desc";
 		};
 	}): Promise<User[]>;
 	/**
@@ -2005,9 +2004,9 @@ export declare class User {
 	roles: string[];
 	/**
 	 * Groups this user is a part of
-	 * @type {Relationship<import('../index').Group>[]}
+	 * @type {Array<Relationship<import('../index').Group>>}
 	 */
-	groups: Relationship<Group>[];
+	groups: Array<Relationship<Group>>;
 	/**
 	 * Makes the logged in user either follow or unfollow this user
 	 * @param {Boolean} [follow=true] True to follow, false to unfollow
@@ -2042,8 +2041,8 @@ export function login(username: string, password: string, cacheLocation?: string
 /**
  * A shortcut for resolving all relationships in an array
  * @template T
- * @param {Relationship<T>[]} relationshipArray
- * @returns {Promise<T[]>}
+ * @param {Array<Relationship<T>>} relationshipArray
+ * @returns {Promise<Array<T>>}
  */
 export function resolveArray<T>(relationshipArray: Relationship<T>[]): Promise<T[]>;
 
