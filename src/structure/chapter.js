@@ -3,6 +3,7 @@
 const Util = require('../util.js');
 const AuthUtil = require('../auth.js');
 const Relationship = require('../internal/relationship.js');
+const APIRequestError = require('../internal/requesterror.js');
 
 /**
  * Represents a chapter with readable pages

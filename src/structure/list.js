@@ -3,6 +3,7 @@
 const Relationship = require('../internal/relationship.js');
 const Util = require('../util.js');
 const AuthUtil = require('../auth.js');
+const Chapter = require('./chapter.js');
 
 /**
  * Represents a custom, user-created list of manga
