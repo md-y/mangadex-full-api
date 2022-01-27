@@ -97,7 +97,7 @@ class Chapter {
 
         /**
          * The scanlation groups that are attributed to this chapter
-         * @type {Relationship<import('../index').Group>[]}
+         * @type {Array<Relationship<import('../index').Group>>}
          */
         this.groups = Relationship.convertType('scanlation_group', context.data.relationships, this);
 

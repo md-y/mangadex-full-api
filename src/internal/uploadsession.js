@@ -77,7 +77,7 @@ class UploadSession {
 
     /**
      * Requests MD to start an upload session
-     * @param {String|Manga} manga 
+     * @param {String|import('../index').Manga} manga 
      * @param  {...String|import('../index').Group|Relationship<import('../index').Group>} groups
      * @returns {UploadSession}
      */

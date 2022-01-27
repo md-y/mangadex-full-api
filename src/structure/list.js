@@ -52,7 +52,7 @@ class List {
 
         /**
          * Relationships to all of the manga in this custom list
-         * @type {Relationship<import('../index').Manga>[]}
+         * @type {Array<Relationship<import('../index').Manga>>}
          */
         this.manga = Relationship.convertType('manga', context.data.relationships, this);
 

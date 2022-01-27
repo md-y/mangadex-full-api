@@ -125,13 +125,13 @@ class Manga {
 
         /**
          * Authors attributed to this manga
-         * @type {Relationship<import('../index').Author>[]}
+         * @type {Array<Relationship<import('../index').Author>>}
          */
         this.authors = Relationship.convertType('author', context.data.relationships, this);
 
         /**
          * Artists attributed to this manga
-         * @type {Relationship<import('../index').Author>[]}
+         * @type {Array<Relationship<import('../index').Author>>}
          */
         this.artists = Relationship.convertType('artist', context.data.relationships, this);
 

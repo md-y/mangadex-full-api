@@ -42,10 +42,11 @@ class Relationship {
     /**
      * Returns an array of converted objects from a Mangadex Relationships Array
      * @ignore
+     * @template T
      * @param {String} type 
      * @param {Object[]} dataArray 
      * @param {Object} caller
-     * @returns {Relationship<ResolveType>}
+     * @returns {Relationship<T>}
      */
     static convertType(type, dataArray, caller) {
         if (!(dataArray instanceof Array)) return [];
@@ -86,8 +87,8 @@ class Relationship {
      * Resolves an array of relationships
      * @ignore
      * @template T
-     * @param {Relationship<T>[]} relationshipArray
-     * @returns {Promise<T[]>}
+     * @param {Array<Relationship<T>>} relationshipArray
+     * @returns {Promise<Array<T>>}
      */
     static resolveAll(relationshipArray) {
         if (relationshipArray.length === 0) return [];

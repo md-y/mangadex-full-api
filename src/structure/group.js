@@ -133,7 +133,7 @@ class Group {
 
         /**
          * Array of this group's members
-         * @type {Relationship<import('../index').User>[]}
+         * @type {Array<Relationship<import('../index').User>>}
          */
         this.members = Relationship.convertType('member', context.data.relationships, this);
     }

@@ -43,7 +43,7 @@ class User {
 
         /**
          * Groups this user is a part of
-         * @type {Relationship<import('../index').Group>[]}
+         * @type {Array<Relationship<import('../index').Group>>}
          */
         this.groups = Relationship.convertType('scanlation_group', context.data.relationships, this);
     }

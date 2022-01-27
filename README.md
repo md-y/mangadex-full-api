@@ -1,7 +1,7 @@
 # MangaDex Full API
 An unofficial [MangaDex](https://www.mangadex.org) API built with the [official JSON API](https://api.mangadex.org/docs.html).
 
-[More Information](#Info)
+[Documentation](https://md-y.github.io/mangadex-full-api)
 
 [![Version](https://img.shields.io/npm/v/mangadex-full-api.svg?style=flat)](https://www.npmjs.com/package/mangadex-full-api)
 [![License](https://img.shields.io/github/license/md-y/mangadex-full-api.svg?style=flat)](https://github.com/md-y/mangadex-full-api/blob/master/LICENSE)
@@ -118,7 +118,6 @@ MFA.login('username', 'password123').then(async () => {
 
 * Requests will automatically be rate limited to about 5 requests/second.
 * The entire package is typed thanks to JSDoc and the included ```index.d.ts``` file, so TypeScript is supported.
-* If you are wondering why the documentation is no longer in the README, it became too difficult to maintain due to JSDoc issues. However, the examples and in-line JSDoc comments should (hopefully) be enough for using the package. Though, here is the [old documentation](https://github.com/md-y/mangadex-full-api/blob/5.5.1/README.md)
 * The entire project is written as regular NodeJS with CommonJS imports/exports. As for browser support, see below:
 
 #### Browser

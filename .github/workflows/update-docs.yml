@@ -1,0 +1,30 @@
+on:
+  push:
+    branches:
+      - master
+name: Update Docs
+jobs:
+  updateDocs:
+    name: Update JSDOC Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node v16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Documentation
+        run: npm run gen-docs
+    
+      - name: Push to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        env:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: docs
+          publish_dir: ./docs
+          full_commit_message: Update Docs for ${{ github.event.head_commit.id }}
