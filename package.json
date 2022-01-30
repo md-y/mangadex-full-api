@@ -10,7 +10,7 @@
     "gen-docs": "jsdoc -c ./jsdoc/config.json -d ./docs"
   },
   "engines": {
-    "node": ">=10.12.0"
+    "node": ">=12.0.0"
   },
   "repository": {
     "type": "git",
