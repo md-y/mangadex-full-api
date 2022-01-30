@@ -29,7 +29,7 @@
   "bugs": {
     "url": "https://github.com/md-y/mangadex-full-api/issues"
   },
-  "homepage": "https://github.com/md-y/mangadex-full-api#readme",
+  "homepage": "https://md-y.github.io/mangadex-full-api/",
   "devDependencies": {
     "@types/node": "^17.0.12",
     "docdash": "^1.2.0",

@@ -18,7 +18,7 @@ jobs:
           node-version: '16'
 
       - name: Install Dependencies and Update Package Lock
-        run: npm ci --package-lock-only
+        run: npm i --package-lock-only
     
       - name: Push to repository
         uses: EndBug/add-and-commit@v8
