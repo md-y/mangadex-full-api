@@ -317,6 +317,11 @@ export declare class Cover {
 	 */
 	uploader: Relationship<User>;
 	/**
+	 * The locale of this cover
+	 * @type {String}
+	 */
+	locale: string;
+	/**
 	 * URL to the source image of the cover
 	 * @type {String}
 	 */
@@ -565,6 +570,11 @@ export declare class Chapter {
 	 * @type {Date}
 	 */
 	publishAt: Date;
+	/**
+	 * The date this chapter was/will be readable
+	 * @type {Date}
+	 */
+	readableAt: Date;
 	/**
 	 * Page count
 	 * @type {Number}
@@ -1929,6 +1939,11 @@ export declare class Group {
 	 * @type {String}
 	 */
 	twitter: string;
+	/**
+	 * This group's manga updates page
+	 * @type {String}
+	 */
+	mangaUpdates: string;
 	/**
 	 * This group's focused languages
 	 * @type {String[]}
