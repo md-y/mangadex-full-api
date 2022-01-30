@@ -1032,6 +1032,63 @@ export declare class Manga {
 		offset?: number;
 	}, includeSubObjects?: boolean): Promise<Manga[]>;
 	/**
+	 * Returns the total amount of search results for a specific query
+	 * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+	 */
+	static getTotalSearchResults(searchParameters?: string | {
+		title?: string;
+		year?: number;
+		includedTagsMode?: "AND" | "OR";
+		excludedTagsMode?: "AND" | "OR";
+		/**
+		 * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+		 */
+		createdAtSince?: string;
+		/**
+		 * DateTime string with following format: YYYY-MM-DDTHH:MM:SS
+		 */
+		updatedAtSince?: string;
+		order?: {
+			createdAt?: "asc" | "desc";
+			updatedAt?: "asc" | "desc";
+			title?: "asc" | "desc";
+			latestUploadedChapter?: "asc" | "desc";
+			followedCount?: "asc" | "desc";
+			relevance?: "asc" | "desc";
+			year?: "asc" | "desc";
+		};
+		/**
+		 * Array of author ids
+		 */
+		authors?: string[] | Author[];
+		/**
+		 * Array of artist ids
+		 */
+		artists?: string[] | Author[];
+		includedTags?: string[] | Tag[];
+		excludedTags?: string[] | Tag[];
+		status?: Array<"ongoing" | "completed" | "hiatus" | "cancelled">;
+		originalLanguage?: string[];
+		excludedOriginalLanguage?: string[];
+		availableTranslatedLanguage?: string[];
+		publicationDemographic?: Array<"shounen" | "shoujo" | "josei" | "seinen" | "none">;
+		/**
+		 * Max of 100 per request
+		 */
+		ids?: string[];
+		contentRating?: Array<"safe" | "suggestive" | "erotica" | "pornographic">;
+		hasAvailableChapters?: boolean;
+		/**
+		 * Group id
+		 */
+		group?: string;
+		/**
+		 * Not limited by API limits (more than 100). Use Infinity for maximum results (use at your own risk)
+		 */
+		limit?: number;
+		offset?: number;
+	}): Promise<any>;
+	/**
 	 * Creates a manga.
 	 * @param {LocalizedString | Object} [title] The title of the manga.
 	 * @param {string} [originalLanguage] The original language of the manga.
