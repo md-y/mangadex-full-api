@@ -68,6 +68,12 @@ class Cover {
         if (!this.uploader) this.uploader = null;
 
         /**
+         * The locale of this cover
+         * @type {String}
+         */
+        this.locale = context.data.attributes.locale;
+
+        /**
          * URL to the source image of the cover
          * @type {String}
          */

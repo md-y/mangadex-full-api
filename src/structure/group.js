@@ -90,6 +90,12 @@ class Group {
         this.twitter = context.data.attributes.twitter;
 
         /**
+         * This group's manga updates page
+         * @type {String}
+         */
+        this.mangaUpdates = context.data.attributes.mangaUpdates;
+
+        /**
          * This group's focused languages
          * @type {String[]}
          */

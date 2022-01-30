@@ -74,6 +74,12 @@ class Chapter {
         this.publishAt = context.data.attributes.publishAt ? new Date(context.data.attributes.publishAt) : null;
 
         /**
+         * The date this chapter was/will be readable
+         * @type {Date}
+         */
+        this.readableAt = context.data.attributes.readableAt ? new Date(context.data.attributes.readableAt) : null;
+
+        /**
          * Page count
          * @type {Number}
          */
