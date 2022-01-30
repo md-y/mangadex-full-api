@@ -259,6 +259,17 @@ class Manga {
     }
 
     /**
+     * Returns the total amount of search results for a specific query
+     * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     */
+    static async getTotalSearchResults(searchParameters = {}) {
+        if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
+        let res = await Util.apiParameterRequest('/manga', searchParameters);
+        if ('total' in res) return res.total;
+        else throw new APIRequestError('The API did not respond with a total result count', APIRequestError.INVALID_RESPONSE);
+    }
+
+    /**
      * Creates a manga.
      * @param {LocalizedString | Object} [title] The title of the manga.
      * @param {string} [originalLanguage] The original language of the manga.
