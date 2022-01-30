@@ -6,6 +6,7 @@ An unofficial [MangaDex](https://www.mangadex.org) API built with the [official 
 [![Version](https://img.shields.io/npm/v/mangadex-full-api.svg?style=flat)](https://www.npmjs.com/package/mangadex-full-api)
 [![License](https://img.shields.io/github/license/md-y/mangadex-full-api.svg?style=flat)](https://github.com/md-y/mangadex-full-api/blob/master/LICENSE)
 [![Downloads](https://img.shields.io/npm/dm/mangadex-full-api.svg?style=flat)](https://www.npmjs.com/package/mangadex-full-api)
+[![Mocha Tests](https://github.com/md-y/mangadex-full-api/actions/workflows/mocha-tests.yml/badge.svg)](https://github.com/md-y/mangadex-full-api/actions/workflows/mocha-tests.yml)
 
 ```bash
 npm install mangadex-full-api
