@@ -129,6 +129,4 @@ Mangadex Full API works out of the box with [Browserify](https://browserify.org/
 browserify yourproject.js > bundle.js
 ```
 
-As for [Webpack](https://webpack.js.org/) and similar applications, Mangadex Full API is untested and may require additional configuration.
-However, the only node-specific module used by the program is ```HTTPS```, so if that is substituted by something like [https-browserify](https://www.npmjs.com/package/https-browserify), there should be no issues.
-The ```fs``` and ```Path``` modules are also included in ```auth.js```, but are only required for node environments and can be excluded for browsers.
+As for [Webpack](https://webpack.js.org/) and similar applications, Mangadex Full API only requires ```https``` to be polyfilled; ```fs``` and ```path``` can be excluded.
