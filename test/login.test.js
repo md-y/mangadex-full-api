@@ -11,6 +11,8 @@ const credentials = {
 };
 
 describe('Authentication', async function () {
+    this.retries(2);
+
     before(async function () {
         assert.equal(typeof credentials.username, 'string', 'Username Environment Variable');
         assert.equal(typeof credentials.password, 'string', 'Password Environment Variable');

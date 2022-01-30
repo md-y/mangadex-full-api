@@ -181,7 +181,7 @@ class Manga {
          * The version of this manga (incremented by updating manga data)
          * @type {Number}
          */
-        this.version = context.data.attributes.version ?? 1;
+        this.version = isNaN(parseInt(context.data.attributes.version)) ? 1 : context.data.attributes.version;
     }
 
     /**
@@ -269,7 +269,7 @@ class Manga {
      */
     static async create(title, originalLanguage, status, contentRating, options){
         return new Manga(await Util.apiRequest('/manga', 'POST', {
-            title: title.data ?? title,
+            title: title.data || title,
             originalLanguage,
             status,
             contentRating,

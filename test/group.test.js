@@ -7,6 +7,8 @@ const { validateResultsArray } = require('./index.test');
 var targetId = 'caf0d1da-a790-49d0-833c-ce74d651c8a1'; // Default, to be overwritten by successful tests
 
 describe('Group', function () {
+    this.retries(2);
+
     describe('search()', function () {
         it('performed a search', async function () {
             let results = await MFA.Group.search({

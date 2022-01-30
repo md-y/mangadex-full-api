@@ -7,6 +7,8 @@ const { validateResultsArray } = require('./index.test');
 var targetId = '2c45da87-bbde-488d-acb6-d1ef51742ec1'; // Default, to be overwritten by successful tests
 
 describe('Author', function () {
+    this.retries(2);
+
     describe('search()', function () {
         it('performed a search', async function () {
             let results = await MFA.Author.search({

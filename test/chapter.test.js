@@ -7,6 +7,8 @@ const { validateResultsArray } = require('./index.test');
 var targetId = '0893dd04-10ee-48df-9067-66b4bb1da487'; // Default, to be overwritten by successful tests
 
 describe('Chapter', function () {
+    this.retries(2);
+
     describe('search()', function () {
         it('performed a search', async function () {
             let results = await MFA.Chapter.search({
@@ -35,7 +37,7 @@ describe('Chapter', function () {
             if (pages.length === 0) assert.fail('Chapter returned 0 readable pages.');
             pages.forEach(elem => {
                 assert.strictEqual(typeof elem, 'string');
-                assert.match(elem, /\..{3,4}$/);
+                assert.strictEqual(['png', 'jpeg', 'jpg', 'gif', 'bmp', 'webp', 'webm'].some(type => elem.endsWith(type)), true);
             });
         });
     });
