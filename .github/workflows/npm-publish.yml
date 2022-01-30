@@ -17,6 +17,9 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm test
+        env:
+          MFA_TEST_USER: ${{ secrets.MFA_TEST_USER }}
+          MFA_TEST_PASSWORD: ${{ secrets.MFA_TEST_PASSWORD }}
 
   publish-npm:
     needs: build
