@@ -1044,6 +1044,7 @@ export declare class Manga {
 	/**
 	 * Returns the total amount of search results for a specific query
 	 * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+	 * @returns {Promise<Number>}
 	 */
 	static getTotalSearchResults(searchParameters?: string | {
 		title?: string;
@@ -1097,7 +1098,7 @@ export declare class Manga {
 		 */
 		limit?: number;
 		offset?: number;
-	}): Promise<any>;
+	}): Promise<number>;
 	/**
 	 * Creates a manga.
 	 * @param {LocalizedString | Object} [title] The title of the manga.
