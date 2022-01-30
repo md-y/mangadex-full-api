@@ -1,0 +1,28 @@
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'package.json'
+name: Update Package Lock
+jobs:
+  updatePackageLock:
+    name: Update Package Lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node v16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies and Update Package Lock
+        run: npm ci --package-lock-only
+    
+      - name: Push to repository
+        uses: EndBug/add-and-commit@v8
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add: ./package-lock.json
+          message: Update package lock for ${{ github.event.head_commit.id }}
