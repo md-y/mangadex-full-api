@@ -261,6 +261,7 @@ class Manga {
     /**
      * Returns the total amount of search results for a specific query
      * @param {MangaParameterObject|String} [searchParameters] An object of offical search parameters, or a string representing the title
+     * @returns {Promise<Number>}
      */
     static async getTotalSearchResults(searchParameters = {}) {
         if (typeof searchParameters === 'string') searchParameters = { title: searchParameters };
