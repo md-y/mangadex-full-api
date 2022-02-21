@@ -16,21 +16,25 @@ class APIRequestError extends Error {
 
     /**
      * @param {String|Object} reason An error message or response from the API
-     * @param {Number} code 
-     * @param  {...any} params 
+     * @param {Number} code
+     * @param {String} requestId The `X-Request-ID` header value sent via the API.
+     * @param  {...any} params
      */
-    constructor(reason = 'Unknown Request Error', code = 0, ...params) {
+    constructor(reason = 'Unknown Request Error', code = 0, requestId = "Unknown Request ID", ...params) {
         super(...params);
 
-        /** 
+        /**
          * What type of error is this?
          * AUTHORIZATION, INVALID_RESPONSE, etc.
-         * @type {Number} 
+         * @type {Number}
          */
         this.code = code;
 
         /** @type {String} */
         this.name = 'APIRequestError';
+
+        /** @type {String} */
+        this.requestId = requestId;
 
         if (typeof reason === 'string') {
             /** @type {String} */
@@ -42,6 +46,9 @@ class APIRequestError extends Error {
                 else if (reason.errors[0].status === 403) this.code = APIRequestError.AUTHORIZATION;
                 else if (code > 500) this.code = APIRequestError.INVALID_RESPONSE;
             } else this.message = 'Unknown Reason.';
+        }
+        if (requestId !== "Unknown Request ID"){
+            this.message = `[X-Request-ID: ${this.requestId}] ${this.message}`;
         }
     }
 }

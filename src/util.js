@@ -81,9 +81,9 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                 if (res.headers['content-type'] !== undefined && res.headers['content-type'].includes('json')) {
                     try {
                         let parsedObj = JSON.parse(responsePayload);
-                        if (parsedObj === null) reject(new APIRequestError(`HTTPS ${method} Response (${endpoint}) returned null`, APIRequestError.INVALID_RESPONSE));
+                        if (parsedObj === null) reject(new APIRequestError(`HTTPS ${method} Response (${endpoint}) returned null`, APIRequestError.INVALID_RESPONSE, res.headers["x-request-id"]));
                         if (res.statusCode < 400 || res.result === 'ok') resolve(parsedObj);
-                        else reject(new APIRequestError(parsedObj));
+                        else reject(new APIRequestError(parsedObj, APIRequestError.OTHER, res.headers["x-request-id"]));
                     } catch (error) {
                         reject(new APIRequestError(
                             `Failed to parse HTTPS ${method} ` +
@@ -92,9 +92,9 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
                         ), APIRequestError.INVALID_RESPONSE);
                     }
                 } else {
-                    if (res.statusCode === 429) reject(new APIRequestError('You have been rate limited', APIRequestError.INVALID_RESPONSE));
-                    else if (res.statusCode >= 400) reject(new APIRequestError(`Returned HTML error page ${responsePayload}`, APIRequestError.INVALID_RESPONSE));
-                    else if (res.statusCode >= 300) reject(new APIRequestError(`Bad/moved endpoint: ${endpoint}`, APIRequestError.INVALID_REQUEST));
+                    if (res.statusCode === 429) reject(new APIRequestError('You have been rate limited', APIRequestError.INVALID_RESPONSE, res.headers["x-request-id"]));
+                    else if (res.statusCode >= 400) reject(new APIRequestError(`Returned HTML error page ${responsePayload}`, APIRequestError.INVALID_RESPONSE, res.headers["x-request-id"]));
+                    else if (res.statusCode >= 300) reject(new APIRequestError(`Bad/moved endpoint: ${endpoint}`, APIRequestError.INVALID_REQUEST, res.headers["x-request-id"]));
                     else resolve(responsePayload);
                 }
             });
@@ -117,7 +117,7 @@ function apiRequest(endpoint, method = 'GET', requestPayload = {}) {
         }
         req.end();
     });
-};
+}
 exports.apiRequest = apiRequest;
 
 /**
