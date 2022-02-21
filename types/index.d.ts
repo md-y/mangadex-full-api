@@ -1547,6 +1547,21 @@ export declare class Manga {
 	 */
 	version: number;
 	/**
+	 * Does this manga's chapter numbers reset on a new volume?
+	 * @type {Boolean}
+	 */
+	chapterNumbersResetOnNewVolume: boolean;
+	/**
+	 * An array of locale strings that represent the languages this manga is available in
+	 * @type {String[]}
+	 */
+	availableTranslatedLanguages: string[];
+	/**
+	 * The state of this manga's publication
+	 * @type {string}
+	 */
+	state: string;
+	/**
 	 * Main title string based on global locale
 	 * @type {String}
 	 */
