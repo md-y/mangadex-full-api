@@ -182,6 +182,24 @@ class Manga {
          * @type {Number}
          */
         this.version = isNaN(parseInt(context.data.attributes.version)) ? 1 : context.data.attributes.version;
+
+        /**
+         * Does this manga's chapter numbers reset on a new volume?
+         * @type {Boolean}
+         */
+        this.chapterNumbersResetOnNewVolume = context.data.attributes.chapterNumbersResetOnNewVolume;
+
+        /**
+         * An array of locale strings that represent the languages this manga is available in
+         * @type {String[]}
+         */
+        this.availableTranslatedLanguages = context.data.attributes.availableTranslatedLanguages;
+
+        /**
+         * The state of this manga's publication
+         * @type {string}
+         */
+        this.state = context.data.attributes.state;
     }
 
     /**
