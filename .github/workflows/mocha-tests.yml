@@ -2,6 +2,13 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+    branches:
+      - master
 name: Mocha Tests
 jobs:
   runTests:
