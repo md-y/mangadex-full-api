@@ -76,7 +76,7 @@ class AuthUtil {
      * @returns {Promise<String>} Returns session token
      */
     static async refreshToken() {
-        res = await Util.apiRequest('/auth/refresh', 'POST', { token: AuthUtil.cache.refresh });
+        const res = await Util.apiRequest('/auth/refresh', 'POST', { token: AuthUtil.cache.refresh });
         if (!('token') in res) throw new APIRequestError('The API did not respond with any tokens when refreshing tokens', APIRequestError.INVALID_RESPONSE);
         AuthUtil.cache.write({ ...res.token, date: Date.now() });
         AuthUtil.updateHeader();
