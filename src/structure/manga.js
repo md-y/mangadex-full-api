@@ -372,7 +372,7 @@ class Manga {
 
     /**
      * Returns one random manga
-     * @param {["safe" | "suggestive" | "erotica" | "pornographic"]} [contentRatings] Allowed content ratings for the random manga
+     * @param {Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>} [contentRatings] Allowed content ratings for the random manga
      * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
