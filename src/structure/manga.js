@@ -372,11 +372,15 @@ class Manga {
 
     /**
      * Returns one random manga
+     * @param {["safe" | "suggestive" | "erotica" | "pornographic"]} [contentRatings] Allowed content ratings for the random manga
      * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
      * @returns {Promise<Manga>}
      */
-    static async getRandom(includeSubObjects = false) {
-        return new Manga(await Util.apiRequest(`/manga/random${includeSubObjects ? '?includes[]=artist&includes[]=author&includes[]=cover_art' : ''}`));
+    static async getRandom(contentRatings, includeSubObjects = false) {
+        const params = {};
+        if (Array.isArray(contentRatings)) params.contentRating = contentRatings;
+        if (includeSubObjects) params.includes = ['artist', 'author', 'cover_art'];
+        return new Manga(await Util.apiParameterRequest('/manga/random', params));
     }
 
     /**
