@@ -43,6 +43,15 @@ describe('Manga', function () {
             });
         });
     });
+    describe('getMultiple()', function() {
+        it(`retrieved a pornographic manga`, async function () {
+            let manga = await MFA.Manga.getMultiple([
+                "239a69f9-a43f-4401-82f1-eb5527877f7d",
+            ]);
+
+            assert.strictEqual(!!manga[0], true);
+        });
+    });
     describe('search()', function () {
         it('performed a search with a finite limit', async function () {
             let results = await MFA.Manga.search({
