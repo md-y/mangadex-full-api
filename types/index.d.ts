@@ -1233,13 +1233,11 @@ export declare class Manga {
 	}, includeSubObjects?: boolean): Promise<Chapter[]>;
 	/**
 	 * Returns one random manga
-	 * @param {["safe" | "suggestive" | "erotica" | "pornographic"]} [contentRatings] Allowed content ratings for the random manga
+	 * @param {Array<'safe' | 'suggestive' | 'erotica' | 'pornographic'>} [contentRatings] Allowed content ratings for the random manga
 	 * @param {Boolean} [includeSubObjects=false] Attempt to resolve sub objects (eg author, artists, etc) when available through the base request
 	 * @returns {Promise<Manga>}
 	 */
-	static getRandom(contentRatings?: [
-		"safe" | "suggestive" | "erotica" | "pornographic"
-	], includeSubObjects?: boolean): Promise<Manga>;
+	static getRandom(contentRatings?: Array<"safe" | "suggestive" | "erotica" | "pornographic">, includeSubObjects?: boolean): Promise<Manga>;
 	/**
 	 * Returns all manga followed by the logged in user
 	 * @param {Number} [limit=100] Amount of manga to return (0 to Infinity)
