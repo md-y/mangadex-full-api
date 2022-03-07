@@ -201,11 +201,12 @@ exports.apiCastedRequest = apiCastedRequest;
  * Retrieves an unlimted amount of an object via a search function and id array
  * @param {Function} searchFunction
  * @param {String[]|String[][]} ids
+ * @param {Object} parameterObject
  * @param {Number} [limit=100]
  * @param {String} [searchProperty='ids']
  * @returns {Promise<Array>}
  */
-async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty = 'ids') {
+async function getMultipleIds(searchFunction, ids, parameterObject = {}, limit = 100, searchProperty = 'ids') {
     let newIds = ids.flat().map(elem => {
         if (typeof elem === 'string') return elem;
         else if (elem === undefined || elem === null) throw new Error(`Invalid id: ${elem}`);
@@ -214,7 +215,7 @@ async function getMultipleIds(searchFunction, ids, limit = 100, searchProperty =
     });
     let promises = [];
     // Create new search requests with a 100 ids (max allowed) at a time
-    while (newIds.length > 0) promises.push(searchFunction({ limit: limit, [searchProperty]: newIds.splice(0, 100) }));
+    while (newIds.length > 0) promises.push(searchFunction({...parameterObject, limit: limit, [searchProperty]: newIds.splice(0, 100) }));
     return (await Promise.all(promises)).flat();
 }
 exports.getMultipleIds = getMultipleIds;

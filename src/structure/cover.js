@@ -185,7 +185,7 @@ class Cover {
      * @returns {Promise<Cover[]>}
      */
     static getMangaCovers(...manga) {
-        return Util.getMultipleIds(Cover.search, manga, Infinity, 'manga');
+        return Util.getMultipleIds(Cover.search, manga, {}, Infinity, 'manga');
     }
 }
 

@@ -313,7 +313,7 @@ class Manga {
      * @returns {Promise<Manga[]>}
      */
     static getMultiple(...ids) {
-        return Util.getMultipleIds(Manga.search, ids);
+        return Util.getMultipleIds(Manga.search, ids, { contentRating: ['safe', 'suggestive', 'erotica', 'pornographic'] });
     }
 
     /**
