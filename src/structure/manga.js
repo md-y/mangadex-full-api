@@ -487,7 +487,7 @@ class Manga {
         await AuthUtil.validateTokens();
         let chapterIds = await Util.apiParameterRequest(`/manga/read`, { ids: ids });
         if (!(chapterIds.data instanceof Array)) throw new APIRequestError('The API did not respond with an array when it was expected to', APIRequestError.INVALID_RESPONSE);
-        return Chapter.getMultiple(...chapterIds);
+        return Chapter.getMultiple(...chapterIds.data);
     }
 
     /**

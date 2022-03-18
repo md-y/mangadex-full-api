@@ -4,6 +4,13 @@ const MFA = require('../src/index');
 const assert = require('assert');
 const { validateResultsArray } = require('./index.test');
 
+require('dotenv').config();
+
+const credentials = {
+    username: process.env.MFA_TEST_USER,
+    password: process.env.MFA_TEST_PASSWORD
+};
+
 var targetId = 'f9c33607-9180-4ba6-b85c-e4b5faee7192'; // Default, to be overwritten by successful tests
 
 describe('Manga', function () {
@@ -106,6 +113,21 @@ describe('Manga', function () {
             let tag = await MFA.Manga.getTag('oneshot');
             assert.strictEqual(typeof tag.id, 'string');
             assert.strictEqual(tag.localizedName['en'].toLowerCase(), 'oneshot');
+        });
+    });
+    describe('getReadChapters', function () {
+        before(async function () {
+            assert.equal(typeof credentials.username, 'string', 'Username Environment Variable');
+            assert.equal(typeof credentials.password, 'string', 'Password Environment Variable');
+            await MFA.login(credentials.username, credentials.password, './test/.md_tokens');
+        });
+
+        it(`got the read chapters of a manga (${targetId})`, async function() {
+            let readChapters = await MFA.Manga.getReadChapters(targetId);
+            readChapters.forEach(chapter => {
+                assert.strictEqual(chapter instanceof MFA.Chapter, true);
+                assert.strictEqual(typeof chapter.id, 'string');
+            });
         });
     });
 });
