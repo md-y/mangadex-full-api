@@ -14,6 +14,7 @@ describe('Authentication', async function () {
     this.retries(2);
 
     before(async function () {
+        if (process.env.MFA_SKIP_AUTH_TEST === 'true') this.skip();
         assert.equal(typeof credentials.username, 'string', 'Username Environment Variable');
         assert.equal(typeof credentials.password, 'string', 'Password Environment Variable');
         await MFA.login(credentials.username, credentials.password, './test/.md_tokens');
