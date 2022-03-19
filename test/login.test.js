@@ -18,6 +18,7 @@ describe('Authentication', async function () {
         assert.equal(typeof credentials.password, 'string', 'Password Environment Variable');
         await MFA.login(credentials.username, credentials.password, './test/.md_tokens');
     });
+    
     describe('getLoggedInUser()', function () {
         it('retrieved English chapters from the followed manga feed', async function () {
             let user = await MFA.User.getLoggedInUser();
@@ -42,6 +43,18 @@ describe('Authentication', async function () {
             assert.strictEqual(manga instanceof Array, true);
             assert.strictEqual(manga.length <= 1, true); // Some test users may have no followed manga
             if (manga.length > 0) assert.strictEqual(manga[0] instanceof MFA.Chapter, true);
+        });
+    });
+    describe('getReadChapters()', function () {
+        let targetId = 'f9c33607-9180-4ba6-b85c-e4b5faee7192';
+        it(`got the read chapters of a manga (${targetId})`, async function () {
+            let readChapters = await MFA.Manga.getReadChapters(targetId);
+            assert.strictEqual(Array.isArray(readChapters), true);
+            readChapters.forEach(chapter => {
+                assert.strictEqual(chapter instanceof MFA.Chapter, true);
+                assert.strictEqual(typeof chapter.id, 'string');
+            });
+            
         });
     });
 });
