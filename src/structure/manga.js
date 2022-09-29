@@ -200,6 +200,12 @@ class Manga {
          * @type {string}
          */
         this.state = context.data.attributes.state;
+
+        /**
+         * The the id of the latest uploaded chapter
+         * @type {String}
+         */
+        this.latestUploadedChapter = context.data.attributes.latestUploadedChapter;
     }
 
     /**
