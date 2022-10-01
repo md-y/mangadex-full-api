@@ -131,7 +131,10 @@ async function apiParameterRequest(baseEndpoint, parameterObject) {
     if (typeof baseEndpoint !== 'string' || typeof parameterObject !== 'object') throw new Error('Invalid Argument(s)');
     let params = new URLSearchParams();
     for (let [key, value] of Object.entries(parameterObject)) {
-        if (value instanceof Array) value.forEach(elem => params.append(`${key}[]`, elem));
+        if (value instanceof Array) value.forEach(elem => {
+            if (typeof elem === 'object' && 'id' in elem) params.append(`${key}[]`, elem.id);
+            else params.append(`${key}[]`, elem)
+        });
         else if (typeof value === 'object') Object.entries(value).forEach(([k, v]) => params.set(`${key}[${k}]`, v));
         else params.set(key, value);
     }
