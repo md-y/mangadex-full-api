@@ -1563,6 +1563,11 @@ export declare class Manga {
 	 */
 	state: string;
 	/**
+	 * The latest uploaded chapter for this manga
+	 * @type {Relationship<Chapter>}
+	 */
+	latestUploadedChapter: Relationship<Chapter>;
+	/**
 	 * Main title string based on global locale
 	 * @type {String}
 	 */
