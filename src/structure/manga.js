@@ -202,10 +202,13 @@ class Manga {
         this.state = context.data.attributes.state;
 
         /**
-         * The the id of the latest uploaded chapter
-         * @type {String}
+         * The latest uploaded chapter for this manga
+         * @type {Relationship<Chapter>}
          */
-        this.latestUploadedChapter = context.data.attributes.latestUploadedChapter;
+        this.latestUploadedChapter = context.data.attributes.latestUploadedChapter ? new Relationship({
+            id: context.data.attributes.latestUploadedChapter,
+            type: 'chapter'
+        }) : null;
     }
 
     /**
