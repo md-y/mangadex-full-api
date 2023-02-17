@@ -1,13 +1,20 @@
 {
-  "include": [
-    "src/**/*"
-  ],
   "compilerOptions": {
-    "allowJs": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "outDir": "types",
-    "lib": [ "ES2018" ],
-    "module": "CommonJS"
-  }
+    "target": "es6",
+    "moduleResolution": "node16",
+    "module": "CommonJS",
+    "outDir": "./dist/cjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "removeComments": true
+  },
+  "lib": [
+    "es2015",
+  ],
+  "include": [
+    "./src/**/*"
+  ],
 }

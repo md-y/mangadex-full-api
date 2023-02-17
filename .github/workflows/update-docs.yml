@@ -19,7 +19,7 @@ jobs:
         run: npm ci
 
       - name: Generate Documentation
-        run: npm run gen-docs
+        run: npm run docs
     
       - name: Push to GH Pages
         uses: peaceiris/actions-gh-pages@v3

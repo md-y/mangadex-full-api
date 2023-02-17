@@ -60,9 +60,11 @@ typings/
 # next.js build output
 .next
 
-# development
+# mangadex-full-api
 dev
 credentials-override.json
 .md_token
 .md_tokens
 docs
+dist
+src/debug.ts
