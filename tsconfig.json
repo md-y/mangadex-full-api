@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "es6",
     "moduleResolution": "node16",
-    "module": "CommonJS",
-    "outDir": "./dist/cjs",
+    "module": "ES2020",
+    "outDir": "./dist/esm",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,

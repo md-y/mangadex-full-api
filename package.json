@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts,.mjs,.cjs,.js",
     "build:schema": "node ./scripts/buildSchema.mjs",
-    "build:tsc": "tsc && tsc --outDir ./dist/esm --module ES2020 && tsc --declaration true --emitDeclarationOnly true --declarationDir ./dist/types --removeComments false",
+    "build:tsc": "tsc && tsc --outDir ./dist/cjs --module CommonJS && tsc --declaration true --emitDeclarationOnly true --declarationDir ./dist/types --removeComments false",
     "prepublish": "npm run build:schema & npm run build:tsc"
   },
   "engines": {
