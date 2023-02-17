@@ -1,5 +1,5 @@
 import IDObject from '../internal/IDObject.js';
-import { fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network.js';
+import { fetchMD, fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network.js';
 
 import type { Merge } from '../types/helpers.js';
 import type {
@@ -8,9 +8,11 @@ import type {
     UserListSchema,
     UserResponseSchema,
     UserSchema,
+    User as UserNamespace
 } from '../types/schema.js';
 
 type UserSearchParams = Partial<Merge<GetUserParamsSchema, { ids: User[] }>>;
+type FollowedUserParams = UserNamespace.GetUserFollowsUser.RequestQuery;
 
 export default class User extends IDObject implements UserAttributesSchema {
     id: string;
@@ -69,8 +71,8 @@ export default class User extends IDObject implements UserAttributesSchema {
     /**
      * Returns all users followed by the currently authenticated user.
      */
-    static async getFollowedUsers(limit = Infinity, offset = 0): Promise<User[]> {
-        const res = await fetchMDSearch<UserListSchema>('/user/follows/user', { limit: limit, offset: offset });
+    static async getFollowedUsers(query: FollowedUserParams = { limit: Infinity, offset: 0 }): Promise<User[]> {
+        const res = await fetchMDSearch<UserListSchema>('/user/follows/user', query);
         return res.map((u) => new User(u));
     }
 }

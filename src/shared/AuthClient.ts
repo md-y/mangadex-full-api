@@ -67,6 +67,13 @@ export default class AuthClient {
     }
 
     /**
+     * Returns the current client being used for authentication, or null if there isn't one
+     */
+    static getActiveClient(): AuthClient | null {
+        return AuthClient.activeClient ?? null;
+    }
+
+    /**
      * Retrieves the user's session token via the currently active client (if there is any)
      */
     static async getActiveSessionToken(): Promise<string | undefined> {

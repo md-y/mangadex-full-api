@@ -73,7 +73,7 @@ export default class Relationship<T> extends IDObject {
     }
 
     /**
-     * This will {@link resolve} an array of relationships, returning another array
+     * This will {@link Relationship.resolve} an array of relationships, returning another array
      * in the same order.
      */
     static async resolveAll<T>(relationshipArray: Relationship<T>[]): Promise<T[]> {

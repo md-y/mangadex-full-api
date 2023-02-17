@@ -12,6 +12,7 @@ import type {
     ScanlationGroupResponseSchema,
     ScanlationGroupSchema,
     Statistics,
+    User as UserNamespace
 } from '../types/schema.js';
 import type { DeepRequire, Merge } from '../types/helpers.js';
 import type User from './User.js';
@@ -19,6 +20,7 @@ import type User from './User.js';
 type GroupSearchParams = Partial<Merge<GetSearchGroupParamsSchema, { ids: Group[] }>>;
 type GroupStatsResponse = DeepRequire<Statistics.GetStatisticsGroups.ResponseBody>;
 type GroupStats = GroupStatsResponse['statistics'][string];
+type FollowedGroupsParams = UserNamespace.GetUserFollowsGroup.RequestQuery;
 
 export default class Group extends IDObject implements ScanlationGroupAttributesSchema {
     /**
@@ -202,31 +204,17 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
     }
 
     /**
-     * Make the currently authenticated user follow a scanlation group
+     * Makes the logged in user follow or unfollow a group
      */
-    static async follow(id: string): Promise<void> {
-        await fetchMD(`/group/${id}/follow`, undefined, { method: 'POST' });
+    static async changeFollowship(id: string, follow = true): Promise<void> {
+        await fetchMD(`/group/${id}/follow`, undefined, { method: follow ? 'POST' : 'DELETE' });
     }
 
     /**
-     * Make the currently authenticated user follow this group
+     * Makes the user follow or unfollow this group
      */
-    async follow(): Promise<void> {
-        await Group.follow(this.id);
-    }
-
-    /**
-     * Make the currently authenticated user unfollow a scanlation group
-     */
-    static async unfollow(id: string): Promise<void> {
-        await fetchMD(`/group/${id}/follow`, undefined, { method: 'DELETE' });
-    }
-
-    /**
-     * Make the currently authenticated user unfollow this group
-     */
-    async unfollow(): Promise<void> {
-        await Group.unfollow(this.id);
+    async changeFollowship(follow = true): Promise<void> {
+        await Group.changeFollowship(this.id, follow);
     }
 
     /**
@@ -243,5 +231,10 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
     async getStatistics(): Promise<GroupStats> {
         const res = await Group.getStatistics([this.id]);
         return res[this.id];
+    }
+
+    static async getFollowedGroups(query: FollowedGroupsParams = { limit: Infinity, offset: 0 }): Promise<Group[]> {
+        const res = await fetchMDSearch<ScanlationGroupListSchema>('/user/follows/group', query);
+        return res.map((u) => new Group(u));
     }
 }

@@ -37,7 +37,7 @@ export default class LocalizedString implements LocalizedStringSchema {
     }
 
     /**
-     * This function sets the default locale used by {@link localString}.
+     * This function sets the default locale used by {@link LocalizedString.localString}.
      */
     static setGlobalLocale(locale: string) {
         if (locale.length < 2 || locale.length > 8) throw Error(`Locale "${locale}" has an invalid length`);

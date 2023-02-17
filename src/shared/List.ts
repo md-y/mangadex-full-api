@@ -83,14 +83,15 @@ export default class List extends IDObject implements CustomListAttributesSchema
     /**
      * Updates a list's information.
      */
-    async update(data: Omit<CustomListCreateSchema, 'version'>) {
+    async update(data: Partial<Omit<CustomListCreateSchema, 'version'>>) {
         return new List(
             await fetchMDDataWithBody<CustomListResponseSchema>(
                 `/list/${this.id}`,
                 {
                     ...data,
+                    name: data.name ?? this.name,
                     version: this.version + 1,
-                },
+                } as CustomListCreateSchema,
                 undefined,
                 'PUT',
             ),
@@ -193,5 +194,27 @@ export default class List extends IDObject implements CustomListAttributesSchema
     static async getFollowedLists(limit = Infinity, offset = 0): Promise<List[]> {
         const res = await fetchMDSearch<CustomListListSchema>('/user/follows/list', { limit: limit, offset: offset });
         return res.map((u) => new List(u));
+    }
+
+    /**
+     * Changes the visibility of this custom list
+     */
+    async changeVisibility(newVis: 'public' | 'private'): Promise<List> {
+        return await this.update({ visibility: newVis });
+    }
+
+    /**
+     * Renames this custom list
+     */
+    async rename(name: string): Promise<List> {
+        return await this.update({ name: name });
+    }
+
+    /**
+     *
+     */
+    async updateMangaList(newList: Manga[] | string[]): Promise<List> {
+        newList = newList.map((i) => (typeof i === 'string' ? i : i.id));
+        return await this.update({ manga: newList });
     }
 }

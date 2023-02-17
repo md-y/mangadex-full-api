@@ -39,6 +39,7 @@ import {
     GetMangaDraftsParamsSchema,
     MangaCreateSchema,
     MangaEditSchema,
+    User as UserNamespace,
 } from '../types/schema.js';
 import type { DeepRequire, Merge } from '../types/helpers.js';
 import type Group from './Group.js';
@@ -66,6 +67,7 @@ type MangaStats = MangaStatsResponse['statistics'][string];
 type MangaDraftSearchParams = Partial<GetMangaDraftsParamsSchema>;
 type MangaAggregateResponse = DeepRequire<MangaNamespace.GetMangaAggregate.ResponseBody>;
 type MangaAggregate = MangaAggregateResponse['volumes'];
+type FollowedMangaParams = UserNamespace.GetUserFollowsManga.RequestQuery;
 
 /**
  * This class represents a specific manga series.
@@ -378,8 +380,8 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
     /**
      * Returns all manga followed by the currently authenticated user
      */
-    static async getFollowedManga(limit = Infinity, offset = 0): Promise<Manga[]> {
-        const res = await fetchMDSearch<MangaListSchema>('/user/follows/manga', { limit: limit, offset: offset });
+    static async getFollowedManga(query: FollowedMangaParams = { limit: Infinity, offset: 0 }): Promise<Manga[]> {
+        const res = await fetchMDSearch<MangaListSchema>('/user/follows/manga', query);
         return res.map((u) => new Manga(u));
     }
 
@@ -668,5 +670,19 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
      */
     async getAggregate(groups?: string[] | Group[], languages?: string[]): Promise<MangaAggregate> {
         return Manga.getAggregate(this.id, groups, languages);
+    }
+
+    /**
+     * Makes the logged in user follow or unfollow a manga
+     */
+    static async changeFollowship(id: string, follow = true): Promise<void> {
+        await fetchMD(`/manga/${id}/follow`, undefined, { method: follow ? 'POST' : 'DELETE' });
+    }
+
+    /**
+     * Makes the user follow or unfollow this manga
+     */
+    async changeFollowship(follow = true): Promise<void> {
+        await Manga.changeFollowship(this.id, follow);
     }
 }
