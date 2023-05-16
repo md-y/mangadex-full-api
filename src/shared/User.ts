@@ -1,5 +1,5 @@
 import IDObject from '../internal/IDObject.js';
-import { fetchMD, fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network.js';
+import { fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network.js';
 
 import type { Merge } from '../types/helpers.js';
 import type {

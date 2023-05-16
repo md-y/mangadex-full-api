@@ -233,6 +233,9 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
         return res[this.id];
     }
 
+    /**
+     * Gets an array of groups that the current user follows
+     */
     static async getFollowedGroups(query: FollowedGroupsParams = { limit: Infinity, offset: 0 }): Promise<Group[]> {
         const res = await fetchMDSearch<ScanlationGroupListSchema>('/user/follows/group', query);
         return res.map((u) => new Group(u));

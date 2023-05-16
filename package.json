@@ -7,6 +7,7 @@
     "lint": "eslint . --ext .ts,.mjs,.cjs,.js",
     "build:schema": "node ./scripts/buildSchema.mjs",
     "build:tsc": "tsc && tsc --outDir ./dist/cjs --module CommonJS && tsc --declaration true --emitDeclarationOnly true --declarationDir ./dist/types --removeComments false",
+    "build": "npm run build:schema && npm run build:tsc",
     "prepublish": "npm run build:schema & npm run build:tsc"
   },
   "engines": {
