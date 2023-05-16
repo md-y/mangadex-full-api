@@ -147,7 +147,7 @@ class List {
     static async getLoggedInUserLists(limit = 100, offset = 0, includeSubObjects = false) {
         await AuthUtil.validateTokens();
         let res = await Util.apiSearchRequest('/user/list', { limit: limit, offset: offset });
-        return res.map(elem => new List({ data: elem }));
+        return res.map(elem => new List(elem));
     }
 
     /**
@@ -161,7 +161,7 @@ class List {
     static async getUserLists(user, limit = 100, offset = 0, includeSubObjects = false) {
         if (typeof user !== 'string') user = user.id;
         let res = await Util.apiSearchRequest(`/user/${user}/list`, { limit: limit, offset: offset });
-        return res.map(elem => new List({ data: elem }));
+        return res.map(elem => new List(elem));
     }
 
     /**
