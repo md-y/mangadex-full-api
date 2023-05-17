@@ -1,6 +1,6 @@
 import IDObject from '../internal/IDObject.js';
 import { fetchMD, fetchMDByArrayParam, fetchMDData, fetchMDDataWithBody, fetchMDSearch } from '../util/Network.js';
-import Relationship from './Relationship.js';
+import Relationship from '../internal/Relationship.js';
 import LocalizedString from '../internal/LocalizedString.js';
 
 import type {
@@ -12,7 +12,7 @@ import type {
     ScanlationGroupResponseSchema,
     ScanlationGroupSchema,
     Statistics,
-    User as UserNamespace
+    User as UserNamespace,
 } from '../types/schema.js';
 import type { DeepRequire, Merge } from '../types/helpers.js';
 import type User from './User.js';

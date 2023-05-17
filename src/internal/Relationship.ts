@@ -7,7 +7,7 @@ type GettableClass<T> = Function & { get: (id: string) => Promise<T>; getMultipl
 /**
  * Represents a relationship from one MangaDex object to another such as a manga, author, etc via its id.
  */
-export default class Relationship<T> extends IDObject {
+class Relationship<T> extends IDObject {
     /**
      * The MangaDex UUID of the object this relationship refers to
      */
@@ -75,6 +75,7 @@ export default class Relationship<T> extends IDObject {
     /**
      * This will {@link Relationship.resolve} an array of relationships, returning another array
      * in the same order.
+     * @param relationshipArray - An array of relationships of the same type
      */
     static async resolveAll<T>(relationshipArray: Relationship<T>[]): Promise<T[]> {
         if (relationshipArray.length === 0) return [];
@@ -123,3 +124,5 @@ export default class Relationship<T> extends IDObject {
         return Object.keys(Relationship.typeMap);
     }
 }
+
+export default Relationship;

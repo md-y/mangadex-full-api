@@ -56,7 +56,7 @@ export default class Tag extends IDObject implements TagAttributesSchema {
     /**
      * Retrieves every tag used on MangaDex. The result is cached so any promise
      * after the first will resolve instantly.
-    */
+     */
     static async getAllTags(): Promise<Tag[]> {
         if (Tag.allTagCache.length === 0) {
             const res = await fetchMD<TagResponseSchema>('/manga/tag');

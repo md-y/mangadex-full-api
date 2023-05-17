@@ -1,4 +1,4 @@
-import Relationship from './shared/Relationship.js';
+import Relationship from './internal/Relationship.js';
 import Author from './shared/Author.js';
 import Cover from './shared/Cover.js';
 import Manga from './shared/Manga.js';
@@ -22,7 +22,6 @@ export { default as Author } from './shared/Author.js';
 export { default as Cover } from './shared/Cover.js';
 export { default as Manga } from './shared/Manga.js';
 export { default as Tag } from './shared/Tag.js';
-export { default as Relationship } from './shared/Relationship.js';
 export { default as Chapter } from './shared/Chapter.js';
 export { default as User } from './shared/User.js';
 export { default as Group } from './shared/Group.js';
@@ -42,21 +41,28 @@ export const setGlobalLocale = LocalizedString.setGlobalLocale;
 import AuthClient from './shared/AuthClient.js';
 
 /**
- * This is the first step in logging in with OAuth. Save the information returned from
- * this function and direct the user to the authUrl.
+ * Generates an OAuth authorization url and client information.
+ * This is the first step in logging in with OAuth. Save the information returned from this function and direct the user to the authUrl.
+ * @param clientId - App client name registered with MangaDex (can be 'thirdparty-oauth-client' for sandbox server)
+ * @param clientSecret - Secret app token from MangaDex
+ * @param redirectUri - Where MangaDex will redirect the user to after authorization
  */
-export const getRequiredLoginData = AuthClient.getRequiredLoginData;
+export const getOAuthLoginData = AuthClient.getOAuthLoginData;
 
 /**
+ * Creates and activates an AuthClient instance via the redirected url and existing login data.
  * This is the second and last step in logging in with OAuth. Use the redirect url from the user
- * and the data from {@link getRequiredLoginData} to login. Once the promise from this function resolves,
+ * and the data from {@link getOAuthLoginData} to login. Once the promise from this function resolves,
  * the user is now logged in.
+ * @param landingUrl - The complete callback url that the user returns to after authorization
+ * @param authData - The initial OAuth login data from {@link getOAuthLoginData}
  */
-export const loginWithRedirectUrl = AuthClient.loginWithRedirectUrl;
+export const loginWithOAuthRedirect = AuthClient.loginWithOAuthRedirect;
 
 /**
- * Resolves an array of Relationship objects. This function is more efficient that resolving
- * each array individually.
+ * This will {@link Relationship.resolve} an array of relationships, returning another array
+ * in the same order.
+ * @param relationshipArray - An array of relationships of the same type
  */
 export const resolveArray = Relationship.resolveAll;
 

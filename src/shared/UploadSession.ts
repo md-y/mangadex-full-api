@@ -1,5 +1,5 @@
 import IDObject from '../internal/IDObject.js';
-import Relationship from './Relationship.js';
+import Relationship from '../internal/Relationship.js';
 import APIResponseError from '../util/APIResponseError.js';
 import { fetchMD, fetchMDWithBody, fetchMDWithFormData } from '../util/Network.js';
 
@@ -24,6 +24,9 @@ type FullUploadSession = UploadSessionSchema & { relationships: RelationshipSche
 type FixedFullUploadSession = FullUploadSession | { data: FullUploadSession };
 type FullPageFileResponse = Required<Upload.PutUploadSessionFile.ResponseBody>;
 
+/**
+ * This class represents an in-progress manga upload session including the uploaded pages.
+ */
 export default class UploadSession extends IDObject implements UploadSessionAttributesSchema {
     /**
      * The MangaDex UUID of this upload session

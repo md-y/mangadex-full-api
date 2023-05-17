@@ -8,7 +8,7 @@ import {
     fetchMDSearch,
     fetchMDWithBody,
 } from '../util/Network.js';
-import Relationship from './Relationship.js';
+import Relationship from '../internal/Relationship.js';
 import Links from '../internal/Links.js';
 import IDObject from '../internal/IDObject.js';
 import Chapter, { ChapterSearchParams } from './Chapter.js';

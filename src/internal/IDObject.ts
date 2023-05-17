@@ -3,6 +3,8 @@
  * only the ID of the object. This is mostly used for instanceOf checks.
  * @internal
  */
-export default abstract class IDObject {
+abstract class IDObject {
     abstract id: string;
 }
+
+export default IDObject;

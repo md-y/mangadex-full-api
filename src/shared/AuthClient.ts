@@ -24,14 +24,19 @@ type AuthClientData = {
 
 /**
  * This class represents a basic OAuth user client. It does not have the ability to automatically prompt
- * the user to login, but there are included login functions for the browser and Node in the root of the MFA module.
+ * the user to login, but it has the ability to generate an authorization url and parse the callback url.
+ *
+ * Use {@link setActive} to make this client the one used by API calls.
+ *
+ * The {@link https://www.npmjs.com/package/simple-oauth-redirect | simple-oauth-redirect} package is recommended
+ * for OAuth redirects.
  */
 export default class AuthClient {
     private static activeClient?: AuthClient;
     protected static authServerCache?: AuthorizationServer;
     protected static authServerIsDebugServer?: boolean;
 
-    oauthData: AuthClientData;
+    private oauthData: AuthClientData;
 
     constructor(data: AuthClientData) {
         this.oauthData = data;
@@ -98,9 +103,13 @@ export default class AuthClient {
     }
 
     /**
-     * Generates the authorization url and client information
+     * Generates an OAuth authorization url and client information.
+     * This is the first step in logging in with OAuth. Save the information returned from this function and direct the user to the authUrl.
+     * @param clientId - App client name registered with MangaDex (can be 'thirdparty-oauth-client' for sandbox server)
+     * @param clientSecret - Secret app token from MangaDex
+     * @param redirectUri - Where MangaDex will redirect the user to after authorization
      */
-    static async getRequiredLoginData(clientId: string, clientSecret: string, redirectUri: string): Promise<LoginData> {
+    static async getOAuthLoginData(clientId: string, clientSecret: string, redirectUri: string): Promise<LoginData> {
         const oauth = await getOAuthImport();
         const authServer = await AuthClient.getAuthServer();
         const codeVerifier = oauth.generateRandomCodeVerifier();
@@ -131,11 +140,18 @@ export default class AuthClient {
 
     /**
      * Create an AuthClient instance via the redirected url and existing login data
+     * @param landingUrl - The complete callback url that the user returns to after authorization
+     * @param authData - The initial OAuth login data from {@link getOAuthLoginData}
      */
-    static async getClientFromUrl(landingUrl: URL, authData: LoginData): Promise<AuthClient> {
+    static async getClientFromOAuthRedirect(landingUrl: URL, authData: LoginData): Promise<AuthClient> {
         const oauth = await getOAuthImport();
         const authServer = await AuthClient.getAuthServer();
-        const params = oauth.validateAuthResponse(authServer, authData.client, landingUrl, oauth.expectNoState);
+        const params = oauth.validateAuthResponse(
+            authServer,
+            authData.client,
+            landingUrl.searchParams,
+            oauth.expectNoState,
+        );
         if (oauth.isOAuth2Error(params)) throw new AuthError(params);
         const codeRes = await oauth.authorizationCodeGrantRequest(
             authServer,
@@ -156,10 +172,15 @@ export default class AuthClient {
     }
 
     /**
-     * Creates and activates an AuthClient instance via the redirected url and existing login data
+     * Creates and activates an AuthClient instance via the redirected url and existing login data.
+     * This is the second and last step in logging in with OAuth. Use the redirect url from the user
+     * and the data from {@link getOAuthLoginData} to login. Once the promise from this function resolves,
+     * the user is now logged in.
+     * @param landingUrl - The complete callback url that the user returns to after authorization
+     * @param authData - The initial OAuth login data from {@link getOAuthLoginData}
      */
-    static async loginWithRedirectUrl(landingUrl: URL, authData: LoginData): Promise<AuthClient> {
-        const client = await AuthClient.getClientFromUrl(landingUrl, authData);
+    static async loginWithOAuthRedirect(landingUrl: URL, authData: LoginData): Promise<AuthClient> {
+        const client = await AuthClient.getClientFromOAuthRedirect(landingUrl, authData);
         client.setActive();
         return client;
     }

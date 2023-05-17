@@ -1,6 +1,6 @@
 import IDObject from '../internal/IDObject.js';
 import { fetchMD, fetchMDData, fetchMDDataWithBody, fetchMDSearch } from '../util/Network.js';
-import Relationship from './Relationship.js';
+import Relationship from '../internal/Relationship.js';
 import Chapter from './Chapter.js';
 
 import type {

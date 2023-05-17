@@ -8,12 +8,15 @@ import type {
     UserListSchema,
     UserResponseSchema,
     UserSchema,
-    User as UserNamespace
+    User as UserNamespace,
 } from '../types/schema.js';
 
 type UserSearchParams = Partial<Merge<GetUserParamsSchema, { ids: User[] }>>;
 type FollowedUserParams = UserNamespace.GetUserFollowsUser.RequestQuery;
 
+/**
+ * This class represents a MangaDex user such as a chapter uploader
+ */
 export default class User extends IDObject implements UserAttributesSchema {
     id: string;
     username: string;

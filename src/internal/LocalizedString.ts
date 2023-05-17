@@ -11,7 +11,7 @@ import type { LocalizedStringSchema } from '../types/schema.js';
  * LocalizedString.setGlobalLocale('jp');
  * locStr.localString; // Japanese String
  */
-export default class LocalizedString implements LocalizedStringSchema {
+class LocalizedString implements LocalizedStringSchema {
     private static globalLocale = 'en';
 
     [x: string]: string;
@@ -44,3 +44,5 @@ export default class LocalizedString implements LocalizedStringSchema {
         LocalizedString.globalLocale = locale;
     }
 }
+
+export default LocalizedString;

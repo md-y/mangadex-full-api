@@ -7,7 +7,7 @@ import {
     fetchMDSearch,
     postToMDNetwork,
 } from '../util/Network.js';
-import Relationship from './Relationship.js';
+import Relationship from '../internal/Relationship.js';
 
 import type {
     AtHome,

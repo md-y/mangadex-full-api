@@ -1,7 +1,7 @@
 import IDObject from '../internal/IDObject.js';
 import LocalizedString from '../internal/LocalizedString.js';
 import { fetchMDData, fetchMDSearch, fetchMDByArrayParam, fetchMDDataWithBody, fetchMD } from '../util/Network.js';
-import Relationship from './Relationship.js';
+import Relationship from '../internal/Relationship.js';
 
 import {
     AuthorAttributesSchema,

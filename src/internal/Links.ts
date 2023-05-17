@@ -1,4 +1,8 @@
-export default class Links {
+/**
+ * A simple record object representing links to manga on different websites.
+ * Websites are the keys, and the values are full urls (when available).
+ */
+class Links {
     /**
      * Anilist (https://anilist.co) link to manga
      */
@@ -83,3 +87,5 @@ export default class Links {
         this.cdJapan = linksObject?.cdj;
     }
 }
+
+export default Links;
