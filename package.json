@@ -2,13 +2,14 @@
   "name": "mangadex-full-api",
   "version": "6.0.0",
   "description": "A MangaDex api based around the official API.",
-  "types": "./dist/types/index.d.mts",
+  "types": "./dist/types/base.d.ts",
   "scripts": {
     "lint": "eslint . --ext .ts,.mjs,.cjs,.js",
     "build:schema": "node ./scripts/buildSchema.mjs",
-    "build:tsc": "tsc && tsc --outDir ./dist/cjs --module CommonJS && tsc --declaration true --emitDeclarationOnly true --declarationDir ./dist/types --removeComments false",
+    "build:tsc": "node ./scripts/buildTypeScript.mjs",
     "build": "npm run build:schema && npm run build:tsc",
-    "prepublish": "npm run build:schema & npm run build:tsc"
+    "prepublish": "npm run build",
+    "docs": "typedoc"
   },
   "engines": {
     "node": ">=19.0.0"
@@ -43,9 +44,11 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-tsdoc": "^0.2.17",
     "prettier": "^2.8.1",
+    "shelljs": "^0.8.5",
     "swagger-typescript-api": "^12.0.2",
     "ts-node": "^10.9.1",
-    "typedoc": "^0.23.24",
+    "typedoc": "^0.24.7",
+    "typedoc-plugin-missing-exports": "^2.0.0",
     "typescript": "^4.9.4"
   },
   "dependencies": {
@@ -53,12 +56,9 @@
   },
   "exports": {
     ".": {
-      "default": {
-        "default": "./dist/esm/index.mjs",
-        "import": "./dist/esm/index.mjs",
-        "require": "./dist/cjs/index.cjs",
-        "types": "./dist/types/node.d.mts"
-      }
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/base.d.ts"
     }
   }
 }

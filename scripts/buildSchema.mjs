@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 
 const MANGADEX_SPEC_URL = 'https://api.mangadex.org/docs/api.yaml';
 const TARGET_DIR = 'src/types/';
-const TARGET_NAME = 'schema.d.ts';
+const TARGET_NAME = 'schema.ts';
 
 const BUGGED_DATELESS_PROPS = ['updatedAt', 'readableAt', 'createdAt', 'publishAt'];
 
