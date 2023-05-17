@@ -1,5 +1,6 @@
 import IDObject from '../internal/IDObject.js';
 import { fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network.js';
+import Relationship from '../internal/Relationship.js';
 
 import type { Merge } from '../types/helpers.js';
 import type {
@@ -10,6 +11,7 @@ import type {
     UserSchema,
     User as UserNamespace,
 } from '../types/schema.js';
+import type Group from './Group.js';
 
 type UserSearchParams = Partial<Merge<GetUserParamsSchema, { ids: User[] }>>;
 type FollowedUserParams = UserNamespace.GetUserFollowsUser.RequestQuery;
@@ -22,7 +24,7 @@ export default class User extends IDObject implements UserAttributesSchema {
     username: string;
     roles: string[];
     version: number;
-    // groups: // TODO: Add groups
+    groups: Relationship<Group>[];
 
     constructor(schem: UserSchema) {
         super();
@@ -30,6 +32,7 @@ export default class User extends IDObject implements UserAttributesSchema {
         this.username = schem.attributes.username;
         this.roles = schem.attributes.roles;
         this.version = schem.attributes.version;
+        this.groups = Relationship.convertType('scanlation_group', schem.relationships);
     }
 
     /**

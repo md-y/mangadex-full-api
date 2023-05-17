@@ -46,7 +46,7 @@ import type Group from './Group.js';
 
 // This type supplements the schema type so that IDObjects can be used instead
 type MangaSearchHelpers = {
-    // TODO: add groups/users
+    group: Group;
     includedTags: Tag[];
     excludedTags: Tag[];
     authors: Author[];
