@@ -14,8 +14,8 @@
   },
   "scripts": {
     "lint": "eslint ./src ./scripts --ext .ts,.mjs,.cjs,.js",
-    "build:schema": "node ./scripts/buildSchema.mjs",
-    "build:tsup": "node ./scripts/buildTsup.mjs",
+    "build:schema": "node ./scripts/build-schema.mjs",
+    "build:tsup": "node ./scripts/build-tsup.mjs",
     "build": "npm run build:schema && npm run build:tsup",
     "prepublish": "npm run build",
     "docs": "typedoc"
