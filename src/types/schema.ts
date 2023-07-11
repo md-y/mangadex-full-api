@@ -305,6 +305,7 @@ export interface ScanlationGroupAttributesSchema {
     locked: boolean;
     official: boolean;
     inactive: boolean;
+    exLicensed: boolean;
     /**
      * Should respected ISO 8601 duration specification: https://en.wikipedia.org/wiki/ISO_8601#Durations
      * @pattern ^(P([1-9]|[1-9][0-9])D)?(P?([1-9])W)?(P?T(([1-9]|1[0-9]|2[0-4])H)?(([1-9]|[1-5][0-9]|60)M)?(([1-9]|[1-5][0-9]|60)S)?)?$
@@ -720,6 +721,56 @@ export interface AuthorCreateSchema {
      * @pattern ^https?://
      */
     website?: string | null;
+}
+
+/** ApiClientResponse */
+export interface ApiClientResponseSchema {
+    result: string;
+    /** @default "entity" */
+    response: string;
+    data: ApiClientSchema;
+}
+
+/** ApiClient */
+export interface ApiClientSchema {
+    /** @format uuid */
+    id: string;
+    type: 'api_client';
+    attributes: ApiClientAttributesSchema;
+    relationships: RelationshipSchema[];
+}
+
+/** ApiClientAttributes */
+export interface ApiClientAttributesSchema {
+    name: string;
+    description: string | null;
+    profile: string;
+    clientId: string | null;
+    /** @min 1 */
+    version: number;
+    /** @format date-time */
+    createdAt: Date;
+    /** @format date-time */
+    updatedAt: Date;
+}
+
+/** ApiClient */
+export interface ApiClientEditSchema {
+    description?: string | null;
+    /** @min 1 */
+    version: number;
+}
+
+/** ApiClientCreate */
+export interface ApiClientCreateSchema {
+    /**
+     * @minLength 5
+     * @maxLength 32
+     */
+    name: string;
+    /** @maxLength 1024 */
+    description?: string | null;
+    profile: 'personal';
     /** @min 1 */
     version?: number;
 }
@@ -851,6 +902,18 @@ export interface AuthorListSchema {
     /** @default "collection" */
     response: string;
     data: AuthorSchema[];
+    limit: number;
+    offset: number;
+    total: number;
+}
+
+/** ApiClientList */
+export interface ApiClientListSchema {
+    /** @default "ok" */
+    result: string;
+    /** @default "collection" */
+    response: string;
+    data: ApiClientSchema[];
     limit: number;
     offset: number;
     total: number;
@@ -1149,6 +1212,12 @@ export interface ForumsThreadResponseSchema {
 export type ReferenceExpansionAuthorSchema = 'manga'[];
 
 /**
+ * ReferenceExpansionApiClient
+ * Reference expansion options for api_client entities or lists
+ */
+export type ReferenceExpansionApiClientSchema = 'creator'[];
+
+/**
  * ReferenceExpansionChapter
  * Reference expansion options for chapter entities or lists
  */
@@ -1164,7 +1233,7 @@ export type ReferenceExpansionCoverArtSchema = ('manga' | 'user')[];
  * ReferenceExpansionManga
  * Reference expansion options for manga entities or lists
  */
-export type ReferenceExpansionMangaSchema = ('manga' | 'cover_art' | 'author' | 'artist' | 'tag')[];
+export type ReferenceExpansionMangaSchema = ('manga' | 'cover_art' | 'author' | 'artist' | 'tag' | 'creator')[];
 
 /**
  * ReferenceExpansionMangaRelation
@@ -1220,11 +1289,8 @@ export interface GetSearchMangaParamsSchema {
     authorOrArtist: string;
     authors: string[];
     artists: string[];
-    /**
-     * Year of release
-     * @pattern ^\\d{4}$
-     */
-    year: number;
+    /** Year of release or none */
+    year: number | 'none';
     includedTags: string[];
     /** @default "AND" */
     includedTagsMode: 'AND' | 'OR';
@@ -1296,6 +1362,47 @@ export interface GetAccountAvailableParamsSchema {
      * @pattern ^[a-zA-Z0-9_-]+$
      */
     username: string;
+}
+
+export interface GetListApiclientsParamsSchema {
+    /**
+     * @min 0
+     * @max 100
+     * @default 10
+     */
+    limit: number;
+    /** @min 0 */
+    offset: number;
+    state: 'requested' | 'approved' | 'rejected' | 'autoapproved';
+    name: string;
+    /** Reference expansion options for api_client entities or lists */
+    includes: ReferenceExpansionApiClientSchema;
+    /** @default {"createdAt":"desc"} */
+    order: {
+        name?: 'asc' | 'desc';
+        createdAt?: 'asc' | 'desc';
+        updatedAt?: 'asc' | 'desc';
+    };
+}
+
+export interface GetApiclientParamsSchema {
+    /** Reference expansion options for api_client entities or lists */
+    includes: ReferenceExpansionApiClientSchema;
+    /**
+     * ApiClient ID
+     * @format uuid
+     */
+    id: string;
+}
+
+export interface DeleteApiclientParamsSchema {
+    /** @pattern ^\d+$ */
+    version: string;
+    /**
+     * ApiClient ID
+     * @format uuid
+     */
+    id: string;
 }
 
 export interface GetSearchGroupParamsSchema {
@@ -1885,11 +1992,8 @@ export namespace Manga {
             authorOrArtist?: string;
             authors?: string[];
             artists?: string[];
-            /**
-             * Year of release
-             * @pattern ^\\d{4}$
-             */
-            year?: number;
+            /** Year of release or none */
+            year?: number | 'none';
             includedTags?: string[];
             /** @default "AND" */
             includedTagsMode?: 'AND' | 'OR';
@@ -2719,6 +2823,187 @@ export namespace Account {
             'Content-Type': string;
         };
         export type ResponseBody = AccountActivateResponseSchema;
+    }
+}
+
+export namespace Client {
+    /**
+     * No description
+     * @tags ApiClient
+     * @name GetListApiclients
+     * @summary List own Api Clients
+     * @request GET:/client
+     * @secure
+     */
+    export namespace GetListApiclients {
+        export type RequestParams = {};
+        export type RequestQuery = {
+            /**
+             * @min 0
+             * @max 100
+             * @default 10
+             */
+            limit?: number;
+            /** @min 0 */
+            offset?: number;
+            state?: 'requested' | 'approved' | 'rejected' | 'autoapproved';
+            name?: string;
+            /** Reference expansion options for api_client entities or lists */
+            includes?: ReferenceExpansionApiClientSchema;
+            /** @default {"createdAt":"desc"} */
+            order?: {
+                name?: 'asc' | 'desc';
+                createdAt?: 'asc' | 'desc';
+                updatedAt?: 'asc' | 'desc';
+            };
+        };
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = ApiClientListSchema;
+    }
+    /**
+     * No description
+     * @tags ApiClient
+     * @name PostCreateApiclient
+     * @summary Create ApiClient
+     * @request POST:/client
+     * @secure
+     */
+    export namespace PostCreateApiclient {
+        export type RequestParams = {};
+        export type RequestQuery = {};
+        export type RequestBody = ApiClientCreateSchema;
+        export type RequestHeaders = {
+            /** @default "application/json" */
+            'Content-Type': string;
+        };
+        export type ResponseBody = ApiClientResponseSchema;
+    }
+    /**
+     * No description
+     * @tags ApiClient
+     * @name GetApiclient
+     * @summary Get Api Client by ID
+     * @request GET:/client/{id}
+     * @secure
+     */
+    export namespace GetApiclient {
+        export type RequestParams = {
+            /**
+             * ApiClient ID
+             * @format uuid
+             */
+            id: string;
+        };
+        export type RequestQuery = {
+            /** Reference expansion options for api_client entities or lists */
+            includes?: ReferenceExpansionApiClientSchema;
+        };
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = ApiClientResponseSchema;
+    }
+    /**
+     * No description
+     * @tags ApiClient
+     * @name PostEditApiclient
+     * @summary Edit ApiClient
+     * @request POST:/client/{id}
+     * @secure
+     */
+    export namespace PostEditApiclient {
+        export type RequestParams = {
+            /**
+             * ApiClient ID
+             * @format uuid
+             */
+            id: string;
+        };
+        export type RequestQuery = {};
+        export type RequestBody = ApiClientEditSchema;
+        export type RequestHeaders = {
+            /** @default "application/json" */
+            'Content-Type': string;
+        };
+        export type ResponseBody = ApiClientResponseSchema;
+    }
+    /**
+     * No description
+     * @tags ApiClient
+     * @name DeleteApiclient
+     * @summary Delete Api Client
+     * @request DELETE:/client/{id}
+     * @secure
+     */
+    export namespace DeleteApiclient {
+        export type RequestParams = {
+            /**
+             * ApiClient ID
+             * @format uuid
+             */
+            id: string;
+        };
+        export type RequestQuery = {
+            /** @pattern ^\d+$ */
+            version?: string;
+        };
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = {
+            /** @default "ok" */
+            result?: string;
+        };
+    }
+    /**
+     * No description
+     * @tags ApiClient
+     * @name GetApiclientSecret
+     * @summary Get Secret for Client by ID
+     * @request GET:/client/{id}/secret
+     * @secure
+     */
+    export namespace GetApiclientSecret {
+        export type RequestParams = {
+            /**
+             * ApiClient ID
+             * @format uuid
+             */
+            id: string;
+        };
+        export type RequestQuery = {};
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = {
+            result?: 'ok';
+            data?: string;
+        };
+    }
+    /**
+     * No description
+     * @tags ApiClient
+     * @name PostRegenerateApiclientSecret
+     * @summary Regenerate Client Secret
+     * @request POST:/client/{id}/secret
+     * @secure
+     */
+    export namespace PostRegenerateApiclientSecret {
+        export type RequestParams = {
+            /**
+             * ApiClient ID
+             * @format uuid
+             */
+            id: string;
+        };
+        export type RequestQuery = {};
+        export type RequestBody = object;
+        export type RequestHeaders = {
+            /** @default "application/json" */
+            'Content-Type': string;
+        };
+        export type ResponseBody = {
+            result?: 'ok';
+            data?: string;
+        };
     }
 }
 

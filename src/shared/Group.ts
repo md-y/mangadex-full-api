@@ -107,6 +107,10 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
      * Array of relationships to the member users of this group
      */
     members: Relationship<User>[];
+    /**
+     * Is this group ex-licensed?
+     */
+    exLicensed: boolean;
 
     constructor(schem: ScanlationGroupSchema) {
         super();
@@ -131,6 +135,7 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
         this.updatedAt = new Date(schem.attributes.updatedAt);
         this.leader = Relationship.convertType<User>('leader', schem.relationships).pop() ?? null;
         this.members = Relationship.convertType<User>('member', schem.relationships);
+        this.exLicensed = schem.attributes.exLicensed;
     }
 
     /**
