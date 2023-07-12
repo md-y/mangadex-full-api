@@ -5,6 +5,7 @@ import { build } from 'tsup';
         bundle: true,
         minify: true,
         outDir: './dist',
+        sourcemap: true,
     };
 
     await build({
