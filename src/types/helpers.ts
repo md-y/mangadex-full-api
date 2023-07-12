@@ -22,3 +22,8 @@ export type Equal<A, B> = (A extends B ? B : Error) extends A ? A : Error;
 export type DeepRequire<T> = Required<{
     [P in keyof T]: T[P] extends object | undefined ? DeepRequire<Required<T[P]>> : T[P];
 }>;
+
+export interface IAuthClient {
+    getSessionToken: () => Promise<string>;
+    setActive: () => void;
+}

@@ -26,7 +26,7 @@ export { default as Chapter } from './shared/Chapter.js';
 export { default as User } from './shared/User.js';
 export { default as Group } from './shared/Group.js';
 export { default as UploadSession } from './shared/UploadSession.js';
-export { default as AuthClient } from './shared/AuthClient.js';
+export { default as OAuthClient } from './shared/OAuthClient.js';
 
 // Export specific functions:
 
@@ -38,7 +38,7 @@ import LocalizedString from './internal/LocalizedString.js';
  */
 export const setGlobalLocale = LocalizedString.setGlobalLocale;
 
-import AuthClient from './shared/AuthClient.js';
+import OAuthClient from './shared/OAuthClient.js';
 
 /**
  * Generates an OAuth authorization url and client information.
@@ -47,17 +47,17 @@ import AuthClient from './shared/AuthClient.js';
  * @param clientSecret - Secret app token from MangaDex
  * @param redirectUri - Where MangaDex will redirect the user to after authorization
  */
-export const getOAuthLoginData = AuthClient.getOAuthLoginData;
+export const getOAuthLoginData = OAuthClient.getOAuthLoginData;
 
 /**
- * Creates and activates an AuthClient instance via the redirected url and existing login data.
- * This is the second and last step in logging in with OAuth. Use the redirect url from the user
+ * Logins in via a redirected OAuth url and existing login data.
+ * This is the second and last step for logging in with OAuth. Use the redirect url from the user
  * and the data from {@link getOAuthLoginData} to login. Once the promise from this function resolves,
  * the user is now logged in.
  * @param landingUrl - The complete callback url that the user returns to after authorization
  * @param authData - The initial OAuth login data from {@link getOAuthLoginData}
  */
-export const loginWithOAuthRedirect = AuthClient.loginWithOAuthRedirect;
+export const loginWithOAuthRedirect = OAuthClient.loginWithOAuthRedirect;
 
 /**
  * This will {@link Relationship.resolve} an array of relationships, returning another array
@@ -71,3 +71,15 @@ export const resolveArray = Relationship.resolveAll;
  * skipped by Mangadex when remapping, so call this function for each individual id if this is an issue.
  */
 export const convertLegacyId = Manga.convertLegacyId;
+
+import LegacyAuthClient from './shared/LegacyAuthClient.js';
+
+/**
+ * Login with a legacy username and password
+ *
+ * @deprecated - This login method is being replaced by OAuth
+ *
+ * @param username - Username of the account
+ * @param password - Password of the account
+ */
+export const login = LegacyAuthClient.login;

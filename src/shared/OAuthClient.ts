@@ -1,9 +1,11 @@
 import AuthError from '../util/AuthError.js';
-import { isDebugServerInUse, performAuthCheck } from '../util/Network.js';
+import { isDebugServerInUse, performAuthCheck, setActiveAuthClient } from '../util/Network.js';
 
 // @ts-expect-error Import is type-only
 import type { Client, AuthorizationServer, OpenIDTokenEndpointResponse } from 'oauth4webapi';
 import { getOAuthImport } from '../util/OAuthImporter.js';
+
+import type { IAuthClient } from '../types/helpers.js';
 
 type LoginData = {
     authUrl: URL;
@@ -13,7 +15,7 @@ type LoginData = {
     verifier: string;
 };
 
-type AuthClientData = {
+type OAuthClientData = {
     idToken: string;
     accessToken: string;
     refreshToken: string;
@@ -31,14 +33,13 @@ type AuthClientData = {
  * The {@link https://www.npmjs.com/package/simple-oauth-redirect | simple-oauth-redirect} package is recommended
  * for OAuth redirects.
  */
-export default class AuthClient {
-    private static activeClient?: AuthClient;
+export default class OAuthClient implements IAuthClient {
     protected static authServerCache?: AuthorizationServer;
     protected static authServerIsDebugServer?: boolean;
 
-    private oauthData: AuthClientData;
+    private oauthData: OAuthClientData;
 
-    constructor(data: AuthClientData) {
+    constructor(data: OAuthClientData) {
         this.oauthData = data;
     }
 
@@ -61,29 +62,7 @@ export default class AuthClient {
      * Set this auth instance to be the one used by all API calls
      */
     setActive() {
-        AuthClient.activeClient = this;
-    }
-
-    /**
-     * Removes the client currently being used by API calls
-     */
-    static clearActiveClient() {
-        AuthClient.activeClient = undefined;
-    }
-
-    /**
-     * Returns the current client being used for authentication, or null if there isn't one
-     */
-    static getActiveClient(): AuthClient | null {
-        return AuthClient.activeClient ?? null;
-    }
-
-    /**
-     * Retrieves the user's session token via the currently active client (if there is any)
-     */
-    static async getActiveSessionToken(): Promise<string | undefined> {
-        if (AuthClient.activeClient === undefined) return undefined;
-        return await AuthClient.activeClient.getSessionToken();
+        setActiveAuthClient(this);
     }
 
     /**
@@ -92,14 +71,14 @@ export default class AuthClient {
     static async getAuthServer(): Promise<AuthorizationServer> {
         const oauth = await getOAuthImport();
         const isDebug = isDebugServerInUse();
-        if (!AuthClient.authServerCache || isDebug !== AuthClient.authServerIsDebugServer) {
+        if (!OAuthClient.authServerCache || isDebug !== OAuthClient.authServerIsDebugServer) {
             const tld = isDebug ? 'dev' : 'org';
             const issuer = new URL(`https://auth.mangadex.${tld}/realms/mangadex`);
             const res = await oauth.discoveryRequest(issuer);
-            AuthClient.authServerCache = await oauth.processDiscoveryResponse(issuer, res);
-            AuthClient.authServerIsDebugServer = isDebug;
+            OAuthClient.authServerCache = await oauth.processDiscoveryResponse(issuer, res);
+            OAuthClient.authServerIsDebugServer = isDebug;
         }
-        return AuthClient.authServerCache;
+        return OAuthClient.authServerCache;
     }
 
     /**
@@ -111,7 +90,7 @@ export default class AuthClient {
      */
     static async getOAuthLoginData(clientId: string, clientSecret: string, redirectUri: string): Promise<LoginData> {
         const oauth = await getOAuthImport();
-        const authServer = await AuthClient.getAuthServer();
+        const authServer = await OAuthClient.getAuthServer();
         const codeVerifier = oauth.generateRandomCodeVerifier();
         const codeChallenge = await oauth.calculatePKCECodeChallenge(codeVerifier);
         const codeChallengeMethod = 'S256';
@@ -143,9 +122,9 @@ export default class AuthClient {
      * @param landingUrl - The complete callback url that the user returns to after authorization
      * @param authData - The initial OAuth login data from {@link getOAuthLoginData}
      */
-    static async getClientFromOAuthRedirect(landingUrl: URL, authData: LoginData): Promise<AuthClient> {
+    static async getClientFromOAuthRedirect(landingUrl: URL, authData: LoginData): Promise<OAuthClient> {
         const oauth = await getOAuthImport();
-        const authServer = await AuthClient.getAuthServer();
+        const authServer = await OAuthClient.getAuthServer();
         const params = oauth.validateAuthResponse(
             authServer,
             authData.client,
@@ -168,7 +147,7 @@ export default class AuthClient {
 
         const tokenRes = await oauth.processAuthorizationCodeOpenIDResponse(authServer, authData.client, codeRes);
         if (oauth.isOAuth2Error(tokenRes)) throw new AuthError(tokenRes);
-        return new AuthClient(AuthClient.parseTokenResponse(tokenRes, authData.client));
+        return new OAuthClient(OAuthClient.parseTokenResponse(tokenRes, authData.client));
     }
 
     /**
@@ -179,8 +158,8 @@ export default class AuthClient {
      * @param landingUrl - The complete callback url that the user returns to after authorization
      * @param authData - The initial OAuth login data from {@link getOAuthLoginData}
      */
-    static async loginWithOAuthRedirect(landingUrl: URL, authData: LoginData): Promise<AuthClient> {
-        const client = await AuthClient.getClientFromOAuthRedirect(landingUrl, authData);
+    static async loginWithOAuthRedirect(landingUrl: URL, authData: LoginData): Promise<OAuthClient> {
+        const client = await OAuthClient.getClientFromOAuthRedirect(landingUrl, authData);
         client.setActive();
         return client;
     }
@@ -188,7 +167,7 @@ export default class AuthClient {
     /**
      * Parse the JSON response from the OpenId Token endpoint into the parameters required for Auth Client
      */
-    static parseTokenResponse(res: OpenIDTokenEndpointResponse, client: Client): AuthClientData {
+    static parseTokenResponse(res: OpenIDTokenEndpointResponse, client: Client): OAuthClientData {
         return {
             client: client,
             accessToken: res.access_token,
@@ -204,7 +183,7 @@ export default class AuthClient {
      */
     async refreshTokens(): Promise<void> {
         const oauth = await getOAuthImport();
-        const authServer = await AuthClient.getAuthServer();
+        const authServer = await OAuthClient.getAuthServer();
         const res = await oauth.refreshTokenGrantRequest(
             authServer,
             this.oauthData.client,
@@ -216,7 +195,7 @@ export default class AuthClient {
             res,
         )) as OpenIDTokenEndpointResponse;
         if (oauth.isOAuth2Error(parsedRes)) throw new AuthError(parsedRes);
-        this.oauthData = AuthClient.parseTokenResponse(parsedRes, this.oauthData.client);
+        this.oauthData = OAuthClient.parseTokenResponse(parsedRes, this.oauthData.client);
     }
 
     /**

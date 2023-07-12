@@ -1,8 +1,8 @@
 import IDObject from '../internal/IDObject.js';
 import APIResponseError from './APIResponseError.js';
-import AuthClient from '../shared/AuthClient.js';
 
 import type { CheckResponseSchema, ErrorResponseSchema } from '../types/schema.js';
+import type { IAuthClient } from '../types/helpers.js';
 
 type ParameterObj = {
     [x: string]:
@@ -19,18 +19,40 @@ type ParameterObj = {
 
 type ListResponse = { data: { id: string }[]; limit: number; offset: number; total: number };
 
-type CustomRequestInit = Omit<RequestInit, 'headers'> & { headers?: Record<string, string> };
+type CustomRequestInit = Omit<RequestInit, 'headers'> & { headers?: Record<string, string>; noAuth?: boolean };
 
-let useDebugServerValue = false;
+class NetworkStateManager {
+    static useDebugServerValue = false;
+    static activeClient: IAuthClient | undefined;
+}
+
 /**
  * If true the debug (sandbox) MangaDex domain wil be used instead of the default one.
  * {@link https://sandbox.mangadex.dev}
  */
 export function useDebugServer(val: boolean) {
-    useDebugServerValue = val;
+    NetworkStateManager.useDebugServerValue = val;
 }
+/**
+ * Returns if the debug (sandbox) MangaDex domain is in use
+ */
 export function isDebugServerInUse() {
-    return useDebugServerValue;
+    return NetworkStateManager.useDebugServerValue;
+}
+
+/**
+ * Sets the AuthClient to be used by API calls
+ * @param client - The signed-in OAuth or legacy AuthClient
+ */
+export function setActiveAuthClient(client: IAuthClient) {
+    NetworkStateManager.activeClient = client;
+}
+
+/**
+ * Removes the current active AuthClient so no further API calls are done with user authorization
+ */
+export function clearActiveAuthClient() {
+    NetworkStateManager.activeClient = undefined;
 }
 
 /**
@@ -41,15 +63,13 @@ export async function fetchMD<T extends object>(
     params?: ParameterObj,
     requestInit: CustomRequestInit = {},
 ): Promise<T> {
-    const domain = useDebugServerValue ? 'https://api.mangadex.dev' : 'https://api.mangadex.org/';
+    const domain = NetworkStateManager.useDebugServerValue ? 'https://api.mangadex.dev' : 'https://api.mangadex.org/';
     const url = buildURL(domain, endpoint, params);
 
-    if (requestInit.headers === undefined || !('authorization' in requestInit)) {
-        const sessionToken = await AuthClient.getActiveSessionToken();
-        if (sessionToken !== undefined) {
-            if (requestInit.headers === undefined) requestInit.headers = {};
-            requestInit.headers['authorization'] = `Bearer ${sessionToken}`;
-        }
+    if (NetworkStateManager.activeClient && !requestInit.noAuth) {
+        const sessionToken = await NetworkStateManager.activeClient.getSessionToken();
+        if (requestInit.headers === undefined) requestInit.headers = {};
+        requestInit.headers['authorization'] = `Bearer ${sessionToken}`;
     }
     const res = await fetch(url, requestInit);
 
@@ -240,7 +260,7 @@ export async function fetchMDWithFormData<T extends object>(
     const formdata = new FormData();
     const appendItem = (name: string, item: Blob | string | { data: string | Blob; name: string }) => {
         if (typeof item !== 'string' && 'data' in item && 'name' in item) {
-            formdata.append(name, item.data, item.name);
+            formdata.append(name, item.data as Blob, item.name);
         } else {
             formdata.append(name, item);
         }
@@ -273,10 +293,10 @@ export function buildURL(base: string, path?: string, params?: ParameterObj): UR
                 url.searchParams.append(`${name}[]`, i.toString());
             }
         } else if (typeof value === 'object') {
-            const valueEntries = Object.entries(value);
             if (value instanceof IDObject) {
                 url.searchParams.append(name, value.id.toString());
             } else {
+                const valueEntries = Object.entries(value);
                 for (const [k, v] of valueEntries) {
                     url.searchParams.append(`${name}[${k}]`, v.toString());
                 }
@@ -300,6 +320,7 @@ export async function performAuthCheck(sessionToken?: string): Promise<boolean> 
                 headers: {
                     authorization: `Bearer ${sessionToken}`,
                 },
+                noAuth: true,
             };
         }
         const res = await fetchMD<CheckResponseSchema>('/auth/check', undefined, options);
