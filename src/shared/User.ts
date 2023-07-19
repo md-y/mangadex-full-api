@@ -1,8 +1,8 @@
-import IDObject from '../internal/IDObject.js';
-import { fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
+import IDObject from '../internal/IDObject';
+import { fetchMDByArrayParam, fetchMDData, fetchMDSearch } from '../util/Network';
+import Relationship from '../internal/Relationship';
 
-import type { Merge } from '../types/helpers.js';
+import type { Merge } from '../types/helpers';
 import type {
     GetUserParamsSchema,
     UserAttributesSchema,
@@ -10,8 +10,8 @@ import type {
     UserResponseSchema,
     UserSchema,
     User as UserNamespace,
-} from '../types/schema.js';
-import type Group from './Group.js';
+} from '../types/schema';
+import type Group from './Group';
 
 type UserSearchParams = Partial<Merge<GetUserParamsSchema, { ids: User[] }>>;
 type FollowedUserParams = UserNamespace.GetUserFollowsUser.RequestQuery;

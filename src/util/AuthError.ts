@@ -1,4 +1,3 @@
-// @ts-expect-error Import is type-only
 import type { OAuth2Error } from 'oauth4webapi';
 
 export default class AuthError extends Error {

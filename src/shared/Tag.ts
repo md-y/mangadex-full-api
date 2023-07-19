@@ -1,7 +1,7 @@
-import { TagAttributesSchema, TagResponseSchema, TagSchema } from '../types/schema.js';
-import { fetchMD } from '../util/Network.js';
-import IDObject from '../internal/IDObject.js';
-import LocalizedString from '../internal/LocalizedString.js';
+import { TagAttributesSchema, TagResponseSchema, TagSchema } from '../types/schema';
+import { fetchMD } from '../util/Network';
+import IDObject from '../internal/IDObject';
+import LocalizedString from '../internal/LocalizedString';
 
 /**
  * This class represents a genre tag for a manga
@@ -14,11 +14,11 @@ export default class Tag extends IDObject implements TagAttributesSchema {
      */
     id: string;
     /**
-     * Localized name of this tag
+     * Localized names for this tag
      */
     name: LocalizedString;
     /**
-     * Localized description of this tag
+     * Localized descriptions for this tag
      */
     description: LocalizedString;
     /**
@@ -58,10 +58,19 @@ export default class Tag extends IDObject implements TagAttributesSchema {
      * after the first will resolve instantly.
      */
     static async getAllTags(): Promise<Tag[]> {
-        if (Tag.allTagCache.length === 0) {
+        if (!Tag.allTagCache || Tag.allTagCache.length === 0) {
             const res = await fetchMD<TagResponseSchema>('/manga/tag');
             Tag.allTagCache = res.data.map((elem) => new Tag(elem));
         }
         return Tag.allTagCache;
+    }
+
+    /**
+     * Return the first tag that contains the specified name, or null if none is found
+     */
+    static async getByName(name: string): Promise<Tag | null> {
+        const tags = await this.getAllTags();
+        const lowerName = name.toLowerCase();
+        return tags.find((tag) => Object.values(tag.name).some((n) => n.toLowerCase().includes(lowerName))) ?? null;
     }
 }

@@ -1,7 +1,7 @@
-import IDObject from '../internal/IDObject.js';
-import Relationship from '../internal/Relationship.js';
-import APIResponseError from '../util/APIResponseError.js';
-import { fetchMD, fetchMDWithBody, fetchMDWithFormData } from '../util/Network.js';
+import IDObject from '../internal/IDObject';
+import Relationship from '../internal/Relationship';
+import APIResponseError from '../util/APIResponseError';
+import { fetchMD, fetchMDWithBody, fetchMDWithFormData } from '../util/Network';
 
 import type {
     BeginUploadSessionSchema,
@@ -14,11 +14,11 @@ import type {
     UploadSessionFileSchema,
     ChapterDraftSchema,
     UploadSessionFileAttributesSchema,
-} from '../types/schema.js';
-import type Group from './Group.js';
-import type Manga from './Manga.js';
-import type User from './User.js';
-import type Chapter from './Chapter.js';
+} from '../types/schema';
+import type Group from './Group';
+import type Manga from './Manga';
+import type User from './User';
+import type Chapter from './Chapter';
 
 type FullUploadSession = UploadSessionSchema & { relationships: RelationshipSchema[] };
 type FixedFullUploadSession = FullUploadSession | { data: FullUploadSession };

@@ -10,7 +10,7 @@ import { build } from 'tsup';
 
     await build({
         ...sharedOptions,
-        entry: ['./src/index.mts'],
+        entry: ['./src/index.ts'],
         format: 'esm',
         outExtension: () => ({ js: '.mjs' }),
         dts: true,

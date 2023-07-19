@@ -1,10 +1,10 @@
-import Relationship from './internal/Relationship.js';
-import Author from './shared/Author.js';
-import Cover from './shared/Cover.js';
-import Manga from './shared/Manga.js';
-import Chapter from './shared/Chapter.js';
-import User from './shared/User.js';
-import Group from './shared/Group.js';
+import Relationship from './internal/Relationship';
+import Author from './shared/Author';
+import Cover from './shared/Cover';
+import Manga from './shared/Manga';
+import Chapter from './shared/Chapter';
+import User from './shared/User';
+import Group from './shared/Group';
 
 if (Relationship.getRegisteredTypes().length === 0) {
     Relationship.registerTypes(['manga'], Manga);
@@ -18,27 +18,27 @@ if (Relationship.getRegisteredTypes().length === 0) {
 
 // Export Classes:
 
-export { default as Author } from './shared/Author.js';
-export { default as Cover } from './shared/Cover.js';
-export { default as Manga } from './shared/Manga.js';
-export { default as Tag } from './shared/Tag.js';
-export { default as Chapter } from './shared/Chapter.js';
-export { default as User } from './shared/User.js';
-export { default as Group } from './shared/Group.js';
-export { default as UploadSession } from './shared/UploadSession.js';
-export { default as OAuthClient } from './shared/OAuthClient.js';
+export { default as Author } from './shared/Author';
+export { default as Cover } from './shared/Cover';
+export { default as Manga } from './shared/Manga';
+export { default as Tag } from './shared/Tag';
+export { default as Chapter } from './shared/Chapter';
+export { default as User } from './shared/User';
+export { default as Group } from './shared/Group';
+export { default as UploadSession } from './shared/UploadSession';
+export { default as OAuthClient } from './shared/OAuthClient';
 
 // Export specific functions:
 
-export { useDebugServer } from './util/Network.js';
+export { useDebugServer } from './util/Network';
 
-import LocalizedString from './internal/LocalizedString.js';
+import LocalizedString from './internal/LocalizedString';
 /**
  * Sets the global language locale to be used by LocalString objects.
  */
 export const setGlobalLocale = LocalizedString.setGlobalLocale;
 
-import OAuthClient from './shared/OAuthClient.js';
+import OAuthClient from './shared/OAuthClient';
 
 /**
  * Generates an OAuth authorization url and client information.
@@ -72,7 +72,7 @@ export const resolveArray = Relationship.resolveAll;
  */
 export const convertLegacyId = Manga.convertLegacyId;
 
-import LegacyAuthClient from './shared/LegacyAuthClient.js';
+import LegacyAuthClient from './shared/LegacyAuthClient';
 
 /**
  * Login with a legacy username and password

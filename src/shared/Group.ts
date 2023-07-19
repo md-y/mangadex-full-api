@@ -1,7 +1,7 @@
-import IDObject from '../internal/IDObject.js';
-import { fetchMD, fetchMDByArrayParam, fetchMDData, fetchMDDataWithBody, fetchMDSearch } from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
-import LocalizedString from '../internal/LocalizedString.js';
+import IDObject from '../internal/IDObject';
+import { fetchMD, fetchMDByArrayParam, fetchMDData, fetchMDDataWithBody, fetchMDSearch } from '../util/Network';
+import Relationship from '../internal/Relationship';
+import LocalizedString from '../internal/LocalizedString';
 
 import type {
     CreateScanlationGroupSchema,
@@ -13,9 +13,9 @@ import type {
     ScanlationGroupSchema,
     Statistics,
     User as UserNamespace,
-} from '../types/schema.js';
-import type { DeepRequire, Merge } from '../types/helpers.js';
-import type User from './User.js';
+} from '../types/schema';
+import type { DeepRequire, Merge } from '../types/helpers';
+import type User from './User';
 
 type GroupSearchParams = Partial<Merge<GetSearchGroupParamsSchema, { ids: Group[] }>>;
 type GroupStatsResponse = DeepRequire<Statistics.GetStatisticsGroups.ResponseBody>;
@@ -111,6 +111,10 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
      * Is this group ex-licensed?
      */
     exLicensed: boolean;
+    /**
+     * Is this group verified?
+     */
+    verified: boolean;
 
     constructor(schem: ScanlationGroupSchema) {
         super();
@@ -136,6 +140,7 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
         this.leader = Relationship.convertType<User>('leader', schem.relationships).pop() ?? null;
         this.members = Relationship.convertType<User>('member', schem.relationships);
         this.exLicensed = schem.attributes.exLicensed;
+        this.verified = schem.attributes.verified;
     }
 
     /**

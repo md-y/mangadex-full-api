@@ -1,4 +1,4 @@
-import { ErrorResponseSchema, ErrorSchema } from '../types/schema.js';
+import { ErrorResponseSchema, ErrorSchema } from '../types/schema';
 
 export default class APIResponseError extends Error {
     constructor(info: ErrorResponseSchema | ErrorSchema[] | string) {

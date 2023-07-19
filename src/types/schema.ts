@@ -114,7 +114,8 @@ export interface ErrorSchema {
     id: string;
     status: number;
     title: string;
-    detail: string;
+    detail: string | null;
+    context: string | null;
 }
 
 /** ChapterAttributes */
@@ -304,6 +305,7 @@ export interface ScanlationGroupAttributesSchema {
     focusedLanguage: string[] | null;
     locked: boolean;
     official: boolean;
+    verified: boolean;
     inactive: boolean;
     exLicensed: boolean;
     /**
@@ -504,7 +506,7 @@ export interface AuthorSchema {
 /** AuthorAttributes */
 export interface AuthorAttributesSchema {
     name: string;
-    imageUrl: string;
+    imageUrl: string | null;
     biography: LocalizedStringSchema;
     /**
      * @format uri

@@ -1,4 +1,4 @@
-import IDObject from '../internal/IDObject.js';
+import IDObject from '../internal/IDObject';
 import {
     fetchMD,
     fetchMDByArrayParam,
@@ -6,8 +6,8 @@ import {
     fetchMDDataWithBody,
     fetchMDSearch,
     postToMDNetwork,
-} from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
+} from '../util/Network';
+import Relationship from '../internal/Relationship';
 
 import type {
     AtHome,
@@ -19,11 +19,11 @@ import type {
     GetChapterParamsSchema,
     ResponseSchema,
     Statistics,
-} from '../types/schema.js';
-import type Manga from './Manga.js';
-import type User from './User.js';
-import type Group from './Group.js';
-import type { DeepRequire, Merge } from '../types/helpers.js';
+} from '../types/schema';
+import type Manga from './Manga';
+import type User from './User';
+import type Group from './Group';
+import type { DeepRequire, Merge } from '../types/helpers';
 
 export type ChapterSearchParams = Partial<
     Merge<GetChapterParamsSchema, { ids: Chapter[]; groups: Group[]; uploader: User | User[] }>

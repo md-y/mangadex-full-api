@@ -1,11 +1,10 @@
-import AuthError from '../util/AuthError.js';
-import { isDebugServerInUse, performAuthCheck, setActiveAuthClient } from '../util/Network.js';
+import AuthError from '../util/AuthError';
+import { isDebugServerInUse, performAuthCheck, setActiveAuthClient } from '../util/Network';
 
-// @ts-expect-error Import is type-only
 import type { Client, AuthorizationServer, OpenIDTokenEndpointResponse } from 'oauth4webapi';
-import { getOAuthImport } from '../util/OAuthImporter.js';
+import { getOAuthImport } from '../util/OAuthImporter';
 
-import type { IAuthClient } from '../types/helpers.js';
+import type { IAuthClient } from '../types/helpers';
 
 type LoginData = {
     authUrl: URL;

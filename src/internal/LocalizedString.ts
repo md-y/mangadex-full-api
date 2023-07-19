@@ -1,4 +1,4 @@
-import type { LocalizedStringSchema } from '../types/schema.js';
+import type { LocalizedStringSchema } from '../types/schema';
 
 /**
  * This class represents a map of locales and their associated strings.

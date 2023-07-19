@@ -1,8 +1,8 @@
-import IDObject from '../internal/IDObject.js';
-import { fetchMD, fetchMDData, fetchMDDataWithBody, fetchMDSearch, fetchMDWithFormData } from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
+import IDObject from '../internal/IDObject';
+import { fetchMD, fetchMDData, fetchMDDataWithBody, fetchMDSearch, fetchMDWithFormData } from '../util/Network';
+import Relationship from '../internal/Relationship';
 
-import type Manga from './Manga.js';
+import type Manga from './Manga';
 import type {
     CoverAttributesSchema,
     CoverEditSchema,
@@ -12,9 +12,9 @@ import type {
     GetCoverParamsSchema,
     ResponseSchema,
     Cover as CoverNamespace,
-} from '../types/schema.js';
-import type { Merge } from '../types/helpers.js';
-import type User from './User.js';
+} from '../types/schema';
+import type { Merge } from '../types/helpers';
+import type User from './User';
 
 type CoverSearchParams = Partial<Merge<GetCoverParamsSchema, { ids: Cover[]; manga: Manga[] }>>;
 type CoverExpandedTypes = CoverSearchParams['includes'];

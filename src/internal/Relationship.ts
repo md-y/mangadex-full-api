@@ -1,5 +1,5 @@
-import { RelationshipSchema } from '../types/schema.js';
-import IDObject from '../internal/IDObject.js';
+import { RelationshipSchema } from '../types/schema';
+import IDObject from '../internal/IDObject';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type GettableClass<T> = Function & { get: (id: string) => Promise<T>; getMultiple?: (ids: string[]) => Promise<T[]> };

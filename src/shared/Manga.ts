@@ -1,5 +1,5 @@
-import LocalizedString from '../internal/LocalizedString.js';
-import Tag from './Tag.js';
+import LocalizedString from '../internal/LocalizedString';
+import Tag from './Tag';
 import {
     fetchMD,
     fetchMDByArrayParam,
@@ -7,15 +7,15 @@ import {
     fetchMDDataWithBody,
     fetchMDSearch,
     fetchMDWithBody,
-} from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
-import Links from '../internal/Links.js';
-import IDObject from '../internal/IDObject.js';
-import Chapter, { ChapterSearchParams } from './Chapter.js';
-import Cover from './Cover.js';
-import APIResponseError from '../util/APIResponseError.js';
+} from '../util/Network';
+import Relationship from '../internal/Relationship';
+import Links from '../internal/Links';
+import IDObject from '../internal/IDObject';
+import Chapter, { ChapterSearchParams } from './Chapter';
+import Cover from './Cover';
+import APIResponseError from '../util/APIResponseError';
 
-import type Author from './Author.js';
+import type Author from './Author';
 import {
     ChapterListSchema,
     ChapterReadMarkerBatchSchema,
@@ -40,9 +40,9 @@ import {
     MangaCreateSchema,
     MangaEditSchema,
     User as UserNamespace,
-} from '../types/schema.js';
-import type { DeepRequire, Merge } from '../types/helpers.js';
-import type Group from './Group.js';
+} from '../types/schema';
+import type { DeepRequire, Merge } from '../types/helpers';
+import type Group from './Group';
 
 // This type supplements the schema type so that IDObjects can be used instead
 type MangaSearchHelpers = {
@@ -195,7 +195,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
         this.links = new Links(schem.attributes.links);
         this.mainCover = Relationship.convertType<Cover>('cover_art', schem.relationships).pop()!;
         this.publicationDemographic = schem.attributes.publicationDemographic;
-        this.relatedManga = this.getRelatedManga(schem.relationships);
+        this.relatedManga = Manga.getRelatedManga(schem.relationships);
         this.state = schem.attributes.state;
         this.status = schem.attributes.status;
         this.tags = schem.attributes.tags.map((elem) => new Tag(elem));
@@ -206,7 +206,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
         this.originalLanguage = schem.attributes.originalLanguage;
     }
 
-    private getRelatedManga(relationships: RelationshipSchema[]): RelatedManga {
+    private static getRelatedManga(relationships: RelationshipSchema[]): RelatedManga {
         const relatedManga: RelatedManga = {
             monochrome: [],
             main_story: [],
@@ -513,30 +513,32 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
     }
 
     /**
-     * Gets all of a manga's relations to other manga. Returns a record with the relation ids as the keys and
-     * a relationship to the appropriate manga as the values.
+     * Gets all of a manga's relations to other manga.
      */
-    static async getRelations(id: string, expandTypes = false): Promise<Record<string, Relationship<Manga>>> {
+    static async getRelations(id: string, expandTypes = false): Promise<RelatedManga> {
         const res = await fetchMDData<MangaRelationListSchema>(`/manga/${id}/relation`, {
             includes: expandTypes ? ['manga'] : undefined,
         });
-        return Object.fromEntries(
-            res.map((r) => [
-                r.id,
-                Relationship.convertType<Manga>(
-                    'manga',
-                    // Add the relation type to each relationship before they're parsed:
-                    r.relationships.map((rel) => ({ ...rel, related: r.attributes.relation })),
-                ).pop()!,
-            ]),
+        const relationships = res.flatMap((relation) =>
+            relation.relationships.map((rel) => ({ ...rel, related: relation.attributes.relation })),
         );
+        return Manga.getRelatedManga(relationships);
+        // return Object.fromEntries(
+        //     res.map((r) => [
+        //         r.id,
+        //         Relationship.convertType<Manga>(
+        //             'manga',
+        //             // Add the relation type to each relationship before they're parsed:
+        //             r.relationships.map((rel) => ({ ...rel, related: r.attributes.relation })),
+        //         ).pop()!,
+        //     ]),
+        // );
     }
 
     /**
-     * Gets all of this manga's relations to other manga. Returns a record with the relation ids as the keys and
-     * a relationship to the appropriate manga as the values.
+     * Gets all of this manga's relations to other manga.
      */
-    async getRelations(expandTypes = false): Promise<Record<string, Relationship<Manga>>> {
+    async getRelations(expandTypes = false): Promise<RelatedManga> {
         return await Manga.getRelations(this.id, expandTypes);
     }
 

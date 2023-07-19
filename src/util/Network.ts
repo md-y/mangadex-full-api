@@ -1,8 +1,8 @@
-import IDObject from '../internal/IDObject.js';
-import APIResponseError from './APIResponseError.js';
+import IDObject from '../internal/IDObject';
+import APIResponseError from './APIResponseError';
 
-import type { CheckResponseSchema, ErrorResponseSchema } from '../types/schema.js';
-import type { IAuthClient } from '../types/helpers.js';
+import type { CheckResponseSchema, ErrorResponseSchema } from '../types/schema';
+import type { IAuthClient } from '../types/helpers';
 
 type ParameterObj = {
     [x: string]:

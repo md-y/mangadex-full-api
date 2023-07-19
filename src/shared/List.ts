@@ -1,7 +1,7 @@
-import IDObject from '../internal/IDObject.js';
-import { fetchMD, fetchMDData, fetchMDDataWithBody, fetchMDSearch } from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
-import Chapter from './Chapter.js';
+import IDObject from '../internal/IDObject';
+import { fetchMD, fetchMDData, fetchMDDataWithBody, fetchMDSearch } from '../util/Network';
+import Relationship from '../internal/Relationship';
+import Chapter from './Chapter';
 
 import type {
     ChapterListSchema,
@@ -12,9 +12,9 @@ import type {
     CustomListSchema,
     GetListIdFeedParamsSchema,
     ResponseSchema,
-} from '../types/schema.js';
-import type Manga from './Manga.js';
-import type User from './User.js';
+} from '../types/schema';
+import type Manga from './Manga';
+import type User from './User';
 
 export default class List extends IDObject implements CustomListAttributesSchema {
     /**

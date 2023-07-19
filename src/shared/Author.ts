@@ -1,7 +1,7 @@
-import IDObject from '../internal/IDObject.js';
-import LocalizedString from '../internal/LocalizedString.js';
-import { fetchMDData, fetchMDSearch, fetchMDByArrayParam, fetchMDDataWithBody, fetchMD } from '../util/Network.js';
-import Relationship from '../internal/Relationship.js';
+import IDObject from '../internal/IDObject';
+import LocalizedString from '../internal/LocalizedString';
+import { fetchMDData, fetchMDSearch, fetchMDByArrayParam, fetchMDDataWithBody, fetchMD } from '../util/Network';
+import Relationship from '../internal/Relationship';
 
 import {
     AuthorAttributesSchema,
@@ -12,9 +12,9 @@ import {
     AuthorSchema,
     GetAuthorParamsSchema,
     ResponseSchema,
-} from '../types/schema.js';
-import type Manga from './Manga.js';
-import type { Merge } from '../types/helpers.js';
+} from '../types/schema';
+import type Manga from './Manga';
+import type { Merge } from '../types/helpers';
 
 type AuthorSearchParams = Partial<Merge<GetAuthorParamsSchema, { ids: Author[] }>>;
 
@@ -33,7 +33,7 @@ export default class Author extends IDObject implements AuthorAttributesSchema {
     /**
      * A url to an image of the author/artist
      */
-    imageUrl: string;
+    imageUrl: string | null;
     /**
      * The biography of the author/artist
      */
