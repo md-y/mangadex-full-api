@@ -1,5 +1,12 @@
 import IDObject from '../internal/IDObject';
-import { fetchMD, fetchMDData, fetchMDDataWithBody, fetchMDSearch, fetchMDWithFormData } from '../util/Network';
+import {
+    fetchMD,
+    fetchMDByArrayParam,
+    fetchMDData,
+    fetchMDDataWithBody,
+    fetchMDSearch,
+    fetchMDWithFormData,
+} from '../util/Network';
 import Relationship from '../internal/Relationship';
 
 import type Manga from './Manga';
@@ -95,6 +102,23 @@ export default class Cover extends IDObject implements CoverAttributesSchema {
     static async search(query?: CoverSearchParams) {
         const res = await fetchMDSearch<CoverListSchema>(`/cover`, query);
         return res.map((m) => new Cover(m));
+    }
+
+    /**
+     * Performs a search for a cover and returns the first one found. If no results are
+     * found, null is returned
+     */
+    static async getByQuery(query?: CoverSearchParams): Promise<Cover | null> {
+        const res = await this.search(query);
+        return res[0] ?? null;
+    }
+
+    /**
+     * Retrieves an array of covers by an array of ids
+     */
+    static async getMultiple(ids: string[]): Promise<Cover[]> {
+        const res = await fetchMDByArrayParam<CoverListSchema>('/cover', ids);
+        return res.map((a) => new Cover(a));
     }
 
     /**
