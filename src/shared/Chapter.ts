@@ -135,10 +135,10 @@ export default class Chapter extends IDObject implements OtherChapterAttributes 
     }
 
     /**
-     * Retrieves a list of authors/artists according to the specified search parameters
+     * Retrieves a list of chapters according to the specified search parameters
      */
     static async search(query?: ChapterSearchParams): Promise<Chapter[]> {
-        const res = await fetchMDSearch<ChapterListSchema>('/author', query);
+        const res = await fetchMDSearch<ChapterListSchema>('/chapter', query);
         return res.map((c) => new Chapter(c));
     }
 
@@ -201,7 +201,7 @@ export default class Chapter extends IDObject implements OtherChapterAttributes 
 
     /**
      * Sends a report to MangaDex about the success/failure of a MangaDex(at)Home server.
-     * Read more information: {@link https://api.mangadex.org/docs/retrieving-chapter/#the-mangadexhome-report-endpoint}
+     * Read more information: {@link https://api.mangadex.org/docs/04-chapter/retrieving-chapter/#mangadexhome-load-successes-failures-and-retries}
      */
     static async reportPageURL(report: {
         url: string;
@@ -217,7 +217,7 @@ export default class Chapter extends IDObject implements OtherChapterAttributes 
      * Gets the statistics about a list of chapters
      */
     static async getStatistics(ids: string[] | Chapter[]): Promise<Record<string, ChapterStats>> {
-        const res = await fetchMD<ChapterStatsResponse>(`/statistics/chapter`, { manga: ids });
+        const res = await fetchMD<ChapterStatsResponse>(`/statistics/chapter`, { chapter: ids });
         return res.statistics;
     }
 
