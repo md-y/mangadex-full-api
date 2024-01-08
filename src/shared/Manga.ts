@@ -523,16 +523,6 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
             relation.relationships.map((rel) => ({ ...rel, related: relation.attributes.relation })),
         );
         return Manga.getRelatedManga(relationships);
-        // return Object.fromEntries(
-        //     res.map((r) => [
-        //         r.id,
-        //         Relationship.convertType<Manga>(
-        //             'manga',
-        //             // Add the relation type to each relationship before they're parsed:
-        //             r.relationships.map((rel) => ({ ...rel, related: r.attributes.relation })),
-        //         ).pop()!,
-        //     ]),
-        // );
     }
 
     /**
