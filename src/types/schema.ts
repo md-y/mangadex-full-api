@@ -1331,7 +1331,7 @@ export interface GetSearchMangaParamsSchema {
     };
     /** Reference expansion options for manga entities or lists */
     includes: ReferenceExpansionMangaSchema;
-    hasAvailableChapters: '0' | '1' | 'true' | 'false';
+    hasAvailableChapters: boolean;
     /** @format uuid */
     group: string;
 }

@@ -47,6 +47,17 @@ export async function buildSchema(silent = false) {
                             ) {
                                 props[key].format = 'date-time';
                             }
+
+                            // Fix enum fields that should be boolean, but aren't
+                            if (
+                                props[key].type === 'string' &&
+                                'enum' in props[key] &&
+                                props[key].enum.includes('true') &&
+                                props[key].enum.includes('false')
+                            ) {
+                                props[key].type = 'boolean';
+                                delete props[key].enum;
+                            }
                         }
                     }
                 }
