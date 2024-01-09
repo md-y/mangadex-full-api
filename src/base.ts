@@ -27,6 +27,8 @@ export { default as User } from './shared/User';
 export { default as Group } from './shared/Group';
 export { default as UploadSession } from './shared/UploadSession';
 export { default as OAuthClient } from './shared/OAuthClient';
+export { default as LegacyAuthClient } from './shared/LegacyAuthClient';
+export { default as List } from './shared/List';
 
 // Export specific functions:
 
