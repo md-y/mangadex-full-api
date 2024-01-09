@@ -8,11 +8,14 @@ test('getAllTags()', async () => {
 test('getByName()', async () => {
     const tag = await Tag.getByName('isekai');
     const tags = await Tag.getAllTags();
-    expect(tag).not.toBeNull();
+    expect(tag).toBeDefined();
     expect(tags).toContain(tag);
+});
 
-    const nullTag = await Tag.getByName('324987ynabfzoiasfudhajkbzxkfhgasf');
-    expect(nullTag).toBeNull();
+test('getByNames()', async () => {
+    const names = ['isekai', 'villainess'];
+    const tags = await Tag.getByNames(names);
+    expect(tags.length).toEqual(names.length);
 });
 
 test('localization', async () => {

@@ -71,8 +71,17 @@ export default class Tag extends IDObject implements TagAttributesSchema {
     static async getByName(name: string): Promise<Tag> {
         const tags = await this.getAllTags();
         const lowerName = name.toLowerCase();
-        const foundTag = tags.find((tag) => Object.values(tag.name).some((n) => n.toLowerCase().includes(lowerName)));
+        const foundTag = tags.find((tag) => Object.values(tag.name).some((n) => n.toLowerCase() === lowerName));
         if (!foundTag) throw new Error(`No tag found with name ${name}`);
         return foundTag;
+    }
+
+    /**
+     * Return tags with the associated names
+     */
+    static async getByNames(names: string[]): Promise<Tag[]> {
+        const tags = await this.getAllTags();
+        const lowerNames = names.map((n) => n.toLowerCase());
+        return tags.filter((tag) => Object.values(tag.name).some((n) => lowerNames.includes(n.toLowerCase())));
     }
 }
