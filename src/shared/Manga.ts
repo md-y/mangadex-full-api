@@ -55,7 +55,7 @@ type MangaSearchHelpers = {
     ids: IDObject[];
 };
 type MangaSearchParams = Partial<Merge<GetSearchMangaParamsSchema, MangaSearchHelpers>>;
-type OtherMangaAttributes = Omit<MangaAttributesSchema, 'tags' | 'links'>;
+type OtherMangaAttributes = Omit<MangaAttributesSchema, 'tags' | 'links' | 'latestUploadedChapter'>;
 type RelatedManga = { [x in RelationshipSchema['related']]: Relationship<Manga>[] };
 type ReadmarkerResponse = Required<MangaNamespace.GetMangaChapterReadmarkers.ResponseBody>;
 type ReadmarkerResponseGrouped = Required<MangaNamespace.GetMangaChapterReadmarkers2.ResponseBody>;
@@ -138,7 +138,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
      * UUID of the chapter that was uploaded last.
      * String is empty if there is no chapter
      */
-    latestUploadedChapter: string;
+    latestUploadedChapter: Relationship<Chapter>;
     /**
      * List of this manga's genre tags
      */
@@ -191,7 +191,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
         this.isLocked = schem.attributes.isLocked;
         this.lastChapter = schem.attributes.lastChapter;
         this.lastVolume = schem.attributes.lastVolume;
-        this.latestUploadedChapter = schem.attributes.latestUploadedChapter;
+        this.latestUploadedChapter = new Relationship({ id: schem.attributes.latestUploadedChapter, type: 'chapter' });
         this.links = new Links(schem.attributes.links);
         this.mainCover = Relationship.convertType<Cover>('cover_art', schem.relationships).pop()!;
         this.publicationDemographic = schem.attributes.publicationDemographic;

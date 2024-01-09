@@ -4,6 +4,9 @@ import IDObject from '../internal/IDObject';
 // eslint-disable-next-line @typescript-eslint/ban-types
 type GettableClass<T> = Function & { get: (id: string) => Promise<T>; getMultiple?: (ids: string[]) => Promise<T[]> };
 
+type PartialRelationshipSchema = Pick<RelationshipSchema, 'id' | 'type'> &
+    Partial<Pick<RelationshipSchema, 'related' | 'attributes'>>;
+
 /**
  * Represents a relationship from one MangaDex object to another such as a manga, author, etc via its id.
  */
@@ -34,7 +37,7 @@ class Relationship<T> extends IDObject {
     private static typeMap: Record<string, GettableClass<unknown>> = {};
     private static typeMapLocked = false;
 
-    constructor(data: RelationshipSchema) {
+    constructor(data: PartialRelationshipSchema) {
         super();
         this.id = data.id;
         if (!(data.type in Relationship.typeMap)) throw `Unregistered relationship type: ${data.type}`;
