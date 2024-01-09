@@ -116,7 +116,7 @@ export default class Chapter extends IDObject implements OtherChapterAttributes 
         this.readableAt = new Date(schem.attributes.readableAt);
         this.isExternal = schem.attributes.externalUrl !== null;
         this.manga = Relationship.convertType<Manga>('manga', schem.relationships).pop()!;
-        this.groups = Relationship.convertType<Group>('scanlation_groups', schem.relationships);
+        this.groups = Relationship.convertType<Group>('scanlation_group', schem.relationships);
     }
 
     /**
