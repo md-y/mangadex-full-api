@@ -57,6 +57,13 @@ export function clearActiveAuthClient() {
 }
 
 /**
+ * Returns the current auth client or null if there is none
+ */
+export function getActiveAuthClient() {
+    return NetworkStateManager.activeClient ?? null;
+}
+
+/**
  * Performs a fetch request to MangaDex and parses the response as JSON.
  */
 export async function fetchMD<T extends object>(
@@ -170,13 +177,13 @@ export async function fetchMDByArrayParam<T extends ListResponse>(
     paramLimit = 100,
     requestInit?: CustomRequestInit,
 ): Promise<T['data']> {
-    const newArr = arr.map((elem) => (elem instanceof IDObject ? elem.id : elem));
+    const idArray = arr.map((elem) => (elem instanceof IDObject ? elem.id : elem));
     const promises = [];
-    while (newArr.length > 0) {
+    for (let i = 0; i < idArray.length; i += paramLimit) {
         promises.push(
-            fetchMDSearch<T>(
+            fetchMDData<T>(
                 endpoint,
-                { ...extraParams, [arrayParam]: newArr.splice(0, paramLimit), limit: paramLimit },
+                { ...extraParams, [arrayParam]: idArray.slice(i, i + paramLimit), limit: paramLimit },
                 requestInit,
             ),
         );
@@ -184,7 +191,7 @@ export async function fetchMDByArrayParam<T extends ListResponse>(
     const results = await Promise.all(promises);
     // Reorder results so that they're in the same order as the id array
     const sortedResults = results.flat();
-    sortedResults.sort((a, b) => newArr.indexOf(a.id) - newArr.indexOf(b.id));
+    sortedResults.sort((a, b) => idArray.indexOf(a.id) - idArray.indexOf(b.id));
     return sortedResults;
 }
 

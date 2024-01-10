@@ -74,3 +74,15 @@ import PersonalAuthClient from './shared/PersonalAuthClient';
  * @param activate - By default, this client will be set as the active client for all API calls. Set this to false to disable this behavior.
  */
 export const loginPersonal = PersonalAuthClient.login;
+
+import { clearActiveAuthClient, getActiveAuthClient } from './util/Network';
+
+/**
+ * This will clear the active auth client, effectively logging out.
+ */
+export const logout = clearActiveAuthClient;
+
+/**
+ * This will return the current active auth client, if any.
+ */
+export const getCurrentAuthClient = getActiveAuthClient;
