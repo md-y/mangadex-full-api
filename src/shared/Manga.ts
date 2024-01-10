@@ -332,15 +332,34 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
      * as the keys and chapter arrays as the values.
      */
     static async getReadChapters(ids: string[] | Manga[]): Promise<Record<string, Chapter[]>> {
-        const res = await fetchMDData<ReadmarkerResponseGrouped>('/manga/read', { ids: ids, grouped: true });
-        if (Array.isArray(res)) {
-            throw new APIResponseError('MangaDex did not respond with a grouped body.');
+        const mangaData: Record<string, string[]> = {};
+
+        // Split requests because there is a maximum URI length for each
+        for (let i = 0; i < ids.length; i += 100) {
+            let res = await fetchMDData<ReadmarkerResponseGrouped>('/manga/read', {
+                ids: ids.slice(i, i + 100),
+                grouped: true,
+            });
+            if (Array.isArray(res)) {
+                // The response won't be grouped if there is only one manga
+                if (ids.length === 1) {
+                    const id = typeof ids[0] === 'string' ? ids[0] : ids[0].id;
+                    res = { [id]: res };
+                } else {
+                    throw new APIResponseError('MangaDex did not respond with a grouped body.');
+                }
+            }
+            for (const [key, value] of Object.entries(res)) {
+                if (key in mangaData) mangaData[key].push(...value);
+                else mangaData[key] = value;
+            }
         }
+
         // Flatten all the chapters so only one request needs to be made
-        const allChapters = await Chapter.getMultiple(Object.values(res).flat());
+        const allChapters = await Chapter.getMultiple(Object.values(mangaData).flat());
         const returnObj: Record<string, Chapter[]> = {};
-        for (const key in res) {
-            returnObj[key] = allChapters.filter((c) => res[key].includes(c.id));
+        for (const key in mangaData) {
+            returnObj[key] = allChapters.filter((c) => mangaData[key].includes(c.id));
         }
         return returnObj;
     }
