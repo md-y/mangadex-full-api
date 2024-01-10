@@ -28,7 +28,7 @@ type TokenBody = {
  * {@link https://api.mangadex.org/docs/02-authentication/personal-clients/}
  */
 export default class PersonalAuthClient implements IAuthClient {
-    private data: ClientData;
+    data: ClientData;
 
     constructor(data: ClientData) {
         this.data = data;

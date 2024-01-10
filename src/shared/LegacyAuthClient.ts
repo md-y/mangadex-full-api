@@ -12,27 +12,27 @@ type LoginData = {
 
 /**
  * This class represents a the legacy (username and password) auth client.
- * This login method is being deprecated in favor of OAuth which is implemented through {@link OAuthClient} instead.
+ * This login method is being deprecated in favor of OAuth which is implemented through {@link PersonalAuthClient} instead.
  *
  * @deprecated - This login method is being replaced by OAuth
  */
 export default class LegacyAuthClient implements IAuthClient {
-    private loginData: LoginData;
+    data: LoginData;
 
     constructor(data: LoginData) {
-        this.loginData = data;
+        this.data = data;
     }
 
     async getSessionToken(): Promise<string> {
         // Don't refresh if the token was refreshed less than 14.9 minutes ago (15 is the maximum age)
-        if (Date.now() - this.loginData.timestamp >= 894000) {
+        if (Date.now() - this.data.timestamp >= 894000) {
             await this.refreshTokens();
             const isValid = await this.checkSessionToken();
             if (!isValid) {
                 throw new AuthError('Failed to validate auth token. Please login again.');
             }
         }
-        return this.loginData.session;
+        return this.data.session;
     }
 
     /**
@@ -65,7 +65,7 @@ export default class LegacyAuthClient implements IAuthClient {
     async refreshTokens() {
         const res = await fetchMDWithBody<RefreshResponseSchema>(
             '/auth/refresh',
-            { token: this.loginData.refresh },
+            { token: this.data.refresh },
             undefined,
             'POST',
             { noAuth: true },
@@ -75,7 +75,7 @@ export default class LegacyAuthClient implements IAuthClient {
         const session = res.token.session;
         const refresh = res.token.refresh;
         if (!session || !refresh) throw new AuthError(`MangaDex did not return auth tokens. ${res.message}`);
-        this.loginData = {
+        this.data = {
             session,
             refresh,
             timestamp: Date.now(),
@@ -86,6 +86,6 @@ export default class LegacyAuthClient implements IAuthClient {
      * Check if the current session token is valid by asking MangaDex
      */
     checkSessionToken(): Promise<boolean> {
-        return performAuthCheck(this.loginData.session);
+        return performAuthCheck(this.data.session);
     }
 }

@@ -71,5 +71,6 @@ import PersonalAuthClient from './shared/PersonalAuthClient';
  * Login with a personal client. This method is recommended for smaller, private applications.
  * {@link https://api.mangadex.org/docs/02-authentication/personal-clients/}
  * @param clientInfo - Personal client info including client secret/id, username, and password
+ * @param activate - By default, this client will be set as the active client for all API calls. Set this to false to disable this behavior.
  */
 export const loginPersonal = PersonalAuthClient.login;
