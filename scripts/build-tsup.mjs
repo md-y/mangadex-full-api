@@ -19,7 +19,7 @@ import { build } from 'tsup';
 
     await build({
         ...sharedOptions,
-        entry: ['./src/index.cts'],
+        entry: ['./src/index.ts'],
         format: 'cjs',
     });
 })();

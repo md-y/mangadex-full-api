@@ -1,5 +1,6 @@
 import IDObject from '../internal/IDObject';
 import APIResponseError from './APIResponseError';
+import AuthError from './AuthError';
 
 import type { CheckResponseSchema, ErrorResponseSchema } from '../types/schema';
 import type { IAuthClient } from '../types/helpers';
@@ -329,4 +330,25 @@ export async function performAuthCheck(sessionToken?: string): Promise<boolean> 
         if (err instanceof APIResponseError) return false;
         else throw err;
     }
+}
+
+/**
+ * Send a URL-encoded POST request to the MangaDex auth server
+ */
+export async function fetchMDAuth<T extends object>(endpoint: string, body: Record<string, string>): Promise<T> {
+    const params = new URLSearchParams();
+    for (const [name, value] of Object.entries(body)) params.append(name, value);
+    const domain = `https://auth.mangadex.${isDebugServerInUse() ? 'dev' : 'org'}`;
+    const url = new URL(endpoint, domain);
+    const res = await fetch(url, {
+        body: params,
+        method: 'POST',
+    });
+
+    if (res.status >= 400) {
+        throw new AuthError(`${res.statusText} (${res.status})`);
+    }
+
+    const resBody: T = await res.json();
+    return resBody;
 }

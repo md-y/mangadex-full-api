@@ -25,5 +25,4 @@ export type DeepRequire<T> = Required<{
 
 export interface IAuthClient {
     getSessionToken: () => Promise<string>;
-    setActive: () => void;
 }
