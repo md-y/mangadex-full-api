@@ -231,7 +231,7 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
      * Gets the statistics about a list of groups
      */
     static async getStatistics(ids: string[] | Group[]): Promise<Record<string, GroupStats>> {
-        const res = await fetchMD<GroupStatsResponse>(`/statistics/group`, { manga: ids });
+        const res = await fetchMD<GroupStatsResponse>(`/statistics/group`, { group: ids });
         return res.statistics;
     }
 
