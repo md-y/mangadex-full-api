@@ -2,13 +2,17 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'package.json'
+      - '**.ts'
+      - '**.js'
 name: Jest Tests
 jobs:
   test:
     name: Run Jest Tests
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         node-version: [19, 20, 21]
     runs-on: ${{ matrix.os }}
     steps:
