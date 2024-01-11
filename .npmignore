@@ -62,5 +62,7 @@ typings/
 
 # mangadex-full-api
 docs
-# dist
 .github
+coverage
+docs
+dev
