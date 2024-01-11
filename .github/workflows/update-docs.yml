@@ -2,6 +2,12 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'package.json'
+      - '**.ts'
+      - '**.js'
+      - '**.md'
+      - 'typedoc.json'
 name: Update Docs
 jobs:
   build:
