@@ -1,0 +1,16 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "./src/index.ts"
+    ],
+    "out": "docs",
+    "plugin": [
+        "typedoc-plugin-missing-exports"
+    ],
+    "cleanOutputDir": true,
+    "githubPages": true,
+    "searchInComments": true,
+    "hideParameterTypesInTitle": false,
+    "includeVersion": true,
+    "internalModule": "<internal types>"
+}

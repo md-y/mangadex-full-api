@@ -1,13 +1,16 @@
 {
-  "include": [
-    "src/**/*"
-  ],
   "compilerOptions": {
-    "allowJs": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "outDir": "types",
-    "lib": [ "ES2018" ],
-    "module": "CommonJS"
-  }
+    "target": "es6",
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+  },
+  "lib": [
+    "es2015",
+  ],
+  "include": [
+    "./src/**/*"
+  ],
 }

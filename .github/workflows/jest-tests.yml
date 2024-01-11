@@ -1,0 +1,31 @@
+on:
+  push:
+    branches:
+      - master
+name: Jest Tests
+jobs:
+  test:
+    name: Run Jest Tests
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        node-version: [19, 20, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests (with Auth)
+        run: npm run test
+        env:
+          MFA_TEST_USERNAME: ${{ secrets.MFA_TEST_USERNAME }}
+          MFA_TEST_PASSWORD: ${{ secrets.MFA_TEST_PASSWORD }}
+          MFA_TEST_CLIENT_ID: ${{ secrets.MFA_TEST_CLIENT_ID }}
+          MFA_TEST_CLIENT_SECRET: ${{ secrets.MFA_TEST_CLIENT_SECRET }}
