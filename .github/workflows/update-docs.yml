@@ -4,27 +4,37 @@ on:
       - master
 name: Update Docs
 jobs:
-  updateDocs:
-    name: Update Typedoc Documentation
+  build:
+    name: Build Typedoc Documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Setup Node v19
+      - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '19'
-
+          node-version: '20'
       - name: Install Dependencies
         run: npm ci
-
       - name: Generate Documentation
         run: npm run docs
-
-      - name: Push to GH Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: docs
-          publish_dir: ./docs
-          full_commit_message: Update Docs for ${{ github.event.head_commit.id }}
+          path: ./docs
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

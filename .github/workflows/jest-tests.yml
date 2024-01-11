@@ -2,21 +2,14 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    types:
-      - opened
-      - edited
-      - reopened
-    branches:
-      - master
-name: Mocha Tests
+name: Jest Tests
 jobs:
-  runTests:
-    name: Run Mocha Tests
+  test:
+    name: Run Jest Tests
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node-version: [12, 14, 16]
+        node-version: [19, 20, 24]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -30,14 +23,9 @@ jobs:
         run: npm ci
 
       - name: Run Tests (with Auth)
-        if: ${{ github.event_name != 'pull_request' }}
         run: npm run test
         env:
-          MFA_TEST_USER: ${{ secrets.MFA_TEST_USER }}
+          MFA_TEST_USERNAME: ${{ secrets.MFA_TEST_USERNAME }}
           MFA_TEST_PASSWORD: ${{ secrets.MFA_TEST_PASSWORD }}
-
-      - name: Run Tests (without Auth)
-        if: ${{ github.event_name == 'pull_request' }}
-        run: npm run test
-        env:
-          MFA_SKIP_AUTH_TEST: true
+          MFA_TEST_CLIENT_ID: ${{ secrets.MFA_TEST_CLIENT_ID }}
+          MFA_TEST_CLIENT_SECRET: ${{ secrets.MFA_TEST_CLIENT_SECRET }}
