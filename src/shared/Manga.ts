@@ -292,7 +292,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
     /**
      * Returns an array of a manga's chapters
      */
-    static async getFeed(id: string, params?: MangaSearchParams): Promise<Chapter[]> {
+    static async getFeed(id: string, params?: ChapterSearchParams): Promise<Chapter[]> {
         const res = await fetchMDSearch<ChapterListSchema>(`/manga/${id}/feed`, params);
         return res.map((c) => new Chapter(c));
     }
@@ -300,7 +300,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
     /**
      * Returns an array of this manga's chapters
      */
-    async getFeed(params?: MangaSearchParams): Promise<Chapter[]> {
+    async getFeed(params?: ChapterSearchParams): Promise<Chapter[]> {
         return Manga.getFeed(this.id, params);
     }
 
