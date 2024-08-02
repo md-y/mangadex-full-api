@@ -570,6 +570,11 @@ export interface AuthorAttributesSchema {
     naver: string | null;
     /**
      * @format uri
+     * @pattern ^https?://([\w-]+\.)?namicomi\.com(/|$)
+     */
+    namicomi: string | null;
+    /**
+     * @format uri
      * @pattern ^https?://
      */
     website: string | null;
@@ -745,15 +750,18 @@ export interface ApiClientSchema {
 /** ApiClientAttributes */
 export interface ApiClientAttributesSchema {
     name: string;
+    /** @maxLength 256 */
     description: string | null;
     profile: string;
-    clientId: string | null;
-    /** @min 1 */
-    version: number;
+    externalClientId: string | null;
+    isActive: boolean;
+    state: 'requested' | 'approved' | 'rejected' | 'autoapproved';
     /** @format date-time */
     createdAt: Date;
     /** @format date-time */
     updatedAt: Date;
+    /** @min 1 */
+    version: number;
 }
 
 /** ApiClient */
@@ -770,7 +778,7 @@ export interface ApiClientCreateSchema {
      * @maxLength 32
      */
     name: string;
-    /** @maxLength 1024 */
+    /** @maxLength 256 */
     description?: string | null;
     profile: 'personal';
     /** @min 1 */
@@ -1354,16 +1362,6 @@ export interface GetMangaIdParamsSchema {
      * @format uuid
      */
     id: string;
-}
-
-export interface GetAccountAvailableParamsSchema {
-    /**
-     * Username to check for avaibility
-     * @minLength 1
-     * @maxLength 64
-     * @pattern ^[a-zA-Z0-9_-]+$
-     */
-    username: string;
 }
 
 export interface GetListApiclientsParamsSchema {
@@ -2708,126 +2706,6 @@ export namespace Auth {
     }
 }
 
-export namespace Account {
-    /**
-     * No description
-     * @tags Account
-     * @name GetAccountAvailable
-     * @summary Account username available
-     * @request GET:/account/available
-     * @deprecated
-     */
-    export namespace GetAccountAvailable {
-        export type RequestParams = {};
-        export type RequestQuery = {
-            /**
-             * Username to check for avaibility
-             * @minLength 1
-             * @maxLength 64
-             * @pattern ^[a-zA-Z0-9_-]+$
-             */
-            username: string;
-        };
-        export type RequestBody = never;
-        export type RequestHeaders = {};
-        export type ResponseBody = {
-            available?: boolean;
-        };
-    }
-    /**
-     * No description
-     * @tags Account
-     * @name PostAccountCreate
-     * @summary Create Account
-     * @request POST:/account/create
-     * @deprecated
-     */
-    export namespace PostAccountCreate {
-        export type RequestParams = {};
-        export type RequestQuery = {};
-        export type RequestBody = CreateAccountSchema;
-        export type RequestHeaders = {
-            /** @default "application/json" */
-            'Content-Type': string;
-        };
-        export type ResponseBody = UserResponseSchema;
-    }
-    /**
-     * No description
-     * @tags Account
-     * @name GetAccountActivateCode
-     * @summary Activate account
-     * @request POST:/account/activate/{code}
-     * @deprecated
-     */
-    export namespace GetAccountActivateCode {
-        export type RequestParams = {
-            /** @pattern [0-9a-fA-F-]+ */
-            code: string;
-        };
-        export type RequestQuery = {};
-        export type RequestBody = never;
-        export type RequestHeaders = {};
-        export type ResponseBody = AccountActivateResponseSchema;
-    }
-    /**
-     * No description
-     * @tags Account
-     * @name PostAccountActivateResend
-     * @summary Resend Activation code
-     * @request POST:/account/activate/resend
-     * @deprecated
-     */
-    export namespace PostAccountActivateResend {
-        export type RequestParams = {};
-        export type RequestQuery = {};
-        export type RequestBody = SendAccountActivationCodeSchema;
-        export type RequestHeaders = {
-            /** @default "application/json" */
-            'Content-Type': string;
-        };
-        export type ResponseBody = AccountActivateResponseSchema;
-    }
-    /**
-     * @description You can only request Account Recovery once per Hour for the same Email Address
-     * @tags Account
-     * @name PostAccountRecover
-     * @summary Recover given Account
-     * @request POST:/account/recover
-     * @deprecated
-     */
-    export namespace PostAccountRecover {
-        export type RequestParams = {};
-        export type RequestQuery = {};
-        export type RequestBody = SendAccountActivationCodeSchema;
-        export type RequestHeaders = {
-            /** @default "application/json" */
-            'Content-Type': string;
-        };
-        export type ResponseBody = AccountActivateResponseSchema;
-    }
-    /**
-     * No description
-     * @tags Account
-     * @name PostAccountRecoverCode
-     * @summary Complete Account recover
-     * @request POST:/account/recover/{code}
-     * @deprecated
-     */
-    export namespace PostAccountRecoverCode {
-        export type RequestParams = {
-            code: string;
-        };
-        export type RequestQuery = {};
-        export type RequestBody = RecoverCompleteBodySchema;
-        export type RequestHeaders = {
-            /** @default "application/json" */
-            'Content-Type': string;
-        };
-        export type ResponseBody = AccountActivateResponseSchema;
-    }
-}
-
 export namespace Client {
     /**
      * No description
@@ -3514,58 +3392,6 @@ export namespace User {
         export type RequestQuery = {};
         export type RequestBody = never;
         export type RequestHeaders = {};
-        export type ResponseBody = ResponseSchema;
-    }
-    /**
-     * No description
-     * @tags User
-     * @name PostUserPassword
-     * @summary Update User password
-     * @request POST:/user/password
-     * @deprecated
-     * @secure
-     */
-    export namespace PostUserPassword {
-        export type RequestParams = {};
-        export type RequestQuery = {};
-        export type RequestBody = {
-            /**
-             * @minLength 8
-             * @maxLength 1024
-             */
-            oldPassword: string;
-            /**
-             * @minLength 8
-             * @maxLength 1024
-             */
-            newPassword: string;
-        };
-        export type RequestHeaders = {
-            /** @default "application/json" */
-            'Content-Type': string;
-        };
-        export type ResponseBody = ResponseSchema;
-    }
-    /**
-     * No description
-     * @tags User
-     * @name PostUserEmail
-     * @summary Update User email
-     * @request POST:/user/email
-     * @deprecated
-     * @secure
-     */
-    export namespace PostUserEmail {
-        export type RequestParams = {};
-        export type RequestQuery = {};
-        export type RequestBody = {
-            /** @format email */
-            email: string;
-        };
-        export type RequestHeaders = {
-            /** @default "application/json" */
-            'Content-Type': string;
-        };
         export type ResponseBody = ResponseSchema;
     }
     /**
@@ -4630,6 +4456,28 @@ export namespace Upload {
             'Content-Type': string;
         };
         export type ResponseBody = ResponseSchema;
+    }
+    /**
+     * No description
+     * @tags Upload
+     * @name UploadCheckApprovalRequired
+     * @summary Check if a given manga / locale for a User needs moderation approval
+     * @request POST:/upload/check-approval-required
+     * @secure
+     */
+    export namespace UploadCheckApprovalRequired {
+        export type RequestParams = {};
+        export type RequestQuery = {};
+        export type RequestBody = {
+            /** @format uuid */
+            manga?: string;
+            /** @pattern ^[a-z]{2}(-[a-z]{2})?$ */
+            locale?: string;
+        };
+        export type RequestHeaders = {};
+        export type ResponseBody = ResponseSchema & {
+            requiresApproval?: boolean;
+        };
     }
 }
 

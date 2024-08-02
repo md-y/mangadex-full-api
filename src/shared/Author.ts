@@ -87,6 +87,10 @@ export default class Author extends IDObject implements AuthorAttributesSchema {
      */
     naver: string | null;
     /**
+     * URL to the author/artist's namicomi
+     */
+    namicomi: string | null;
+    /**
      *  URL to the author/artist's website
      */
     website: string | null;
@@ -125,6 +129,7 @@ export default class Author extends IDObject implements AuthorAttributesSchema {
         this.youtube = schem.attributes.youtube;
         this.weibo = schem.attributes.weibo;
         this.naver = schem.attributes.naver;
+        this.namicomi = schem.attributes.namicomi;
         this.website = schem.attributes.website;
         this.version = schem.attributes.version;
         this.createdAt = new Date(schem.attributes.createdAt);
