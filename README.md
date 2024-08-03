@@ -9,7 +9,7 @@ An unofficial [MangaDex](https://www.mangadex.org) API built with the [official 
 [![Downloads](https://img.shields.io/npm/dm/mangadex-full-api.svg?style=flat)](https://www.npmjs.com/package/mangadex-full-api)
 
 ```bash
-npm install mangadex-full-api@6.0.0-beta.0
+npm install mangadex-full-api@6.0.0
 ```
 
 ```javascript
