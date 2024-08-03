@@ -231,11 +231,7 @@ export async function fetchMDDataWithBody<T extends { data: unknown }>(
 /**
  * Performs a POST fetch request to api.mangadex.network with a JSON body
  */
-export async function postToMDNetwork<T extends object>(
-    endpoint: string,
-    body: object,
-    params?: ParameterObj,
-): Promise<T> {
+export async function postToMDNetwork(endpoint: string, body: object, params?: ParameterObj): Promise<void> {
     const url = buildURL('https://api.mangadex.network', endpoint, params);
     const res = await fetch(url, {
         body: JSON.stringify(body),
@@ -244,8 +240,7 @@ export async function postToMDNetwork<T extends object>(
             'Content-Type': 'application/json',
         },
     });
-    const json = await res.json();
-    return json as T;
+    if (!res.ok) throw new APIResponseError(`${res.status} ${res.statusText}`);
 }
 
 export async function fetchMDWithFormData<T extends object>(
