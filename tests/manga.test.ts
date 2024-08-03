@@ -71,7 +71,12 @@ test('getRelations()', async () => {
     const requestedRelations = await manga!.getRelations(true);
     const givenRelations = manga!.relatedManga as Record<string, Relationship<Manga>[]>;
     for (const [relType, relatedManga] of Object.entries(requestedRelations)) {
-        expect(relatedManga.every((r) => r.cached)).toBeTruthy();
+        for (const related of relatedManga) {
+            // Sometimes the related manga don't exist, so if they're not cached, resolving should cause an error
+            if (!related.cached) {
+                expect(related.resolve()).rejects.not.toBeNull();
+            }
+        }
 
         const ids1 = relatedManga.map((m) => m.id);
         const ids2 = givenRelations[relType].map((m) => m.id);
