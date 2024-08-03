@@ -1,8 +1,6 @@
 import 'dotenv/config';
 import { getCurrentAuthClient, loginPersonal } from '../src/index';
 import IDObject from '../src/internal/IDObject';
-import * as Network from '../src/util/Network';
-import { jest } from '@jest/globals';
 
 /**
  * Ensures that the user is logged in. If not, logs in with the credentials provided in the environment variables.
