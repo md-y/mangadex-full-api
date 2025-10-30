@@ -7,4 +7,5 @@ module.exports = {
     maxConcurrency: 2,
     coveragePathIgnorePatterns: ['LegacyAuthClient', 'testutil'],
     testTimeout: 60000,
+    verbose: true,
 };
