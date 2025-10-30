@@ -1,6 +1,6 @@
 {
   "name": "mangadex-full-api",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "A MangaDex api based around the official API.",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
