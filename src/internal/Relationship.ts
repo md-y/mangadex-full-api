@@ -1,7 +1,7 @@
 import { RelationshipSchema } from '../types/schema';
 import IDObject from '../internal/IDObject';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type GettableClass<T> = Function & { get: (id: string) => Promise<T>; getMultiple?: (ids: string[]) => Promise<T[]> };
 
 type MFARelationshipSchema = Pick<RelationshipSchema, 'id' | 'type'> &

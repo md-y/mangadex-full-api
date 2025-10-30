@@ -23,6 +23,7 @@
         "prettier/prettier": 1,
         "eqeqeq": ["error", "always"],
         "@typescript-eslint/no-non-null-assertion": 0,
+        "@typescript-eslint/no-unused-vars": 0,
         "no-empty": [
             "error",
             {

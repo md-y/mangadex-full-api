@@ -7,16 +7,16 @@
   "module": "./dist/index.mjs",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
     "lint": "eslint ./src ./scripts --ext .ts,.mjs,.cjs,.js",
     "build:schema": "node ./scripts/build-schema.mjs",
     "build:tsup": "node ./scripts/build-tsup.mjs",
-    "build": "npm run build:schema && npm run build:tsup",
+    "build": "npm run lint && npm run build:schema && npm run build:tsup",
     "prepublish": "npm run build",
     "docs": "typedoc",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
@@ -46,8 +46,8 @@
     "@microsoft/tsdoc": "^0.14.2",
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.1",
-    "@typescript-eslint/eslint-plugin": "^5.47.0",
-    "@typescript-eslint/parser": "^5.47.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
     "dotenv": "^16.3.1",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
@@ -57,7 +57,7 @@
     "prettier": "^2.8.1",
     "simple-oauth-redirect": "^1.1.0",
     "swagger-typescript-api": "^13.2.16",
-    "ts-jest": "^29.1.1",
+    "ts-jest": "^29.4.5",
     "tsup": "^8.5.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-missing-exports": "^4.1.2",

@@ -20,7 +20,7 @@ export async function buildSchema(silent = false) {
     targetPath = path.join(targetPath, TARGET_DIR);
 
     await generateApi({
-        name: TARGET_NAME,
+        fileName: TARGET_NAME,
         output: targetPath,
         url: MANGADEX_SPEC_URL,
         generateClient: false,
