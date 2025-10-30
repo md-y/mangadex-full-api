@@ -13,7 +13,7 @@ import { build } from 'tsup';
         entry: ['./src/index.ts'],
         format: 'esm',
         outExtension: () => ({ js: '.mjs' }),
-        dts: true,
+        dts: false,
         clean: true,
     });
 
@@ -21,5 +21,6 @@ import { build } from 'tsup';
         ...sharedOptions,
         entry: ['./src/index.ts'],
         format: 'cjs',
+        dts: true,
     });
 })();
