@@ -1,5 +1,4 @@
 import { Chapter, Cover, Manga, Tag } from '../src/index';
-import type Relationship from '../src/internal/Relationship';
 import { ensureLogin, expectEqualIds } from './testutil';
 
 beforeAll(async () => {
@@ -69,7 +68,7 @@ test('getRelations()', async () => {
 
     // Check if the requested relations are cached and that they match the given relations
     const requestedRelations = await manga!.getRelations(true);
-    const givenRelations = manga!.relatedManga as Record<string, Relationship<Manga>[]>;
+    const givenRelations = manga!.relatedManga;
     for (const [relType, relatedManga] of Object.entries(requestedRelations)) {
         for (const related of relatedManga) {
             // Sometimes the related manga don't exist, so if they're not cached, resolving should cause an error
@@ -79,7 +78,7 @@ test('getRelations()', async () => {
         }
 
         const ids1 = relatedManga.map((m) => m.id);
-        const ids2 = givenRelations[relType].map((m) => m.id);
+        const ids2 = givenRelations[relType as keyof typeof givenRelations].map((m) => m.id);
         ids1.sort();
         ids2.sort();
         expect(ids1).toEqual(ids2);
