@@ -43,6 +43,7 @@ import {
 } from '../types/schema';
 import type { DeepRequire, Merge } from '../types/helpers';
 import type Group from './Group';
+import type User from './User';
 
 // This type supplements the schema type so that IDObjects can be used instead
 type MangaSearchHelpers = {
@@ -135,10 +136,9 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
      */
     availableTranslatedLanguages: string[];
     /**
-     * UUID of the chapter that was uploaded last.
-     * String is empty if there is no chapter
+     * Relationship to the latest chapter. Null if there is no latest chapter.
      */
-    latestUploadedChapter: Relationship<Chapter>;
+    latestUploadedChapter: Relationship<Chapter> | null;
     /**
      * List of this manga's genre tags
      */
@@ -176,13 +176,19 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
      * A relationship to the current main cover of this series
      */
     mainCover: Relationship<Cover>;
+    /**
+     * The user that created this manga, if known.
+     */
+    creator: Relationship<User> | null;
 
     constructor(schem: MangaSchema) {
         super();
         this.id = schem.id;
+        const parentRelationship = Relationship.createSelfRelationship('manga', this);
+
         this.altTitles = schem.attributes.altTitles.map((elem) => new LocalizedString(elem));
-        this.artists = Relationship.convertType('artist', schem.relationships);
-        this.authors = Relationship.convertType('author', schem.relationships);
+        this.artists = Relationship.convertType('artist', schem.relationships, parentRelationship);
+        this.authors = Relationship.convertType('author', schem.relationships, parentRelationship);
         this.availableTranslatedLanguages = schem.attributes.availableTranslatedLanguages;
         this.chapterNumbersResetOnNewVolume = schem.attributes.chapterNumbersResetOnNewVolume;
         this.contentRating = schem.attributes.contentRating;
@@ -191,9 +197,18 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
         this.isLocked = schem.attributes.isLocked;
         this.lastChapter = schem.attributes.lastChapter;
         this.lastVolume = schem.attributes.lastVolume;
-        this.latestUploadedChapter = new Relationship({ id: schem.attributes.latestUploadedChapter, type: 'chapter' });
+
+        this.latestUploadedChapter = null;
+        if (schem.attributes.latestUploadedChapter) {
+            this.latestUploadedChapter = new Relationship({
+                id: schem.attributes.latestUploadedChapter,
+                type: 'chapter',
+                relationships: [parentRelationship],
+            });
+        }
+
         this.links = new Links(schem.attributes.links);
-        this.mainCover = Relationship.convertType<Cover>('cover_art', schem.relationships).pop()!;
+        this.mainCover = Relationship.convertType<Cover>('cover_art', schem.relationships, parentRelationship).pop()!;
         this.publicationDemographic = schem.attributes.publicationDemographic;
         this.relatedManga = Manga.getRelatedManga(schem.relationships);
         this.state = schem.attributes.state;
@@ -204,6 +219,7 @@ export default class Manga extends IDObject implements OtherMangaAttributes {
         this.version = schem.attributes.version;
         this.year = schem.attributes.year;
         this.originalLanguage = schem.attributes.originalLanguage;
+        this.creator = Relationship.convertType<User>('creator', schem.relationships).pop() ?? null;
     }
 
     private static getRelatedManga(relationships: RelationshipSchema[]): RelatedManga {

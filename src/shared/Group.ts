@@ -137,8 +137,9 @@ export default class Group extends IDObject implements ScanlationGroupAttributes
         this.version = schem.attributes.version;
         this.createdAt = new Date(schem.attributes.createdAt);
         this.updatedAt = new Date(schem.attributes.updatedAt);
-        this.leader = Relationship.convertType<User>('leader', schem.relationships).pop() ?? null;
-        this.members = Relationship.convertType<User>('member', schem.relationships);
+        const parentRelationship = Relationship.createSelfRelationship('scanlation_group', this);
+        this.leader = Relationship.convertType<User>('leader', schem.relationships, parentRelationship).pop() ?? null;
+        this.members = Relationship.convertType<User>('member', schem.relationships, parentRelationship);
         this.exLicensed = schem.attributes.exLicensed;
         this.verified = schem.attributes.verified;
     }

@@ -71,7 +71,7 @@ export default class Cover extends IDObject implements CoverAttributesSchema {
     /**
      * Relationship to the user who uploaded this cover
      */
-    uploader: Relationship<User>;
+    uploader: Relationship<User> | null;
 
     constructor(schem: CoverSchema) {
         super();
@@ -83,9 +83,10 @@ export default class Cover extends IDObject implements CoverAttributesSchema {
         this.version = schem.attributes.version;
         this.createdAt = new Date(schem.attributes.createdAt);
         this.updatedAt = new Date(schem.attributes.updatedAt);
-        this.manga = Relationship.convertType<Manga>('manga', schem.relationships).pop()!;
+        const parentRelationship = Relationship.createSelfRelationship('cover_art', this);
+        this.manga = Relationship.convertType<Manga>('manga', schem.relationships, parentRelationship).pop()!;
         this.url = `https://mangadex.org/covers/${this.manga.id}/${this.fileName}`;
-        this.uploader = Relationship.convertType<User>('user', schem.relationships).pop()!;
+        this.uploader = Relationship.convertType<User>('user', schem.relationships).pop() ?? null;
     }
 
     /**

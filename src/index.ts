@@ -11,7 +11,7 @@ if (Relationship.getRegisteredTypes().length === 0) {
     Relationship.registerTypes(['author', 'artist'], Author);
     Relationship.registerTypes(['cover_art'], Cover);
     Relationship.registerTypes(['chapter'], Chapter);
-    Relationship.registerTypes(['user', 'member', 'leader'], User);
+    Relationship.registerTypes(['user', 'member', 'leader', 'creator'], User);
     Relationship.registerTypes(['scanlation_group'], Group);
     Relationship.lockTypeMap();
 }

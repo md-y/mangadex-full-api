@@ -147,6 +147,7 @@ export interface ChapterAttributesSchema {
     publishAt: Date;
     /** @format date-time */
     readableAt: Date;
+    isUnavailable: boolean;
 }
 
 /** MangaAttributes */
@@ -470,11 +471,7 @@ export interface CoverAttributesSchema {
 
 /** CoverEdit */
 export interface CoverEditSchema {
-    /**
-     * @minLength 0
-     * @maxLength 8
-     */
-    volume: string | null;
+    volume: CoverVolumeSchema;
     /**
      * @minLength 0
      * @maxLength 512
@@ -485,6 +482,20 @@ export interface CoverEditSchema {
     /** @min 1 */
     version: number;
 }
+
+/**
+ * CoverVolume
+ * @maxLength 8
+ * @pattern ^(0|[1-9]\d*)(\.\d+)?([a-z]+)?$
+ */
+export type CoverVolumeSchema = string | null;
+
+/**
+ * ChapterVolume
+ * @maxLength 8
+ * @pattern ^((0|[1-9]\d*)(\.\d+)?[a-z]?)?$
+ */
+export type ChapterVolumeSchema = string | null;
 
 /** AuthorResponse */
 export interface AuthorResponseSchema {
@@ -882,9 +893,8 @@ export interface UpdateMangaStatusSchema {
 export interface ChapterRequestSchema {
     /** @maxLength 255 */
     title: string | null;
-    volume: string | null;
-    /** @maxLength 8 */
-    chapter: string | null;
+    volume: ChapterVolumeSchema;
+    chapter: ChapterVolumeSchema;
     /** @pattern ^[a-z]{2}(-[a-z]{2})?$ */
     translatedLanguage: string;
     /** @maxItems 10 */
@@ -1142,16 +1152,8 @@ export interface CommitUploadSessionSchema {
 }
 
 export interface ChapterDraftSchema {
-    /**
-     * @maxLength 8
-     * @pattern ^((0|[1-9]\d*)(\.\d+)?[a-z]?)?$
-     */
-    volume: string | null;
-    /**
-     * @maxLength 8
-     * @pattern ^((0|[1-9]\d*)(\.\d+)?[a-z]?)?$
-     */
-    chapter: string | null;
+    volume: ChapterVolumeSchema;
+    chapter: ChapterVolumeSchema;
     /** @maxLength 255 */
     title: string | null;
     /** @pattern ^[a-z]{2}(-[a-z]{2})?$ */
@@ -1340,6 +1342,7 @@ export interface GetSearchMangaParamsSchema {
     /** Reference expansion options for manga entities or lists */
     includes: ReferenceExpansionMangaSchema;
     hasAvailableChapters: boolean;
+    hasUnavailableChapters: '0' | '1';
     /** @format uuid */
     group: string;
 }
@@ -1514,6 +1517,8 @@ export interface GetChapterParamsSchema {
     includeEmptyPages: 0 | 1;
     includeFuturePublishAt: 0 | 1;
     includeExternalUrl: 0 | 1;
+    /** @default "0" */
+    includeUnavailable: '0' | '1';
     /**
      * DateTime string with following format: YYYY-MM-DDTHH:MM:SS in timezone UTC+0
      * @pattern ^\d{4}-[0-1]\d-([0-2]\d|3[0-1])T([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d$
@@ -1596,6 +1601,8 @@ export interface GetUserFollowsMangaFeedParamsSchema {
     includeEmptyPages: 0 | 1;
     includeFuturePublishAt: 0 | 1;
     includeExternalUrl: 0 | 1;
+    /** @default "0" */
+    includeUnavailable: '0' | '1';
 }
 
 export interface GetListIdFeedParamsSchema {
@@ -1644,6 +1651,8 @@ export interface GetListIdFeedParamsSchema {
     includeEmptyPages: 0 | 1;
     includeFuturePublishAt: 0 | 1;
     includeExternalUrl: 0 | 1;
+    /** @default "0" */
+    includeUnavailable: '0' | '1';
     /** @format uuid */
     id: string;
 }
@@ -1759,6 +1768,8 @@ export interface GetMangaIdFeedParamsSchema {
     includeEmptyPages: 0 | 1;
     includeFuturePublishAt: 0 | 1;
     includeExternalUrl: 0 | 1;
+    /** @default "0" */
+    includeUnavailable: '0' | '1';
     /**
      * Manga ID
      * @format uuid
@@ -2033,6 +2044,7 @@ export namespace Manga {
             /** Reference expansion options for manga entities or lists */
             includes?: ReferenceExpansionMangaSchema;
             hasAvailableChapters?: '0' | '1' | 'true' | 'false';
+            hasUnavailableChapters?: '0' | '1';
             /** @format uuid */
             group?: string;
         };
@@ -2321,6 +2333,8 @@ export namespace Manga {
             includeEmptyPages?: 0 | 1;
             includeFuturePublishAt?: 0 | 1;
             includeExternalUrl?: 0 | 1;
+            /** @default "0" */
+            includeUnavailable?: '0' | '1';
         };
         export type RequestBody = never;
         export type RequestHeaders = {};
@@ -3240,6 +3254,8 @@ export namespace List {
             includeEmptyPages?: 0 | 1;
             includeFuturePublishAt?: 0 | 1;
             includeExternalUrl?: 0 | 1;
+            /** @default "0" */
+            includeUnavailable?: '0' | '1';
         };
         export type RequestBody = never;
         export type RequestHeaders = {};
@@ -3450,6 +3466,8 @@ export namespace User {
             includeEmptyPages?: 0 | 1;
             includeFuturePublishAt?: 0 | 1;
             includeExternalUrl?: 0 | 1;
+            /** @default "0" */
+            includeUnavailable?: '0' | '1';
         };
         export type RequestBody = never;
         export type RequestHeaders = {};
@@ -3719,6 +3737,8 @@ export namespace Chapter {
             includeEmptyPages?: 0 | 1;
             includeFuturePublishAt?: 0 | 1;
             includeExternalUrl?: 0 | 1;
+            /** @default "0" */
+            includeUnavailable?: '0' | '1';
             /**
              * DateTime string with following format: YYYY-MM-DDTHH:MM:SS in timezone UTC+0
              * @pattern ^\d{4}-[0-1]\d-([0-2]\d|3[0-1])T([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d$
@@ -3877,11 +3897,7 @@ export namespace Cover {
         export type RequestBody = {
             /** @format binary */
             file?: File;
-            /**
-             * @maxLength 8
-             * @pattern ^(0|[1-9]\\d*)((\\.\\d+){1,2})?[a-z]?$
-             */
-            volume?: string | null;
+            volume?: CoverVolumeSchema;
             description?: string;
             /** @pattern ^[a-z]{2}(-[a-z]{2})?$ */
             locale?: string;
@@ -4723,6 +4739,7 @@ export namespace Statistics {
                         };
                     };
                     follows?: number;
+                    unavailableChapterCount?: number;
                 }
             >;
         };

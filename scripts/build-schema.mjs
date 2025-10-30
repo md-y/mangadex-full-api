@@ -4,7 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-const MANGADEX_SPEC_URL = 'https://api.mangadex.org/docs/api.yaml';
+const MANGADEX_SPEC_URL = 'https://api.mangadex.org/docs/static/api.yaml';
 const TARGET_DIR = 'src/types/';
 const TARGET_NAME = 'schema.ts';
 

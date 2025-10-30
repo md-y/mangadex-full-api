@@ -30,7 +30,7 @@ test('get() and getStatistics()', async () => {
     expect(stats).toBeDefined();
 });
 
-test('getReadablePages() and reportPageUrl()', async () => {
+test('getReadablePages()', async () => {
     const chapter = await Chapter.getByQuery();
     expect(chapter).not.toBeNull();
 
@@ -47,21 +47,26 @@ test('getReadablePages() and reportPageUrl()', async () => {
     try {
         pageData = await pageRes.arrayBuffer();
     } catch (err) {
-        await Chapter.reportPageURL({
-            url: pageUrl,
-            bytes: 0,
-            cached: pageCached,
-            duration: Date.now() - startTime,
-            success: false,
-        });
+        try {
+            await Chapter.reportPageURL({
+                url: pageUrl,
+                bytes: 0,
+                cached: pageCached,
+                duration: Date.now() - startTime,
+                success: false,
+            });
+        } catch {}
         throw err;
     }
 
-    await Chapter.reportPageURL({
-        url: pageUrl,
-        bytes: pageData.byteLength,
-        cached: pageCached,
-        duration: Date.now() - startTime,
-        success: true,
-    });
+    // mangadex.network reporting seems to be deprecated as of October 2025
+    try {
+        await Chapter.reportPageURL({
+            url: pageUrl,
+            bytes: pageData.byteLength,
+            cached: pageCached,
+            duration: Date.now() - startTime,
+            success: true,
+        });
+    } catch {}
 });

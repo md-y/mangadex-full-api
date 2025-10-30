@@ -4,13 +4,13 @@ import IDObject from '../internal/IDObject';
 // eslint-disable-next-line @typescript-eslint/ban-types
 type GettableClass<T> = Function & { get: (id: string) => Promise<T>; getMultiple?: (ids: string[]) => Promise<T[]> };
 
-type PartialRelationshipSchema = Pick<RelationshipSchema, 'id' | 'type'> &
-    Partial<Pick<RelationshipSchema, 'related' | 'attributes'>>;
+type MFARelationshipSchema = Pick<RelationshipSchema, 'id' | 'type'> &
+    Partial<Pick<RelationshipSchema, 'related' | 'attributes'>> & { relationships?: Relationship[] };
 
 /**
  * Represents a relationship from one MangaDex object to another such as a manga, author, etc via its id.
  */
-class Relationship<T> extends IDObject {
+class Relationship<T extends IDObject = IDObject> extends IDObject {
     /**
      * The MangaDex UUID of the object this relationship refers to
      */
@@ -37,7 +37,7 @@ class Relationship<T> extends IDObject {
     private static typeMap: Record<string, GettableClass<unknown>> = {};
     private static typeMapLocked = false;
 
-    constructor(data: PartialRelationshipSchema) {
+    constructor(data: MFARelationshipSchema) {
         super();
         this.id = data.id;
         if (!(data.type in Relationship.typeMap)) throw `Unregistered relationship type: ${data.type}`;
@@ -53,7 +53,7 @@ class Relationship<T> extends IDObject {
                     attributes: data.attributes,
                     id: this.id,
                     type: this.type,
-                    relationships: [],
+                    relationships: data.relationships ?? [],
                 };
                 this.cachedData = Reflect.construct(classObj, [schemaObj]);
                 this.cached = true;
@@ -68,7 +68,7 @@ class Relationship<T> extends IDObject {
      * This will automatically fetch the associated object that this relationship refers to.
      * In other words, it wil call Manga.get(id), Chapter.get(id), etc with the information
      * stored in this relationship instance. If this relationship is cached, then the resulting
-     * object will not have any relationships of its own.
+     * object will be missing relationships.
      */
     async resolve(): Promise<T> {
         if (this.cached) return this.cachedData as T;
@@ -80,7 +80,7 @@ class Relationship<T> extends IDObject {
      * in the same order.
      * @param relationshipArray - An array of relationships of the same type
      */
-    static async resolveAll<T>(relationshipArray: Relationship<T>[]): Promise<T[]> {
+    static async resolveAll<T extends IDObject>(relationshipArray: Relationship<T>[]): Promise<T[]> {
         if (relationshipArray.length === 0) return [];
         const classObj = Relationship.typeMap[relationshipArray[0].type] as GettableClass<T>;
         if (classObj !== undefined && classObj.getMultiple !== undefined) {
@@ -95,8 +95,29 @@ class Relationship<T> extends IDObject {
      * relationships of a specific type into relationship objects.
      * @internal
      */
-    static convertType<T2>(type: string, arr: RelationshipSchema[]): Relationship<T2>[] {
-        return arr.filter((elem) => elem.type === type).map((elem) => new Relationship<T2>(elem));
+    static convertType<T2 extends IDObject>(
+        type: string,
+        arr: RelationshipSchema[],
+        parent?: Relationship<IDObject>,
+    ): Relationship<T2>[] {
+        return arr
+            .filter((elem) => elem.type === type)
+            .map((elem) => {
+                if (parent) return new Relationship<T2>({ ...elem, relationships: [parent] });
+                return new Relationship<T2>(elem);
+            });
+    }
+
+    /**
+     * Create a reference to an object's self
+     * @internal
+     */
+    static createSelfRelationship<T extends IDObject>(type: string, self: T) {
+        if (!self.id) throw new Error('ID is missing. Did you call this too early in the constructor?');
+        return new Relationship<T>({
+            id: self.id,
+            type,
+        });
     }
 
     /**

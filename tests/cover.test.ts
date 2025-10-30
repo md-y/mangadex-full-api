@@ -1,4 +1,4 @@
-import { Cover } from '../src/index';
+import { Cover, Manga } from '../src/index';
 import { expectEqualIds } from './testutil';
 
 test('getByQuery() and search()', async () => {
@@ -39,4 +39,13 @@ test('Download Cover.url', async () => {
     const coverRes = await fetch(url);
     const coverData = await coverRes.arrayBuffer();
     expect(coverData.byteLength).toBeGreaterThan(0);
+});
+
+test('Get Cover.url via cached relationship', async () => {
+    const manga = await Manga.getByQuery({ includes: ['cover_art'] });
+    expect(manga).not.toBeNull();
+    expect(manga?.mainCover.cached).toBeTruthy();
+    const cover = await manga?.mainCover.resolve();
+    expect(cover?.url).toContain(manga?.id);
+    expect(cover?.url).toContain(cover?.fileName);
 });

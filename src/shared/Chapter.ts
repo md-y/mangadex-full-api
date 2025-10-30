@@ -98,6 +98,10 @@ export default class Chapter extends IDObject implements OtherChapterAttributes 
      * Array of relationships to the groups that translated this chapter
      */
     groups: Relationship<Group>[];
+    /**
+     * Is this chapter unavailable?
+     */
+    isUnavailable: boolean;
 
     constructor(schem: ChapterSchema) {
         super();
@@ -117,6 +121,7 @@ export default class Chapter extends IDObject implements OtherChapterAttributes 
         this.isExternal = schem.attributes.externalUrl !== null;
         this.manga = Relationship.convertType<Manga>('manga', schem.relationships).pop()!;
         this.groups = Relationship.convertType<Group>('scanlation_group', schem.relationships);
+        this.isUnavailable = schem.attributes.isUnavailable;
     }
 
     /**
