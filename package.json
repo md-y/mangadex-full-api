@@ -58,7 +58,7 @@
     "simple-oauth-redirect": "^1.1.0",
     "swagger-typescript-api": "^13.2.16",
     "ts-jest": "^29.1.1",
-    "tsup": "^6.7.0",
+    "tsup": "^8.5.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^5.9.3"
