@@ -6,6 +6,7 @@ on:
       - 'package.json'
       - '**.ts'
       - '**.js'
+      - 'jest-tests.yml'
 name: Jest Tests
 jobs:
   test:
@@ -13,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [20, 21, 26]
+        node-version: [20, 21, 25]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
