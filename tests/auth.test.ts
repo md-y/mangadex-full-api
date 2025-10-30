@@ -13,6 +13,9 @@ test('Intentionally fail personal login', async () => {
         fail('loginPersonal() should throw an error');
     } catch (e) {
         expect(e).toBeDefined();
+        if (!(e instanceof AuthError)) {
+            console.error(e);
+        }
         expect(e).toBeInstanceOf(AuthError);
     }
 });
