@@ -10,7 +10,6 @@
     "cleanOutputDir": true,
     "githubPages": true,
     "searchInComments": true,
-    "hideParameterTypesInTitle": false,
     "includeVersion": true,
     "internalModule": "<internal types>"
 }
