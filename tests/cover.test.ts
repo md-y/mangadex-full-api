@@ -41,11 +41,20 @@ test('Download Cover.url', async () => {
     expect(coverData.byteLength).toBeGreaterThan(0);
 });
 
-test('Get Cover.url via cached relationship', async () => {
+test('Get Cover.url via cached relationship using .resolve()', async () => {
     const manga = await Manga.getByQuery({ includes: ['cover_art'] });
     expect(manga).not.toBeNull();
     expect(manga?.mainCover.cached).toBeTruthy();
     const cover = await manga?.mainCover.resolve();
+    expect(cover?.url).toContain(manga?.id);
+    expect(cover?.url).toContain(cover?.fileName);
+});
+
+test('Get Cover.url via cached relationship using .peek()', async () => {
+    const manga = await Manga.getByQuery({ includes: ['cover_art'] });
+    expect(manga).not.toBeNull();
+    expect(manga?.mainCover.cached).toBeTruthy();
+    const cover = manga?.mainCover.peek();
     expect(cover?.url).toContain(manga?.id);
     expect(cover?.url).toContain(cover?.fileName);
 });
