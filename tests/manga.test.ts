@@ -126,7 +126,7 @@ test('getFollowedManga() and getReadChapters()', async () => {
 
     const chapters = await Manga.getReadChapters(followedManga.map((m) => m.id));
     const readChapters = Object.values(chapters);
-    readChapters.sort((a, b) => b.length - a.length)[0];
+    readChapters.sort((a, b) => b.length - a.length);
     if (readChapters[0].length === 0) {
         console.warn('No read chapters found, skipping test');
         return;

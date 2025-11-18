@@ -23,22 +23,55 @@ type ListResponse = { data: { id: string }[]; limit: number; offset: number; tot
 type CustomRequestInit = Omit<RequestInit, 'headers'> & { headers?: Record<string, string>; noAuth?: boolean };
 
 class NetworkStateManager {
-    static useDebugServerValue = false;
+    static apiOriginOverride: string | undefined;
+    static authOriginOverride: string | undefined;
     static activeClient: IAuthClient | undefined;
+
+    static get apiOrigin() {
+        const rawDomain = this.apiOriginOverride ?? 'https://api.mangadex.org/';
+        return new URL(rawDomain).origin;
+    }
+
+    static get authOrigin() {
+        const rawDomain = this.authOriginOverride ?? 'https://auth.mangadex.org/';
+        return new URL(rawDomain).origin;
+    }
 }
 
 /**
- * If true the debug (sandbox) MangaDex domain wil be used instead of the default one.
+ * If true the debug (sandbox) MangaDex domain will be used as the domain override.
  * {@link https://sandbox.mangadex.dev}
  */
 export function useDebugServer(val: boolean) {
-    NetworkStateManager.useDebugServerValue = val;
+    const devApiDomain = 'https://api.mangadex.dev';
+    const devAuthDomain = 'https://auth.mangadex.dev';
+    if (val) {
+        NetworkStateManager.apiOriginOverride = devApiDomain;
+        NetworkStateManager.authOriginOverride = devAuthDomain;
+    } else {
+        if (NetworkStateManager.apiOriginOverride === devApiDomain) {
+            NetworkStateManager.apiOriginOverride = undefined;
+        }
+        if (NetworkStateManager.authOriginOverride === devAuthDomain) {
+            NetworkStateManager.authOriginOverride = undefined;
+        }
+    }
 }
+
 /**
- * Returns if the debug (sandbox) MangaDex domain is in use
+ * Changes the origin used by api calls to a custom one, or clears it if the passed value is undefined.
+ * @param domain - The new domain (e.g. https://example.com)
  */
-export function isDebugServerInUse() {
-    return NetworkStateManager.useDebugServerValue;
+export function overrideApiOrigin(domain: string | undefined) {
+    NetworkStateManager.apiOriginOverride = domain;
+}
+
+/**
+ * Changes the origin used by authentication calls to a custom one, or clears it if the passed value is undefined.
+ * @param domain - The new domain (e.g. https://example.com)
+ */
+export function overrideAuthOrigin(domain: string | undefined) {
+    NetworkStateManager.authOriginOverride = domain;
 }
 
 /**
@@ -71,7 +104,7 @@ export async function fetchMD<T extends object>(
     params?: ParameterObj,
     requestInit: CustomRequestInit = {},
 ): Promise<T> {
-    const domain = NetworkStateManager.useDebugServerValue ? 'https://api.mangadex.dev' : 'https://api.mangadex.org/';
+    const domain = NetworkStateManager.apiOrigin;
     const url = buildURL(domain, endpoint, params);
 
     if (NetworkStateManager.activeClient && !requestInit.noAuth) {
@@ -340,7 +373,7 @@ export async function performAuthCheck(sessionToken?: string): Promise<boolean> 
 export async function fetchMDAuth<T extends object>(endpoint: string, body: Record<string, string>): Promise<T> {
     const params = new URLSearchParams();
     for (const [name, value] of Object.entries(body)) params.append(name, value);
-    const domain = `https://auth.mangadex.${isDebugServerInUse() ? 'dev' : 'org'}`;
+    const domain = NetworkStateManager.authOrigin;
     const url = new URL(endpoint, domain);
     const res = await fetch(url, {
         body: params,
