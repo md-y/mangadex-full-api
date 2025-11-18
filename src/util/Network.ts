@@ -59,6 +59,22 @@ export function useDebugServer(val: boolean) {
 }
 
 /**
+ * Returns the origin used for api calls.
+ * https://api.mangadex.org/ by default.
+ */
+export function getApiOrigin() {
+    return NetworkStateManager.apiOrigin;
+}
+
+/**
+ * Returns the origin used for auth calls.
+ * https://auth.mangadex.org/ by default.
+ */
+export function getAuthOrigin() {
+    return NetworkStateManager.authOrigin;
+}
+
+/**
  * Changes the origin used by api calls to a custom one, or clears it if the passed value is undefined.
  * @param domain - The new domain (e.g. https://example.com)
  */
