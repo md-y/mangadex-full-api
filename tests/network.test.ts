@@ -1,4 +1,4 @@
-import { fetchMD, fetchMDAuth, overrideApiOrigin, overrideAuthOrigin, useDebugServer } from '../src/util/Network';
+import { fetchMD, fetchMDAuth, overrideApiURL, overrideAuthURL, useDebugServer } from '../src/util/Network';
 
 function createFetchMock() {
     return jest.fn().mockResolvedValue({
@@ -26,7 +26,7 @@ test('Override Auth Origin', async () => {
     global.fetch = mockFetch;
 
     const testOrigin = 'http://localhost';
-    overrideAuthOrigin(testOrigin);
+    overrideAuthURL(testOrigin);
 
     await fetchMDAuth('/test-endpoint', { param: 'value' });
 
@@ -41,7 +41,7 @@ test('Override Api Origin', async () => {
     global.fetch = mockFetch;
 
     const testOrigin = 'http://localhost';
-    overrideApiOrigin(testOrigin);
+    overrideApiURL(testOrigin);
 
     await fetchMD('/test-endpoint', { param: 'value' });
 

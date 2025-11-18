@@ -23,18 +23,16 @@ type ListResponse = { data: { id: string }[]; limit: number; offset: number; tot
 type CustomRequestInit = Omit<RequestInit, 'headers'> & { headers?: Record<string, string>; noAuth?: boolean };
 
 class NetworkStateManager {
-    static apiOriginOverride: string | undefined;
-    static authOriginOverride: string | undefined;
+    static apiURLOverride: string | undefined;
+    static authURLOverride: string | undefined;
     static activeClient: IAuthClient | undefined;
 
-    static get apiOrigin() {
-        const rawDomain = this.apiOriginOverride ?? 'https://api.mangadex.org/';
-        return new URL(rawDomain).origin;
+    static get apiURL() {
+        return this.apiURLOverride ?? 'https://api.mangadex.org/';
     }
 
-    static get authOrigin() {
-        const rawDomain = this.authOriginOverride ?? 'https://auth.mangadex.org/';
-        return new URL(rawDomain).origin;
+    static get authURL() {
+        return this.authURLOverride ?? 'https://auth.mangadex.org/';
     }
 }
 
@@ -46,48 +44,59 @@ export function useDebugServer(val: boolean) {
     const devApiDomain = 'https://api.mangadex.dev';
     const devAuthDomain = 'https://auth.mangadex.dev';
     if (val) {
-        NetworkStateManager.apiOriginOverride = devApiDomain;
-        NetworkStateManager.authOriginOverride = devAuthDomain;
+        NetworkStateManager.apiURLOverride = devApiDomain;
+        NetworkStateManager.authURLOverride = devAuthDomain;
     } else {
-        if (NetworkStateManager.apiOriginOverride === devApiDomain) {
-            NetworkStateManager.apiOriginOverride = undefined;
+        // is this necessary?
+        if (NetworkStateManager.apiURLOverride === devApiDomain) {
+            NetworkStateManager.apiURLOverride = undefined;
         }
-        if (NetworkStateManager.authOriginOverride === devAuthDomain) {
-            NetworkStateManager.authOriginOverride = undefined;
+        if (NetworkStateManager.authURLOverride === devAuthDomain) {
+            NetworkStateManager.authURLOverride = undefined;
         }
     }
 }
 
 /**
- * Returns the origin used for api calls.
+ * Returns the URL used for api calls.
  * https://api.mangadex.org/ by default.
  */
-export function getApiOrigin() {
-    return NetworkStateManager.apiOrigin;
+export function getApiURL() {
+    return NetworkStateManager.apiURL;
 }
 
 /**
- * Returns the origin used for auth calls.
+ * Returns the URL used for auth calls.
  * https://auth.mangadex.org/ by default.
  */
-export function getAuthOrigin() {
-    return NetworkStateManager.authOrigin;
+export function getAuthURL() {
+    return NetworkStateManager.authURL;
 }
 
 /**
  * Changes the origin used by api calls to a custom one, or clears it if the passed value is undefined.
- * @param domain - The new domain (e.g. https://example.com)
+ * @param url - The new URL (e.g. https://example.com)
  */
-export function overrideApiOrigin(domain: string | undefined) {
-    NetworkStateManager.apiOriginOverride = domain;
+export function overrideApiURL(url: string | undefined) {
+    if (url) {
+        const newUrl = new URL(url).toString();
+        NetworkStateManager.apiURLOverride = newUrl.endsWith('/') ? newUrl : newUrl + '/';
+    } else {
+        NetworkStateManager.apiURLOverride = undefined;
+    }
 }
 
 /**
  * Changes the origin used by authentication calls to a custom one, or clears it if the passed value is undefined.
- * @param domain - The new domain (e.g. https://example.com)
+ * @param url - The new URL (e.g. https://example.com)
  */
-export function overrideAuthOrigin(domain: string | undefined) {
-    NetworkStateManager.authOriginOverride = domain;
+export function overrideAuthURL(url: string | undefined) {
+    if (url) {
+        const newUrl = new URL(url).toString();
+        NetworkStateManager.authURLOverride = newUrl.endsWith('/') ? newUrl : newUrl + '/';
+    } else {
+        NetworkStateManager.authURLOverride = undefined;
+    }
 }
 
 /**
@@ -120,8 +129,9 @@ export async function fetchMD<T extends object>(
     params?: ParameterObj,
     requestInit: CustomRequestInit = {},
 ): Promise<T> {
-    const domain = NetworkStateManager.apiOrigin;
-    const url = buildURL(domain, endpoint, params);
+    const domain = NetworkStateManager.apiURL;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const url = buildURL(domain, normalizedEndpoint, params);
 
     if (NetworkStateManager.activeClient && !requestInit.noAuth) {
         const sessionToken = await NetworkStateManager.activeClient.getSessionToken();
@@ -281,7 +291,8 @@ export async function fetchMDDataWithBody<T extends { data: unknown }>(
  * Performs a POST fetch request to api.mangadex.network with a JSON body
  */
 export async function postToMDNetwork(endpoint: string, body: object, params?: ParameterObj): Promise<void> {
-    const url = buildURL('https://api.mangadex.network', endpoint, params);
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const url = buildURL('https://api.mangadex.network', normalizedEndpoint, params);
     const res = await fetch(url, {
         body: JSON.stringify(body),
         method: 'POST',
@@ -389,8 +400,9 @@ export async function performAuthCheck(sessionToken?: string): Promise<boolean> 
 export async function fetchMDAuth<T extends object>(endpoint: string, body: Record<string, string>): Promise<T> {
     const params = new URLSearchParams();
     for (const [name, value] of Object.entries(body)) params.append(name, value);
-    const domain = NetworkStateManager.authOrigin;
-    const url = new URL(endpoint, domain);
+    const domain = NetworkStateManager.authURL;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const url = new URL(normalizedEndpoint, domain);
     const res = await fetch(url, {
         body: params,
         method: 'POST',
