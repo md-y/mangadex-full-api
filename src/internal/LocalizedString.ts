@@ -11,7 +11,7 @@ import type { LocalizedStringSchema } from '../types/schema';
  * LocalizedString.setGlobalLocale('jp');
  * locStr.localString; // Japanese String
  */
-class LocalizedString implements LocalizedStringSchema {
+class LocalizedString implements LocalizedStringSchema, Iterable<[string, string]> {
     private static globalLocale = 'en';
 
     [x: string]: string;
@@ -42,6 +42,12 @@ class LocalizedString implements LocalizedStringSchema {
     static setGlobalLocale(locale: string) {
         if (locale.length < 2 || locale.length > 8) throw Error(`Locale "${locale}" has an invalid length`);
         LocalizedString.globalLocale = locale;
+    }
+
+    *[Symbol.iterator](): IterableIterator<[string, string]> {
+        for (const [key, value] of Object.entries(this)) {
+            if (key !== 'globalLocale') yield [key, value];
+        }
     }
 }
 
