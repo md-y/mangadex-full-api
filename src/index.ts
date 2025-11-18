@@ -32,7 +32,15 @@ export { default as List } from './shared/List';
 
 // Export specific functions:
 
-export { useDebugServer, overrideApiOrigin, overrideAuthOrigin } from './util/Network';
+export {
+    useDebugServer,
+    overrideApiURL,
+    overrideAuthURL,
+    overrideUploadsURL,
+    getApiURL,
+    getAuthURL,
+    getUploadsURL,
+} from './util/Network';
 
 import LocalizedString from './internal/LocalizedString';
 /**
