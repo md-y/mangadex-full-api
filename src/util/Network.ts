@@ -25,6 +25,7 @@ type CustomRequestInit = Omit<RequestInit, 'headers'> & { headers?: Record<strin
 class NetworkStateManager {
     static apiURLOverride: string | undefined;
     static authURLOverride: string | undefined;
+    static uploadsURLOverride: string | undefined;
     static activeClient: IAuthClient | undefined;
 
     static get apiURL() {
@@ -33,6 +34,10 @@ class NetworkStateManager {
 
     static get authURL() {
         return this.authURLOverride ?? 'https://auth.mangadex.org/';
+    }
+
+    static get uploadsURL() {
+        return this.uploadsURLOverride ?? 'https://uploads.mangadex.org/';
     }
 }
 
@@ -74,6 +79,14 @@ export function getAuthURL() {
 }
 
 /**
+ * Returns the URL used for uploads calls.
+ * https://uploads.mangadex.org/ by default.
+ */
+export function getUploadsURL() {
+    return NetworkStateManager.uploadsURL;
+}
+
+/**
  * Changes the origin used by api calls to a custom one, or clears it if the passed value is undefined.
  * @param url - The new URL (e.g. https://example.com)
  */
@@ -96,6 +109,19 @@ export function overrideAuthURL(url: string | undefined) {
         NetworkStateManager.authURLOverride = newUrl.endsWith('/') ? newUrl : newUrl + '/';
     } else {
         NetworkStateManager.authURLOverride = undefined;
+    }
+}
+
+/**
+ * Changes the origin used by uploads calls to a custom one, or clears it if the passed value is undefined.
+ * @param url - The new URL (e.g. https://example.com)
+ */
+export function overrideUploadsURL(url: string | undefined) {
+    if (url) {
+        const newUrl = new URL(url).toString();
+        NetworkStateManager.uploadsURLOverride = newUrl.endsWith('/') ? newUrl : newUrl + '/';
+    } else {
+        NetworkStateManager.uploadsURLOverride = undefined;
     }
 }
 

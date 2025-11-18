@@ -6,6 +6,7 @@ import {
     fetchMDDataWithBody,
     fetchMDSearch,
     fetchMDWithFormData,
+    getUploadsURL,
 } from '../util/Network';
 import Relationship from '../internal/Relationship';
 
@@ -85,7 +86,7 @@ export default class Cover extends IDObject implements CoverAttributesSchema {
         this.updatedAt = new Date(schem.attributes.updatedAt);
         const parentRelationship = Relationship.createSelfRelationship('cover_art', this);
         this.manga = Relationship.convertType<Manga>('manga', schem.relationships, parentRelationship).pop()!;
-        this.url = `https://mangadex.org/covers/${this.manga.id}/${this.fileName}`;
+        this.url = `${getUploadsURL()}covers/${this.manga.id}/${this.fileName}`;
         this.uploader = Relationship.convertType<User>('user', schem.relationships).pop() ?? null;
     }
 
