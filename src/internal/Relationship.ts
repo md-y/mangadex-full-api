@@ -65,6 +65,14 @@ class Relationship<T extends IDObject = IDObject> extends IDObject {
     }
 
     /**
+     * Returns the cached related object, or undefined if nothing is cached.
+     * Unlike resolve(), this does not fetch data or perform any I/O.
+     */
+    peek() {
+        return this.cachedData as T | undefined;
+    }
+
+    /**
      * This will automatically fetch the associated object that this relationship refers to.
      * In other words, it wil call Manga.get(id), Chapter.get(id), etc with the information
      * stored in this relationship instance. If this relationship is cached, then the resulting
